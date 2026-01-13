@@ -25,7 +25,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-[#121212]">
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 z-40 h-screen w-60 bg-black">
         <div className="absolute right-0 top-0 h-full w-0.5 bg-primary" />
@@ -78,7 +78,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="ml-60 flex-1 p-6">{children}</main>
+      <main className="ml-60 flex-1 p-6 text-white">{children}</main>
     </div>
   );
 }

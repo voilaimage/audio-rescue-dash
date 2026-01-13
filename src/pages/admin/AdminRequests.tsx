@@ -96,8 +96,8 @@ export default function AdminRequests() {
       <div className="space-y-5">
         {/* Header */}
         <div>
-          <h1 className="font-display text-2xl font-bold text-foreground">All Requests</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="font-display text-2xl font-bold text-white">All Requests</h1>
+          <p className="text-sm text-gray-400">
             {filteredRequests.length} of {requests.length} requests
           </p>
         </div>
@@ -105,17 +105,17 @@ export default function AdminRequests() {
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative flex-1 min-w-[200px] max-w-xs">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               placeholder="Search business, description, location..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-card"
+              className="pl-9 bg-[#1d1d1d] border-[#333] text-white placeholder:text-gray-500"
             />
           </div>
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[140px] bg-card">
+            <SelectTrigger className="w-[140px] bg-[#1d1d1d] border-[#333] text-white">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -129,7 +129,7 @@ export default function AdminRequests() {
           </Select>
 
           <Select value={cityFilter} onValueChange={setCityFilter}>
-            <SelectTrigger className="w-[160px] bg-card">
+            <SelectTrigger className="w-[160px] bg-[#1d1d1d] border-[#333] text-white">
               <SelectValue placeholder="City" />
             </SelectTrigger>
             <SelectContent>
@@ -141,7 +141,7 @@ export default function AdminRequests() {
           </Select>
 
           <Select value={dateFilter} onValueChange={setDateFilter}>
-            <SelectTrigger className="w-[140px] bg-card">
+            <SelectTrigger className="w-[140px] bg-[#1d1d1d] border-[#333] text-white">
               <SelectValue placeholder="Date" />
             </SelectTrigger>
             <SelectContent>
@@ -154,91 +154,91 @@ export default function AdminRequests() {
         </div>
 
         {/* Table */}
-        <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
+        <div className="rounded-xl border border-[#333] bg-[#1d1d1d] overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-border bg-secondary/50">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b border-[#333] bg-black/30">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
                   Business
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
                   Description
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
                   Location
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
                   Date
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
                   Status
                 </th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-[#333]">
               {filteredRequests.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
                     No requests found
                   </td>
                 </tr>
               ) : (
                 filteredRequests.map((request) => {
                   const status = statusConfig[request.status] || statusConfig.new;
-                  return (
-                    <tr key={request.id} className="hover:bg-secondary/30">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          {request.request_photos?.[0] && (
-                            <img
-                              src={request.request_photos[0].file_url}
-                              alt=""
-                              className="h-10 w-10 shrink-0 rounded-lg object-cover"
-                            />
-                          )}
-                          <div>
-                            <p className="text-sm font-medium text-foreground">
-                              {request.profiles?.business_name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {request.profiles?.contact_name}
-                            </p>
+                    return (
+                      <tr key={request.id} className="hover:bg-white/5">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            {request.request_photos?.[0] && (
+                              <img
+                                src={request.request_photos[0].file_url}
+                                alt=""
+                                className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                              />
+                            )}
+                            <div>
+                              <p className="text-sm font-medium text-white">
+                                {request.profiles?.business_name}
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                {request.profiles?.contact_name}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="max-w-[200px] truncate text-sm text-foreground">
-                          {request.description}
-                        </p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm text-foreground">{request.profiles?.city}</p>
-                        <p className="text-xs text-muted-foreground">{request.profiles?.postcode}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm text-foreground">
-                          {format(new Date(request.created_at), "d MMM yyyy")}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(new Date(request.created_at), "h:mm a")}
-                        </p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}>
-                          {status.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <Link
-                          to={`/admin/requests/${request.id}`}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Link>
-                      </td>
-                    </tr>
-                  );
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="max-w-[200px] truncate text-sm text-white">
+                            {request.description}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-white">{request.profiles?.city}</p>
+                          <p className="text-xs text-gray-400">{request.profiles?.postcode}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-white">
+                            {format(new Date(request.created_at), "d MMM yyyy")}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {format(new Date(request.created_at), "h:mm a")}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}>
+                            {status.label}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <Link
+                            to={`/admin/requests/${request.id}`}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-white/10 hover:text-white"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Link>
+                        </td>
+                      </tr>
+                    );
                 })
               )}
             </tbody>

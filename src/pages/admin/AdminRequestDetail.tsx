@@ -121,13 +121,13 @@ export default function AdminRequestDetail() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/admin/requests")}
-              className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-foreground"
+              className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div>
-              <h1 className="font-display text-2xl font-bold text-foreground">Request Details</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="font-display text-2xl font-bold text-white">Request Details</h1>
+              <p className="text-sm text-gray-400">
                 Submitted {format(new Date(request.created_at), "d MMMM yyyy 'at' h:mm a")}
               </p>
             </div>
@@ -142,8 +142,8 @@ export default function AdminRequestDetail() {
           <div className="col-span-2 space-y-5">
             {/* Photos */}
             {request.request_photos && request.request_photos.length > 0 && (
-              <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-                <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
+                <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-gray-400">
                   Photos ({request.request_photos.length})
                 </h3>
                 <div className="grid grid-cols-4 gap-3">
@@ -151,7 +151,7 @@ export default function AdminRequestDetail() {
                     <button
                       key={photo.id}
                       onClick={() => setSelectedPhoto(photo.file_url)}
-                      className="aspect-square overflow-hidden rounded-lg border border-border"
+                      className="aspect-square overflow-hidden rounded-lg border border-[#333]"
                     >
                       <img src={photo.file_url} alt="" className="h-full w-full object-cover transition-transform hover:scale-105" />
                     </button>
@@ -161,25 +161,25 @@ export default function AdminRequestDetail() {
             )}
 
             {/* Description */}
-            <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
               <div className="mb-3 flex items-center gap-2">
                 <Package className="h-4 w-4 text-primary" />
-                <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Description</h3>
+                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Description</h3>
               </div>
-              <p className="text-sm text-foreground leading-relaxed">{request.description}</p>
+              <p className="text-sm text-white leading-relaxed">{request.description}</p>
             </div>
 
             {/* Collection Preferences */}
-            <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-              <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">Collection Preferences</h3>
+            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
+              <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-gray-400">Collection Preferences</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                     <Clock className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Preferred Window</p>
-                    <p className="text-sm font-medium text-foreground">{windowLabels[request.preferred_window || "anytime"]}</p>
+                    <p className="text-xs text-gray-400">Preferred Window</p>
+                    <p className="text-sm font-medium text-white">{windowLabels[request.preferred_window || "anytime"]}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -187,8 +187,8 @@ export default function AdminRequestDetail() {
                     <Calendar className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Preferred Timeframe</p>
-                    <p className="text-sm font-medium text-foreground">{dayRangeLabels[request.preferred_day_range || "none"]}</p>
+                    <p className="text-xs text-gray-400">Preferred Timeframe</p>
+                    <p className="text-sm font-medium text-white">{dayRangeLabels[request.preferred_day_range || "none"]}</p>
                   </div>
                 </div>
               </div>
@@ -198,11 +198,11 @@ export default function AdminRequestDetail() {
           {/* Right Column - Business Info & Actions */}
           <div className="space-y-5">
             {/* Status Update */}
-            <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-              <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">Update Status</h3>
+            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
+              <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-gray-400">Update Status</h3>
               <div className="space-y-3">
                 <Select value={newStatus} onValueChange={setNewStatus}>
-                  <SelectTrigger className="bg-background">
+                  <SelectTrigger className="bg-[#28292b] border-[#333] text-white">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -224,63 +224,63 @@ export default function AdminRequestDetail() {
             </div>
 
             {/* Business Info */}
-            <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-              <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">Business Details</h3>
+            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
+              <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-gray-400">Business Details</h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary">
-                    <Building2 className="h-4 w-4 text-foreground" />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                    <Building2 className="h-4 w-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">{profile.business_name}</p>
-                    <p className="text-xs text-muted-foreground">Business</p>
+                    <p className="text-sm font-medium text-white">{profile.business_name}</p>
+                    <p className="text-xs text-gray-400">Business</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary">
-                    <User className="h-4 w-4 text-foreground" />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                    <User className="h-4 w-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">{profile.contact_name}</p>
-                    <p className="text-xs text-muted-foreground">Contact</p>
+                    <p className="text-sm font-medium text-white">{profile.contact_name}</p>
+                    <p className="text-xs text-gray-400">Contact</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary">
-                    <Phone className="h-4 w-4 text-foreground" />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                    <Phone className="h-4 w-4 text-white" />
                   </div>
                   <div>
                     <a href={`tel:${profile.phone}`} className="text-sm font-medium text-primary hover:underline">{profile.phone}</a>
-                    <p className="text-xs text-muted-foreground">Phone</p>
+                    <p className="text-xs text-gray-400">Phone</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary">
-                    <Mail className="h-4 w-4 text-foreground" />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                    <Mail className="h-4 w-4 text-white" />
                   </div>
                   <div>
                     <a href={`mailto:${profile.email}`} className="text-sm font-medium text-primary hover:underline">{profile.email}</a>
-                    <p className="text-xs text-muted-foreground">Email</p>
+                    <p className="text-xs text-gray-400">Email</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Address */}
-            <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-              <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">Pickup Address</h3>
+            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
+              <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-gray-400">Pickup Address</h3>
               <div className="flex items-start gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                   <MapPin className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-sm font-medium text-white">
                     {profile.address_line1}
                     {profile.address_line2 && `, ${profile.address_line2}`}
                   </p>
-                  <p className="text-sm text-foreground">{profile.city}, {profile.postcode}</p>
+                  <p className="text-sm text-white">{profile.city}, {profile.postcode}</p>
                   {profile.driver_notes && (
-                    <p className="mt-2 text-xs text-muted-foreground">
+                    <p className="mt-2 text-xs text-gray-400">
                       <span className="font-medium">Notes:</span> {profile.driver_notes}
                     </p>
                   )}
