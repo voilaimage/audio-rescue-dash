@@ -96,57 +96,70 @@ export default function Requests() {
       </MobileLayout>;
   }
   return <MobileLayout>
-      <div className="h-full px-5 py-6 safe-top overflow-hidden" style={{
+      <div className="h-full flex flex-col safe-top" style={{
       backgroundImage: `url(${appBg})`,
       backgroundSize: '100% 100%',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
     }}>
-        {/* Header with back button */}
-        <div className="flex items-center gap-4 mb-6">
-          <button 
-            onClick={() => navigate("/home")} 
-            className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="flex-1 flex justify-center">
-            <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
+        {/* Fixed Header */}
+        <div className="flex-shrink-0 px-5 pt-6">
+          <div className="flex items-center gap-4 mb-6">
+            <button 
+              onClick={() => navigate("/home")} 
+              className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="flex-1 flex justify-center">
+              <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
+            </div>
+            {/* Spacer to balance the layout */}
+            <div className="w-10" />
           </div>
-          {/* Spacer to balance the layout */}
-          <div className="w-10" />
+
+          <h1 className="mb-5 font-display text-white text-lg font-light">Past Requests</h1>
         </div>
 
-        <h1 className="mb-5 font-display text-white text-lg font-light">Past Requests</h1>
-
-        {requests.length === 0 ? <div className="flex flex-col items-center justify-center rounded-xl border border-[#555555] bg-[#1d1d1d] py-12 text-center">
-            <Package className="mb-3 h-10 w-10 text-white" />
-            <p className="text-sm text-white">No requests yet</p>
-            <Link to="/new-request" className="mt-3 text-sm font-bold text-primary hover:underline">
-              Create your first request
-            </Link>
-          </div> : <div className="space-y-3">
-            {requests.map(request => {
-          const status = statusConfig[request.status] || statusConfig.new;
-          return <Link key={request.id} to={`/requests/${request.id}`} className="block">
-                  <div className="group rounded-xl border border-border bg-card p-4 shadow-card transition-all hover:border-muted-foreground/30">
-                    <div className="flex gap-3">
-                      {request.request_photos?.[0] && <img src={request.request_photos[0].file_url} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />}
-                      <div className="flex-1 min-w-0">
-                        <p className="truncate text-sm font-medium text-foreground">{request.description}</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          {format(new Date(request.created_at), "d MMM yyyy")}
-                        </p>
-                        <span className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${status.bg} ${status.text}`}>
-                          {status.label}
-                        </span>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto px-5 pb-6">
+          {requests.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-[#555555] bg-[#1d1d1d] py-12 text-center">
+              <Package className="mb-3 h-10 w-10 text-white" />
+              <p className="text-sm text-white">No requests yet</p>
+              <Link to="/new-request" className="mt-3 text-sm font-bold text-primary hover:underline">
+                Create your first request
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {requests.map(request => {
+                const status = statusConfig[request.status] || statusConfig.new;
+                return (
+                  <Link key={request.id} to={`/requests/${request.id}`} className="block">
+                    <div className="group rounded-xl border border-border bg-card p-4 shadow-card transition-all hover:border-muted-foreground/30">
+                      <div className="flex gap-3">
+                        {request.request_photos?.[0] && (
+                          <img src={request.request_photos[0].file_url} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-sm font-medium text-foreground">{request.description}</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {format(new Date(request.created_at), "d MMM yyyy")}
+                          </p>
+                          <span className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${status.bg} ${status.text}`}>
+                            {status.label}
+                          </span>
+                        </div>
+                        <ChevronRight className="h-5 w-5 shrink-0 self-center text-muted-foreground transition-transform group-hover:translate-x-1" />
                       </div>
-                      <ChevronRight className="h-5 w-5 shrink-0 self-center text-muted-foreground transition-transform group-hover:translate-x-1" />
                     </div>
-                  </div>
-                </Link>;
-        })}
-          </div>}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </MobileLayout>;
 }

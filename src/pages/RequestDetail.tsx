@@ -116,7 +116,7 @@ export default function RequestDetail() {
       )}
 
       <div 
-        className="h-full safe-top overflow-hidden"
+        className="h-full flex flex-col safe-top"
         style={{
           backgroundImage: `url(${appBg})`,
           backgroundSize: '100% 100%',
@@ -124,8 +124,8 @@ export default function RequestDetail() {
           backgroundRepeat: 'no-repeat',
         }}
       >
-        {/* Header */}
-        <div className="sticky top-0 z-10 border-b border-border/50 bg-background/80 backdrop-blur-md px-5 py-4">
+        {/* Fixed Header */}
+        <div className="flex-shrink-0 border-b border-border/50 bg-background/80 backdrop-blur-md px-5 py-4">
           {/* Logo */}
           <div className="flex justify-center mb-4">
             <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
@@ -133,7 +133,7 @@ export default function RequestDetail() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate("/requests")}
-              className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-foreground"
+              className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
@@ -149,7 +149,8 @@ export default function RequestDetail() {
           </div>
         </div>
 
-        <div className="px-5 py-5 space-y-5">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
           {/* Photos Gallery */}
           {request.request_photos && request.request_photos.length > 0 && (
             <div className="space-y-3">
