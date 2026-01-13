@@ -113,30 +113,36 @@ export default function NewRequest() {
     }
   };
   return <MobileLayout showNav={false}>
-      <div className="h-full px-5 py-5 safe-top overflow-hidden" style={{
+      <div className="h-full flex flex-col safe-top" style={{
       backgroundImage: `url(${appBg})`,
       backgroundSize: '100% 100%',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
     }}>
-        {/* Logo */}
-        <div className="mt-8 mb-4 flex justify-center">
-          <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
-        </div>
+        {/* Fixed Header */}
+        <div className="flex-shrink-0 px-5 pt-5">
+          {/* Logo */}
+          <div className="mt-8 mb-4 flex justify-center">
+            <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
+          </div>
 
-        {/* Title */}
-        <h1 className="mt-4 mb-6 text-center text-white text-lg font-light">New Collection Request</h1>
+          {/* Title */}
+          <h1 className="mt-4 mb-6 text-center text-white text-lg font-light">New Collection Request</h1>
 
-        {/* Navigation & Progress */}
-        <div className="mb-6 flex items-center justify-between">
-          <button onClick={() => step === 1 ? navigate(-1) : setStep(1)} className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <p className="text-sm text-white">Step {step} of 2</p>
-          <div className="flex gap-1.5">
-            {[1, 2].map(s => <div key={s} className={`h-1.5 w-6 rounded-full transition-all ${s <= step ? "bg-primary" : "bg-muted"}`} />)}
+          {/* Navigation & Progress */}
+          <div className="mb-6 flex items-center justify-between">
+            <button onClick={() => step === 1 ? navigate(-1) : setStep(1)} className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <p className="text-sm text-white">Step {step} of 2</p>
+            <div className="flex gap-1.5">
+              {[1, 2].map(s => <div key={s} className={`h-1.5 w-6 rounded-full transition-all ${s <= step ? "bg-primary" : "bg-muted"}`} />)}
+            </div>
           </div>
         </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto px-5 pb-6">
 
         {step === 1 && <div className="animate-fade-in space-y-5">
             <div className="space-y-3">
@@ -312,6 +318,7 @@ export default function NewRequest() {
               {loading ? <LoadingSpinner size="sm" /> : <><Check className="mr-2 h-4 w-4" /> Submit Request</>}
             </Button>
           </div>}
+        </div>
       </div>
     </MobileLayout>;
 }
