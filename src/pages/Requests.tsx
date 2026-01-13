@@ -108,7 +108,7 @@ export default function Requests() {
 
         <h1 className="mb-5 font-display text-white text-lg font-light">Past Requests</h1>
 
-        {requests.length === 0 ? <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card py-12 text-center">
+        {requests.length === 0 ? <div className="flex flex-col items-center justify-center rounded-xl border border-[#555555] bg-[#1d1d1d] py-12 text-center">
             <Package className="mb-3 h-10 w-10 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">No requests yet</p>
             <Link to="/new-request" className="mt-3 text-sm font-medium text-primary hover:underline">
