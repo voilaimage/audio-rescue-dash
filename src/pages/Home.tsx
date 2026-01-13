@@ -68,7 +68,7 @@ export default function Home() {
               <Sparkles className="h-4 w-4 text-white" />
             </div>
             <div>
-              <h3 className="text-sm font-medium text-white">How it works</h3>
+              <h3 className="font-display text-lg font-semibold text-white">How it works</h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 Submit photos of faulty or unsellable high-end audio equipment.
                 We'll arrange a free collection at a time that suits you.
