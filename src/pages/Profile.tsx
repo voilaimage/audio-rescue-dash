@@ -10,13 +10,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ImageCropper } from "@/components/ImageCropper";
 import { LogOut, Save, Camera, Trash2 } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
 import logoWhite from "@/assets/logo-white.png";
+
 export default function Profile() {
   const { profile, signOut, refreshProfile, user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -33,9 +37,9 @@ export default function Profile() {
     driver_notes: profile?.driver_notes || "",
   });
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file) return;
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
@@ -43,22 +47,32 @@ export default function Profile() {
       return;
     }
 
-    // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ variant: "destructive", title: "File too large", description: "Please upload an image under 2MB." });
-      return;
+    // Create object URL for cropper
+    const imageUrl = URL.createObjectURL(file);
+    setSelectedImage(imageUrl);
+    setCropperOpen(true);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
+  };
 
+  const handleCroppedImage = async (croppedBlob: Blob) => {
+    if (!user) return;
+    
     setUploadingAvatar(true);
 
     try {
-      const fileExt = file.name.split(".").pop();
-      const filePath = `${user.id}/avatar.${fileExt}`;
+      const filePath = `${user.id}/avatar.jpg`;
 
-      // Upload to storage
+      // Upload cropped and compressed image
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, croppedBlob, { 
+          upsert: true,
+          contentType: "image/jpeg"
+        });
 
       if (uploadError) throw uploadError;
 
@@ -81,6 +95,11 @@ export default function Profile() {
       toast({ variant: "destructive", title: "Upload failed", description: error.message });
     } finally {
       setUploadingAvatar(false);
+      // Clean up object URL
+      if (selectedImage) {
+        URL.revokeObjectURL(selectedImage);
+        setSelectedImage(null);
+      }
     }
   };
 
@@ -197,7 +216,8 @@ export default function Profile() {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                onChange={handleAvatarUpload}
+                capture="environment"
+                onChange={handleFileSelect}
                 className="hidden"
               />
             </div>
@@ -220,6 +240,24 @@ export default function Profile() {
               )}
             </div>
           </div>
+
+          {/* Image Cropper Dialog */}
+          {selectedImage && (
+            <ImageCropper
+              open={cropperOpen}
+              onClose={() => {
+                setCropperOpen(false);
+                if (selectedImage) {
+                  URL.revokeObjectURL(selectedImage);
+                  setSelectedImage(null);
+                }
+              }}
+              imageSrc={selectedImage}
+              onCropComplete={handleCroppedImage}
+              aspectRatio={1}
+              maxSizeKB={500}
+            />
+          )}
 
           {/* Business Info */}
           <div className="space-y-3 rounded-xl border border-[#555555] bg-[#1d1d1d] p-4 shadow-card">
