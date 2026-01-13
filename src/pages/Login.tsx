@@ -62,8 +62,6 @@ export default function Login() {
         backgroundRepeat: 'no-repeat',
       }}
     >
-      {/* Dark overlay for better readability */}
-      <div className="absolute inset-0 bg-black/60" />
       
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 relative z-10">
         {/* Logo */}
