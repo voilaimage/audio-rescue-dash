@@ -142,9 +142,9 @@ export default function NewRequest() {
                   </div>
                 ))}
                 {photos.length < 10 && (
-                  <button onClick={() => fileInputRef.current?.click()} className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-[#555555] bg-[#1d1d1d] hover:border-primary hover:bg-primary/5">
-                    <Camera className="h-6 w-6 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Add</span>
+                  <button onClick={() => fileInputRef.current?.click()} className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-white bg-[#1d1d1d] hover:border-primary hover:bg-primary/5">
+                    <Camera className="h-6 w-6 text-white" />
+                    <span className="text-xs text-white">Add</span>
                   </button>
                 )}
               </div>
