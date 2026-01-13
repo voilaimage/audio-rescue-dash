@@ -63,18 +63,14 @@ export default function Home() {
 
         {/* Info Card */}
         <div className="mt-6 animate-fade-in rounded-lg border border-[#555555] bg-[#1d1d1d] p-4">
-          <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#f59f0a]">
-              <Sparkles className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h3 className="font-display text-lg font-semibold text-white">How it works</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Submit photos of faulty or unsellable high-end audio equipment.
-                We'll arrange a free collection at a time that suits you.
-              </p>
-            </div>
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-[#f59f0a]">
+            <Sparkles className="h-6 w-6 text-white" />
           </div>
+          <h3 className="font-display text-lg font-semibold text-white">How it works</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Submit photos of faulty or unsellable high-end audio equipment.
+            We'll arrange a free collection at a time that suits you.
+          </p>
         </div>
       </div>
     </MobileLayout>
