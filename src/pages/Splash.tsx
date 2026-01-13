@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import logo from "@/assets/logo-white.png";
-import loginBg from "@/assets/login-bg.png";
+import authBg from "@/assets/auth-bg.png";
 
 export default function Splash() {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ export default function Splash() {
       <div 
         className="absolute inset-0 animate-[splash-zoom_3s_ease-out_forwards]"
         style={{
-          backgroundImage: `url(${loginBg})`,
+          backgroundImage: `url(${authBg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

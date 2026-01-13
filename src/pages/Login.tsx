@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import logo from "@/assets/logo-white.png";
-import loginBg from "@/assets/login-bg.png";
+import authBg from "@/assets/auth-bg.png";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -56,7 +56,7 @@ export default function Login() {
     <div 
       className="flex min-h-screen flex-col bg-background relative"
       style={{
-        backgroundImage: `url(${loginBg})`,
+        backgroundImage: `url(${authBg})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',

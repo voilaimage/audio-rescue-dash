@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ArrowLeft, ArrowRight, Building2, User, MapPin, Check } from "lucide-react";
 import logo from "@/assets/logo-white.png";
-import loginBg from "@/assets/login-bg.png";
+import authBg from "@/assets/auth-bg.png";
 
 type Step = 1 | 2 | 3;
 
@@ -127,7 +127,7 @@ export default function Register() {
     <div 
       className="min-h-screen bg-background relative"
       style={{
-        backgroundImage: `url(${loginBg})`,
+        backgroundImage: `url(${authBg})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
