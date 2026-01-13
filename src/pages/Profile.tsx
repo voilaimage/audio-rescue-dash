@@ -186,10 +186,10 @@ export default function Profile() {
   return (
     <MobileLayout>
       <div 
-        className="min-h-screen px-5 py-6 safe-top"
+        className="h-full px-5 py-6 safe-top overflow-hidden"
         style={{
           backgroundImage: `url(${appBg})`,
-          backgroundSize: 'cover',
+          backgroundSize: '100% 100%',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
         }}

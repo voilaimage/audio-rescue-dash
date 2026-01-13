@@ -28,8 +28,8 @@ export function MobileLayout({ children, showNav = true, className }: MobileLayo
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <main className={cn("flex-1 overflow-y-auto", showNav && "pb-20", className)}>
+    <div className="flex h-screen flex-col bg-background overflow-hidden">
+      <main className={cn("flex-1 overflow-hidden", showNav && "pb-20", className)}>
         {children}
       </main>
       

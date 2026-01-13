@@ -116,10 +116,10 @@ export default function RequestDetail() {
       )}
 
       <div 
-        className="min-h-screen safe-top"
+        className="h-full safe-top overflow-hidden"
         style={{
           backgroundImage: `url(${appBg})`,
-          backgroundSize: 'cover',
+          backgroundSize: '100% 100%',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
         }}
