@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ArrowLeft, Camera, X, Check, MapPin } from "lucide-react";
+import homeBg from "@/assets/home-bg.png";
 
 type Step = 1 | 2;
 
@@ -94,7 +95,15 @@ export default function NewRequest() {
 
   return (
     <MobileLayout showNav={false}>
-      <div className="px-5 py-5 safe-top">
+      <div 
+        className="min-h-full px-5 py-5 safe-top"
+        style={{
+          backgroundImage: `url(${homeBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
         {/* Header */}
         <div className="mb-5 flex items-center gap-3">
           <button onClick={() => step === 1 ? navigate(-1) : setStep(1)} className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-foreground">
