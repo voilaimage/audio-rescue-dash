@@ -17,6 +17,11 @@ import RequestDetail from "./pages/RequestDetail";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
+// Admin Pages
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminRequests from "./pages/admin/AdminRequests";
+import AdminRequestDetail from "./pages/admin/AdminRequestDetail";
+
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
@@ -51,6 +56,12 @@ function AppRoutes() {
       <Route path="/requests" element={<ProtectedRoute><Requests /></ProtectedRoute>} />
       <Route path="/requests/:id" element={<ProtectedRoute><RequestDetail /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      
+      {/* Admin Routes */}
+      <Route path="/admin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/admin/requests" element={<ProtectedRoute adminOnly><AdminRequests /></ProtectedRoute>} />
+      <Route path="/admin/requests/:id" element={<ProtectedRoute adminOnly><AdminRequestDetail /></ProtectedRoute>} />
+      
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
