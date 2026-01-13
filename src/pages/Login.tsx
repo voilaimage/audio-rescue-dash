@@ -66,7 +66,7 @@ export default function Login() {
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 relative z-10">
         {/* Logo */}
         <div className="mb-10 flex flex-col items-center">
-          <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
+          <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto brightness-0 invert" />
           <p className="mt-2 text-sm text-muted-foreground">Partner Portal</p>
         </div>
 
