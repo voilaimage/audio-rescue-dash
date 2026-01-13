@@ -127,7 +127,7 @@ export default function NewRequest() {
                   </div>
                 ))}
                 {photos.length < 10 && (
-                  <button onClick={() => fileInputRef.current?.click()} className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border bg-card hover:border-primary hover:bg-primary/5">
+                  <button onClick={() => fileInputRef.current?.click()} className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-[#555555] bg-[#1d1d1d] hover:border-primary hover:bg-primary/5">
                     <Camera className="h-6 w-6 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">Add</span>
                   </button>
@@ -144,14 +144,14 @@ export default function NewRequest() {
         {step === 2 && (
           <div className="animate-fade-in space-y-4">
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Description *</Label>
-              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the equipment (brand, model, condition, issues)..." rows={4} className="resize-none" />
+              <Label className="text-sm font-medium text-white">Description *</Label>
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the equipment (brand, model, condition, issues)..." rows={4} className="resize-none bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Preferred Collection Window</Label>
+              <Label className="text-sm font-medium text-white">Preferred Collection Window</Label>
               <Select value={preferredWindow} onValueChange={setPreferredWindow}>
-                <SelectTrigger className="bg-card"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-[#28292b] border-[#555555] text-white"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="anytime">Anytime</SelectItem>
                   <SelectItem value="morning">Morning (9am-12pm)</SelectItem>
@@ -162,9 +162,9 @@ export default function NewRequest() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Preferred Day Range</Label>
+              <Label className="text-sm font-medium text-white">Preferred Day Range</Label>
               <Select value={preferredDayRange} onValueChange={setPreferredDayRange}>
-                <SelectTrigger className="bg-card"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-[#28292b] border-[#555555] text-white"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">No preference</SelectItem>
                   <SelectItem value="tomorrow">Tomorrow</SelectItem>
@@ -174,7 +174,7 @@ export default function NewRequest() {
               </Select>
             </div>
 
-            <div className="rounded-lg border border-border bg-card p-3">
+            <div className="rounded-lg border border-[#555555] bg-[#1d1d1d] p-3">
               <div className="flex items-start gap-3">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                   <MapPin className="h-4 w-4 text-primary" />

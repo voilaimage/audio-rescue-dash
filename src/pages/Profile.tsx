@@ -164,7 +164,7 @@ export default function Profile() {
 
         <div className="space-y-4">
           {/* Profile Picture */}
-          <div className="flex flex-col items-center space-y-3 rounded-xl border border-border bg-card p-4 shadow-card">
+          <div className="flex flex-col items-center space-y-3 rounded-xl border border-[#555555] bg-[#1d1d1d] p-4 shadow-card">
             <div className="relative">
               <Avatar className="h-24 w-24">
                 <AvatarImage src={(profile as any)?.avatar_url} alt={profile?.contact_name} />
@@ -208,53 +208,53 @@ export default function Profile() {
           </div>
 
           {/* Business Info */}
-          <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-card">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Business Info</h3>
+          <div className="space-y-3 rounded-xl border border-[#555555] bg-[#1d1d1d] p-4 shadow-card">
+            <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Business Info</h3>
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label className="text-sm">Business Name</Label>
-                <Input value={formData.business_name} onChange={(e) => setFormData({ ...formData, business_name: e.target.value })} />
+                <Label className="text-sm text-white">Business Name</Label>
+                <Input value={formData.business_name} onChange={(e) => setFormData({ ...formData, business_name: e.target.value })} className="bg-[#28292b] border-[#555555] text-white" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-sm">Contact Name</Label>
-                <Input value={formData.contact_name} onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })} />
+                <Label className="text-sm text-white">Contact Name</Label>
+                <Input value={formData.contact_name} onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })} className="bg-[#28292b] border-[#555555] text-white" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-sm">Phone</Label>
-                <Input value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                <Label className="text-sm text-white">Phone</Label>
+                <Input value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="bg-[#28292b] border-[#555555] text-white" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-sm">Email</Label>
-                <Input value={formData.email} disabled className="bg-muted/50" />
+                <Label className="text-sm text-white">Email</Label>
+                <Input value={formData.email} disabled className="bg-[#28292b] border-[#555555] text-gray-400" />
               </div>
             </div>
           </div>
 
           {/* Address */}
-          <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-card">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Pickup Address</h3>
+          <div className="space-y-3 rounded-xl border border-[#555555] bg-[#1d1d1d] p-4 shadow-card">
+            <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Pickup Address</h3>
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label className="text-sm">Address Line 1</Label>
-                <Input value={formData.address_line1} onChange={(e) => setFormData({ ...formData, address_line1: e.target.value })} />
+                <Label className="text-sm text-white">Address Line 1</Label>
+                <Input value={formData.address_line1} onChange={(e) => setFormData({ ...formData, address_line1: e.target.value })} className="bg-[#28292b] border-[#555555] text-white" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-sm">Address Line 2</Label>
-                <Input value={formData.address_line2} onChange={(e) => setFormData({ ...formData, address_line2: e.target.value })} />
+                <Label className="text-sm text-white">Address Line 2</Label>
+                <Input value={formData.address_line2} onChange={(e) => setFormData({ ...formData, address_line2: e.target.value })} className="bg-[#28292b] border-[#555555] text-white" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-sm">City</Label>
-                  <Input value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} />
+                  <Label className="text-sm text-white">City</Label>
+                  <Input value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} className="bg-[#28292b] border-[#555555] text-white" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-sm">Postcode</Label>
-                  <Input value={formData.postcode} onChange={(e) => setFormData({ ...formData, postcode: e.target.value })} />
+                  <Label className="text-sm text-white">Postcode</Label>
+                  <Input value={formData.postcode} onChange={(e) => setFormData({ ...formData, postcode: e.target.value })} className="bg-[#28292b] border-[#555555] text-white" />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-sm">Driver Notes</Label>
-                <Textarea value={formData.driver_notes} onChange={(e) => setFormData({ ...formData, driver_notes: e.target.value })} rows={2} placeholder="Parking instructions, access codes, etc." className="resize-none" />
+                <Label className="text-sm text-white">Driver Notes</Label>
+                <Textarea value={formData.driver_notes} onChange={(e) => setFormData({ ...formData, driver_notes: e.target.value })} rows={2} placeholder="Parking instructions, access codes, etc." className="resize-none bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" />
               </div>
             </div>
           </div>

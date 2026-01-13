@@ -23,7 +23,7 @@ export default function Home() {
         {/* Main Action Buttons */}
         <div className="space-y-3">
           <Link to="/new-request" className="block">
-            <div className="group rounded-xl border border-primary/20 bg-primary/5 p-5 shadow-card transition-all hover:border-primary/40 hover:bg-primary/10">
+            <div className="group rounded-xl border border-[#555555] bg-[#1d1d1d] p-5 shadow-card transition-all hover:border-primary/40 hover:bg-[#1d1d1d]/90">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
@@ -42,7 +42,7 @@ export default function Home() {
           </Link>
 
           <Link to="/requests" className="block">
-            <div className="group rounded-xl border border-border bg-card p-5 shadow-card transition-all hover:border-muted-foreground/30">
+            <div className="group rounded-xl border border-[#555555] bg-[#1d1d1d] p-5 shadow-card transition-all hover:border-muted-foreground/30">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-secondary">
@@ -62,7 +62,7 @@ export default function Home() {
         </div>
 
         {/* Info Card */}
-        <div className="mt-6 animate-fade-in rounded-lg border border-border bg-card p-4">
+        <div className="mt-6 animate-fade-in rounded-lg border border-[#555555] bg-[#1d1d1d] p-4">
           <div className="flex items-start gap-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-warning/10">
               <Sparkles className="h-4 w-4 text-warning" />
