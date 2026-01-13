@@ -67,7 +67,7 @@ export default function Login() {
         {/* Logo */}
         <div className="mb-10 flex flex-col items-center -mt-24">
           <img src={logo} alt="Audio Salvage UK" className="h-24 w-auto brightness-0 invert" />
-          <p className="mt-2 text-sm text-white">Partner Portal</p>
+          <p className="mt-2 text-lg text-white">Partner Portal</p>
         </div>
 
         {/* Login Form */}
