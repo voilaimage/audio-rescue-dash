@@ -124,7 +124,7 @@ export default function RequestDetail() {
         }}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 border-b border-border bg-background px-5 py-4">
+        <div className="sticky top-0 z-10 border-b border-border/50 bg-background/80 backdrop-blur-md px-5 py-4">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate("/requests")}
