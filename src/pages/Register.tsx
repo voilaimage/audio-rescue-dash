@@ -137,12 +137,16 @@ export default function Register() {
 
       
       <div className="mx-auto max-w-lg px-5 py-6 relative z-10">
-        {/* Header */}
+        {/* Logo */}
+        <div className="mb-4">
+          <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
+        </div>
+
+        {/* Navigation & Progress */}
         <div className="mb-6 flex items-center justify-between">
           <button onClick={() => (step === 1 ? navigate("/login") : handleBack())} className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-foreground">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <img src={logo} alt="Audio Salvage UK" className="h-8 w-auto" />
           <div className="flex gap-1.5">
             {[1, 2, 3].map((s) => (
               <div key={s} className={`h-1.5 w-6 rounded-full transition-all ${s <= step ? "bg-primary" : "bg-muted"}`} />
