@@ -53,18 +53,15 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background relative overflow-hidden">
-      {/* Background image with high contrast */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `url(${loginBg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          filter: 'contrast(2)',
-        }}
-      />
+    <div 
+      className="flex min-h-screen flex-col bg-background relative"
+      style={{
+        backgroundImage: `url(${loginBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
       {/* Dark overlay for better readability */}
       <div className="absolute inset-0 bg-black/60" />
       

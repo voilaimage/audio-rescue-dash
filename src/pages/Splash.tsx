@@ -37,7 +37,6 @@ export default function Splash() {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          filter: 'contrast(2)',
         }}
       />
       {/* Dark overlay for better readability */}
