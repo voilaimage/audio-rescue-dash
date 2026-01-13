@@ -111,7 +111,7 @@ export default function NewRequest() {
         </div>
 
         {/* Title */}
-        <h1 className="mt-4 mb-6 text-center font-display text-xl font-bold text-white">New Collection Request</h1>
+        <h1 className="mt-4 mb-6 text-center font-display text-xl text-white">New Collection Request</h1>
 
         {/* Navigation & Progress */}
         <div className="mb-6 flex items-center justify-between">
