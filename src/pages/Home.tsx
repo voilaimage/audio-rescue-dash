@@ -2,13 +2,22 @@ import { Link } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Camera, ClipboardList, ChevronRight, Sparkles } from "lucide-react";
+import homeBg from "@/assets/home-bg.png";
 
 export default function Home() {
   const { profile } = useAuth();
 
   return (
     <MobileLayout>
-      <div className="px-5 py-6 safe-top">
+      <div 
+        className="min-h-full px-5 py-6 safe-top"
+        style={{
+          backgroundImage: `url(${homeBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
         {/* Welcome Header */}
         <div className="mb-6 animate-fade-in">
           <p className="text-sm text-white">Welcome back,</p>
