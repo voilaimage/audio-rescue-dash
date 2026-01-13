@@ -143,7 +143,7 @@ export default function Register() {
         </div>
 
         {/* Navigation & Progress */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 mt-4 flex items-center justify-between">
           <button onClick={() => (step === 1 ? navigate("/login") : handleBack())} className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-foreground">
             <ArrowLeft className="h-5 w-5" />
           </button>
