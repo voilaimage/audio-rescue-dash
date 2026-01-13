@@ -3,6 +3,7 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Camera, ClipboardList, ChevronRight, Sparkles } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
+import logo from "@/assets/logo-white.png";
 
 export default function Home() {
   const { profile } = useAuth();
@@ -18,6 +19,11 @@ export default function Home() {
           backgroundRepeat: 'no-repeat',
         }}
       >
+        {/* Logo */}
+        <div className="mb-6 flex justify-center">
+          <img src={logo} alt="Audio Salvage UK" className="h-24 w-auto" />
+        </div>
+
         {/* Welcome Header */}
         <div className="mb-6 animate-fade-in">
           <p className="text-sm text-white">Welcome back,</p>
