@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -55,25 +56,8 @@ export default function Login() {
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
         {/* Logo */}
         <div className="mb-10 flex flex-col items-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-card">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="h-7 w-7 text-primary-foreground"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-              />
-            </svg>
-          </div>
-          <h1 className="mt-4 font-display text-xl font-bold text-foreground">
-            AudioSalvageUK
-          </h1>
-          <p className="text-sm text-muted-foreground">Partner Portal</p>
+          <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
+          <p className="mt-2 text-sm text-muted-foreground">Partner Portal</p>
         </div>
 
         {/* Login Form */}

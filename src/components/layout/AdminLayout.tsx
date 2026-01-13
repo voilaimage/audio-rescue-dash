@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, ClipboardList, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/logo.png";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -30,10 +31,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="border-b border-border px-5 py-5">
-            <h1 className="font-display text-lg font-bold text-foreground">
-              AudioSalvageUK
-            </h1>
-            <p className="text-xs text-muted-foreground">Admin Dashboard</p>
+            <img src={logo} alt="Audio Salvage UK" className="h-10 w-auto" />
+            <p className="mt-1 text-xs text-muted-foreground">Admin Dashboard</p>
           </div>
 
           {/* Nav Items */}

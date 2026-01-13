@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import logo from "@/assets/logo.png";
 
 export default function Splash() {
   const navigate = useNavigate();
@@ -30,27 +31,8 @@ export default function Splash() {
       <div className="animate-fade-in flex flex-col items-center gap-8">
         {/* Logo */}
         <div className="flex flex-col items-center gap-4">
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary shadow-elevated">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="h-10 w-10 text-primary-foreground"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-              />
-            </svg>
-          </div>
-          <div className="text-center">
-            <h1 className="font-display text-2xl font-bold text-foreground">
-              AudioSalvageUK
-            </h1>
-            <p className="mt-1 text-base text-muted-foreground">Partner</p>
-          </div>
+          <img src={logo} alt="Audio Salvage UK" className="h-24 w-auto" />
+          <p className="text-base text-muted-foreground">Partner</p>
         </div>
 
         {/* Loading */}
