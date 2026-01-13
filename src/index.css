@@ -129,4 +129,14 @@
   .safe-top {
     padding-top: env(safe-area-inset-top, 16px);
   }
+
+  /* Splash screen zoom animation */
+  @keyframes splash-zoom {
+    from {
+      transform: scale(1);
+    }
+    to {
+      transform: scale(1.1);
+    }
+  }
 }
