@@ -11,11 +11,11 @@ export default function Home() {
       <div className="px-5 py-6 safe-top">
         {/* Welcome Header */}
         <div className="mb-6 animate-fade-in">
-          <p className="text-sm text-muted-foreground">Welcome back,</p>
+          <p className="text-sm text-white">Welcome back,</p>
           <h1 className="font-display text-2xl font-bold text-white">
             {profile?.contact_name || "Partner"}
           </h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
+          <p className="mt-0.5 text-sm text-white">
             {profile?.business_name}
           </p>
         </div>
@@ -32,7 +32,7 @@ export default function Home() {
                   <h2 className="font-display text-lg font-semibold text-white">
                     New Collection Request
                   </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="mt-1 text-sm text-white">
                     Take photos and request a free pickup
                   </p>
                 </div>
@@ -51,7 +51,7 @@ export default function Home() {
                   <h2 className="font-display text-lg font-semibold text-white">
                     View Past Requests
                   </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="mt-1 text-sm text-white">
                     Track status of your collection requests
                   </p>
                 </div>
@@ -67,7 +67,7 @@ export default function Home() {
             <Sparkles className="h-6 w-6 text-white" />
           </div>
           <h3 className="font-display text-lg font-semibold text-white">How it works</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-white">
             Submit photos of faulty or unsellable high-end audio equipment.
             We'll arrange a free collection at a time that suits you.
           </p>
