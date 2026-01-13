@@ -10,7 +10,6 @@ export default function Splash() {
   useEffect(() => {
     if (loading) return;
 
-    // Small delay for splash effect
     const timer = setTimeout(() => {
       if (!user) {
         navigate("/login", { replace: true });
@@ -19,7 +18,6 @@ export default function Splash() {
       } else if (profile) {
         navigate("/home", { replace: true });
       } else {
-        // User exists but no profile - they need to complete registration
         navigate("/login", { replace: true });
       }
     }, 1500);
@@ -28,15 +26,15 @@ export default function Splash() {
   }, [user, profile, loading, navigate]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background gradient-hero">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background">
       <div className="animate-fade-in flex flex-col items-center gap-8">
         {/* Logo */}
         <div className="flex flex-col items-center gap-4">
-          <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-primary shadow-glow animate-pulse-glow">
+          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary shadow-elevated">
             <svg
               viewBox="0 0 24 24"
               fill="none"
-              className="h-12 w-12 text-primary-foreground"
+              className="h-10 w-10 text-primary-foreground"
               stroke="currentColor"
               strokeWidth={2}
             >
@@ -48,10 +46,10 @@ export default function Splash() {
             </svg>
           </div>
           <div className="text-center">
-            <h1 className="font-display text-3xl font-bold tracking-tight text-gradient">
+            <h1 className="font-display text-2xl font-bold text-foreground">
               AudioSalvageUK
             </h1>
-            <p className="mt-1 text-lg text-muted-foreground">Partner</p>
+            <p className="mt-1 text-base text-muted-foreground">Partner</p>
           </div>
         </div>
 
@@ -62,7 +60,6 @@ export default function Splash() {
         </div>
       </div>
 
-      {/* Tagline */}
       <p className="absolute bottom-8 text-center text-sm text-muted-foreground">
         Free collection of high-end audio equipment
       </p>

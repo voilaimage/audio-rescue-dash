@@ -28,7 +28,6 @@ export default function Login() {
 
       if (error) throw error;
 
-      // Check user role and redirect
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
@@ -52,15 +51,15 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background gradient-hero">
+    <div className="flex min-h-screen flex-col bg-background">
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
         {/* Logo */}
         <div className="mb-10 flex flex-col items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary shadow-glow">
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-card">
             <svg
               viewBox="0 0 24 24"
               fill="none"
-              className="h-8 w-8 text-primary-foreground"
+              className="h-7 w-7 text-primary-foreground"
               stroke="currentColor"
               strokeWidth={2}
             >
@@ -71,7 +70,7 @@ export default function Login() {
               />
             </svg>
           </div>
-          <h1 className="mt-4 font-display text-2xl font-bold text-gradient">
+          <h1 className="mt-4 font-display text-xl font-bold text-foreground">
             AudioSalvageUK
           </h1>
           <p className="text-sm text-muted-foreground">Partner Portal</p>
@@ -79,7 +78,7 @@ export default function Login() {
 
         {/* Login Form */}
         <div className="w-full max-w-sm animate-fade-in">
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+          <div className="rounded-xl border border-border bg-card p-6 shadow-card">
             <h2 className="mb-6 text-center font-display text-xl font-semibold">
               Welcome Back
             </h2>
@@ -119,20 +118,12 @@ export default function Login() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full touch-target font-semibold"
-                disabled={loading}
-              >
+              <Button type="submit" className="w-full touch-target font-semibold" disabled={loading}>
                 {loading ? <LoadingSpinner size="sm" /> : "Sign In"}
               </Button>
             </form>
@@ -140,10 +131,7 @@ export default function Login() {
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Don't have an account?{" "}
-            <Link
-              to="/register"
-              className="font-medium text-primary hover:underline"
-            >
+            <Link to="/register" className="font-medium text-primary hover:underline">
               Register your business
             </Link>
           </p>
