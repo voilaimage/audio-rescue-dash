@@ -45,8 +45,8 @@ export default function Home() {
             <div className="group rounded-xl border border-[#555555] bg-[#1d1d1d] p-5 shadow-card transition-all hover:border-muted-foreground/30">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-secondary">
-                    <ClipboardList className="h-6 w-6 text-foreground" />
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-[#f59f0a]">
+                    <ClipboardList className="h-6 w-6 text-white" />
                   </div>
                   <h2 className="font-display text-lg font-semibold text-foreground">
                     View Past Requests
@@ -64,8 +64,8 @@ export default function Home() {
         {/* Info Card */}
         <div className="mt-6 animate-fade-in rounded-lg border border-[#555555] bg-[#1d1d1d] p-4">
           <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-warning/10">
-              <Sparkles className="h-4 w-4 text-warning" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f59f0a]">
+              <Sparkles className="h-4 w-4 text-white" />
             </div>
             <div>
               <h3 className="text-sm font-medium text-foreground">How it works</h3>
