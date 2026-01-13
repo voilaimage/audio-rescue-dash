@@ -110,7 +110,7 @@ export default function Requests() {
 
         {requests.length === 0 ? <div className="flex flex-col items-center justify-center rounded-xl border border-[#555555] bg-[#1d1d1d] py-12 text-center">
             <Package className="mb-3 h-10 w-10 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">No requests yet</p>
+            <p className="text-sm text-white">No requests yet</p>
             <Link to="/new-request" className="mt-3 text-sm font-medium text-primary hover:underline">
               Create your first request
             </Link>
