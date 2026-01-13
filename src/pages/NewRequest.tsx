@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ArrowLeft, Camera, X, Check, MapPin } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
+import logo from "@/assets/logo-white.png";
 
 type Step = 1 | 2;
 
@@ -104,13 +105,18 @@ export default function NewRequest() {
           backgroundRepeat: 'no-repeat',
         }}
       >
+        {/* Logo */}
+        <div className="flex justify-center mb-5">
+          <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
+        </div>
+
         {/* Header */}
         <div className="mb-5 flex items-center gap-3">
           <button onClick={() => step === 1 ? navigate(-1) : setStep(1)} className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-foreground">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="font-display text-lg font-bold text-foreground">New Collection Request</h1>
+            <h1 className="font-display text-lg font-bold text-white">New Collection Request</h1>
             <p className="text-xs text-muted-foreground">Step {step} of 2</p>
           </div>
           {/* Progress */}
