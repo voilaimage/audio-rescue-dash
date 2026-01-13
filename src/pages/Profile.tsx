@@ -11,7 +11,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ImageCropper } from "@/components/ImageCropper";
-import { LogOut, Save, Camera, Trash2 } from "lucide-react";
+import { LogOut, Save, Camera, Trash2, ImageIcon, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import appBg from "@/assets/app-bg.png";
 import logoWhite from "@/assets/logo-white.png";
 
@@ -23,7 +29,8 @@ export default function Profile() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     business_name: profile?.business_name || "",
@@ -52,10 +59,9 @@ export default function Profile() {
     setSelectedImage(imageUrl);
     setCropperOpen(true);
     
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    // Reset file inputs
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
+    if (galleryInputRef.current) galleryInputRef.current.value = "";
   };
 
   const handleCroppedImage = async (croppedBlob: Blob) => {
@@ -205,30 +211,75 @@ export default function Profile() {
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadingAvatar}
-                className="absolute bottom-0 right-0 rounded-full bg-primary p-2 text-primary-foreground shadow-md hover:bg-primary/90 transition-colors disabled:opacity-50"
-              >
-                {uploadingAvatar ? <LoadingSpinner size="sm" /> : <Camera className="h-4 w-4" />}
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    disabled={uploadingAvatar}
+                    className="absolute bottom-0 right-0 rounded-full bg-primary p-2 text-primary-foreground shadow-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  >
+                    {uploadingAvatar ? <LoadingSpinner size="sm" /> : <Camera className="h-4 w-4" />}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="bg-[#1d1d1d] border-[#555555]">
+                  <DropdownMenuItem 
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
+                  >
+                    <Camera className="mr-2 h-4 w-4" />
+                    Take Photo
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => galleryInputRef.current?.click()}
+                    className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
+                  >
+                    <ImageIcon className="mr-2 h-4 w-4" />
+                    Choose from Gallery
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <input
-                ref={fileInputRef}
+                ref={cameraInputRef}
                 type="file"
                 accept="image/*"
                 capture="environment"
                 onChange={handleFileSelect}
                 className="hidden"
               />
+              <input
+                ref={galleryInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
             </div>
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadingAvatar}
-                className="text-sm text-primary hover:underline"
-              >
-                Change photo
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    disabled={uploadingAvatar}
+                    className="flex items-center gap-1 text-sm text-primary hover:underline"
+                  >
+                    Change photo <ChevronDown className="h-3 w-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="bg-[#1d1d1d] border-[#555555]">
+                  <DropdownMenuItem 
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
+                  >
+                    <Camera className="mr-2 h-4 w-4" />
+                    Take Photo
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => galleryInputRef.current?.click()}
+                    className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
+                  >
+                    <ImageIcon className="mr-2 h-4 w-4" />
+                    Choose from Gallery
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               {(profile as any)?.avatar_url && (
                 <button
                   onClick={handleRemoveAvatar}
