@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, ClipboardList, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/logo.png";
+import logoWhite from "@/assets/logo-white.png";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -27,12 +27,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-40 h-screen w-60 border-r border-border bg-card">
+      <aside className="fixed left-0 top-0 z-40 h-screen w-60 bg-black">
+        <div className="absolute right-0 top-0 h-full w-0.5 bg-primary" />
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="border-b border-border px-5 py-5">
-            <img src={logo} alt="Audio Salvage UK" className="h-10 w-auto" />
-            <p className="mt-1 text-xs text-muted-foreground">Admin Dashboard</p>
+          <div className="border-b border-[#333] px-5 py-5">
+            <img src={logoWhite} alt="Audio Salvage UK" className="h-10 w-auto" />
+            <p className="mt-1 text-xs text-gray-400">Admin Dashboard</p>
           </div>
 
           {/* Nav Items */}
@@ -47,7 +48,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                     isActive
                       ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      : "text-white hover:bg-white/10 hover:text-primary"
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -58,15 +59,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </nav>
 
           {/* User Section */}
-          <div className="border-t border-border p-3">
-            <div className="mb-3 rounded-lg bg-secondary p-3">
-              <p className="text-sm font-medium text-foreground">{profile?.contact_name}</p>
-              <p className="text-xs text-muted-foreground">{profile?.email}</p>
+          <div className="border-t border-[#333] p-3">
+            <div className="mb-3 rounded-lg bg-white/10 p-3">
+              <p className="text-sm font-medium text-white">{profile?.contact_name}</p>
+              <p className="text-xs text-gray-400">{profile?.email}</p>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="w-full justify-start gap-2 text-muted-foreground hover:text-destructive"
+              className="w-full justify-start gap-2 text-white hover:bg-white/10 hover:text-destructive"
               onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4" />
