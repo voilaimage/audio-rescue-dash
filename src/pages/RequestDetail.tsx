@@ -7,6 +7,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { format } from "date-fns";
 import { ArrowLeft, MapPin, Clock, Calendar, Package } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
+import logo from "@/assets/logo-white.png";
 
 const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
   new: { bg: "bg-primary/10", text: "text-primary", label: "New" },
@@ -125,6 +126,10 @@ export default function RequestDetail() {
       >
         {/* Header */}
         <div className="sticky top-0 z-10 border-b border-border/50 bg-background/80 backdrop-blur-md px-5 py-4">
+          {/* Logo */}
+          <div className="flex justify-center mb-4">
+            <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
+          </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate("/requests")}
@@ -133,7 +138,7 @@ export default function RequestDetail() {
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div className="flex-1">
-              <h1 className="font-display text-lg font-bold text-foreground">Request Details</h1>
+              <h1 className="font-display text-lg font-bold text-white">Request Details</h1>
               <p className="text-xs text-muted-foreground">
                 {format(new Date(request.created_at), "d MMMM yyyy 'at' h:mm a")}
               </p>
