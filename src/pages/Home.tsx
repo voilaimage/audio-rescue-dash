@@ -36,7 +36,7 @@ export default function Home() {
                     Take photos and request a free pickup
                   </p>
                 </div>
-                <ChevronRight className="h-5 w-5 text-primary transition-transform group-hover:translate-x-1" />
+                <ChevronRight className="h-5 w-5 text-[#f59f0a] transition-transform group-hover:translate-x-1" />
               </div>
             </div>
           </Link>
@@ -55,7 +55,7 @@ export default function Home() {
                     Track status of your collection requests
                   </p>
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                <ChevronRight className="h-5 w-5 text-[#f59f0a] transition-transform group-hover:translate-x-1" />
               </div>
             </div>
           </Link>
