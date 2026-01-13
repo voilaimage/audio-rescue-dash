@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { LogOut, Save, Camera, User } from "lucide-react";
+import { LogOut, Save, Camera, Trash2 } from "lucide-react";
 
 export default function Profile() {
   const { profile, signOut, refreshProfile, user } = useAuth();
@@ -78,6 +78,39 @@ export default function Profile() {
       toast({ title: "Profile picture updated!" });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Upload failed", description: error.message });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!user || !(profile as any)?.avatar_url) return;
+    
+    setUploadingAvatar(true);
+
+    try {
+      // List and delete all files in user's avatar folder
+      const { data: files } = await supabase.storage
+        .from("avatars")
+        .list(user.id);
+
+      if (files && files.length > 0) {
+        const filePaths = files.map(file => `${user.id}/${file.name}`);
+        await supabase.storage.from("avatars").remove(filePaths);
+      }
+
+      // Update profile to remove avatar URL
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: null })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      await refreshProfile();
+      toast({ title: "Profile picture removed!" });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Remove failed", description: error.message });
     } finally {
       setUploadingAvatar(false);
     }
@@ -154,7 +187,24 @@ export default function Profile() {
                 className="hidden"
               />
             </div>
-            <p className="text-sm text-muted-foreground">Tap to change photo</p>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="text-sm text-primary hover:underline"
+              >
+                Change photo
+              </button>
+              {(profile as any)?.avatar_url && (
+                <button
+                  onClick={handleRemoveAvatar}
+                  disabled={uploadingAvatar}
+                  className="flex items-center gap-1 text-sm text-destructive hover:underline"
+                >
+                  <Trash2 className="h-3 w-3" /> Remove
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Business Info */}
