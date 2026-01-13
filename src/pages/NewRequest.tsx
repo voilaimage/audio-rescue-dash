@@ -9,13 +9,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { ArrowLeft, Camera, X, Check, MapPin, ImageIcon } from "lucide-react";
+import { ArrowLeft, Camera, X, Check, MapPin, ImageIcon, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import appBg from "@/assets/app-bg.png";
 import logo from "@/assets/logo-white.png";
 type Step = 1 | 2;
@@ -29,6 +33,8 @@ export default function NewRequest() {
   const [loading, setLoading] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState(0);
   
   const navigate = useNavigate();
   const {
@@ -140,12 +146,19 @@ export default function NewRequest() {
               <input ref={galleryInputRef} type="file" accept="image/*" multiple onChange={handlePhotoSelect} className="hidden" />
               
               <div className="grid grid-cols-3 gap-2">
-                {previews.map((preview, i) => <div key={i} className="relative aspect-square overflow-hidden rounded-lg border border-border">
-                    <img src={preview} alt="" className="h-full w-full object-cover" />
+                {previews.map((preview, i) => (
+                  <div key={i} className="relative aspect-square overflow-hidden rounded-lg border border-border">
+                    <button 
+                      onClick={() => { setPreviewIndex(i); setPreviewOpen(true); }}
+                      className="h-full w-full"
+                    >
+                      <img src={preview} alt="" className="h-full w-full object-cover" />
+                    </button>
                     <button onClick={() => removePhoto(i)} className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-foreground/80 text-background">
                       <X className="h-3.5 w-3.5" />
                     </button>
-                  </div>)}
+                  </div>
+                ))}
                 {photos.length < 10 && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -178,6 +191,71 @@ export default function NewRequest() {
             <Button onClick={() => photos.length > 0 && setStep(2)} disabled={photos.length === 0} className="w-full touch-target font-semibold">
               Continue
             </Button>
+
+            {/* Photo Preview Modal */}
+            <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+              <DialogContent className="max-w-[95vw] max-h-[90vh] p-0 bg-black/95 border-none">
+                <div className="relative flex items-center justify-center min-h-[60vh]">
+                  {/* Close button */}
+                  <button 
+                    onClick={() => setPreviewOpen(false)}
+                    className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+
+                  {/* Previous button */}
+                  {previews.length > 1 && (
+                    <button 
+                      onClick={() => setPreviewIndex((previewIndex - 1 + previews.length) % previews.length)}
+                      className="absolute left-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
+                    >
+                      <ChevronLeft className="h-6 w-6" />
+                    </button>
+                  )}
+
+                  {/* Image */}
+                  <img 
+                    src={previews[previewIndex]} 
+                    alt={`Photo ${previewIndex + 1}`} 
+                    className="max-h-[80vh] max-w-full object-contain"
+                  />
+
+                  {/* Next button */}
+                  {previews.length > 1 && (
+                    <button 
+                      onClick={() => setPreviewIndex((previewIndex + 1) % previews.length)}
+                      className="absolute right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
+                    >
+                      <ChevronRight className="h-6 w-6" />
+                    </button>
+                  )}
+
+                  {/* Delete button */}
+                  <button 
+                    onClick={() => {
+                      removePhoto(previewIndex);
+                      if (previews.length <= 1) {
+                        setPreviewOpen(false);
+                      } else if (previewIndex >= previews.length - 1) {
+                        setPreviewIndex(Math.max(0, previewIndex - 1));
+                      }
+                    }}
+                    className="absolute bottom-4 z-10 flex items-center gap-2 rounded-full bg-destructive px-4 py-2 text-white hover:bg-destructive/90"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Remove
+                  </button>
+
+                  {/* Photo counter */}
+                  {previews.length > 1 && (
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/20 px-3 py-1 text-sm text-white">
+                      {previewIndex + 1} / {previews.length}
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>}
 
         {step === 2 && <div className="animate-fade-in space-y-4">
