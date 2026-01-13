@@ -113,9 +113,9 @@ export default function NewRequest() {
     }
   };
   return <MobileLayout showNav={false}>
-      <div className="min-h-screen px-5 py-5 safe-top" style={{
+      <div className="h-full px-5 py-5 safe-top overflow-hidden" style={{
       backgroundImage: `url(${appBg})`,
-      backgroundSize: 'cover',
+      backgroundSize: '100% 100%',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
     }}>
