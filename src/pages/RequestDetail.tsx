@@ -58,6 +58,27 @@ export default function RequestDetail() {
     };
 
     fetchRequest();
+
+    // Subscribe to realtime updates for this specific request
+    const channel = supabase
+      .channel(`request-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'requests',
+          filter: `id=eq.${id}`,
+        },
+        (payload) => {
+          setRequest(prev => prev ? { ...prev, ...payload.new } : prev);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [id, navigate]);
 
   if (loading) {

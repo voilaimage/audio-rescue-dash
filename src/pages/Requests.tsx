@@ -36,6 +36,47 @@ export default function Requests() {
     };
 
     fetchRequests();
+
+    // Subscribe to realtime updates for user's requests
+    const channel = supabase
+      .channel('requests-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'requests',
+          filter: `user_id=eq.${user.id}`,
+        },
+        async (payload) => {
+          if (payload.eventType === 'INSERT') {
+            // Fetch the new request with photos
+            const { data } = await supabase
+              .from("requests")
+              .select("*, request_photos(*)")
+              .eq("id", payload.new.id)
+              .single();
+            if (data) {
+              setRequests(prev => [data as RequestWithPhotos, ...prev]);
+            }
+          } else if (payload.eventType === 'UPDATE') {
+            setRequests(prev => 
+              prev.map(req => 
+                req.id === payload.new.id 
+                  ? { ...req, ...payload.new } 
+                  : req
+              )
+            );
+          } else if (payload.eventType === 'DELETE') {
+            setRequests(prev => prev.filter(req => req.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   if (loading) {
