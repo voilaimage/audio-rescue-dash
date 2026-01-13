@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo-white.png";
 import loginBg from "@/assets/login-bg.png";
 
 export default function Login() {
@@ -66,7 +66,7 @@ export default function Login() {
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 relative z-10">
         {/* Logo */}
         <div className="mb-10 flex flex-col items-center -mt-24">
-          <img src={logo} alt="Audio Salvage UK" className="h-24 w-auto brightness-0 invert" />
+          <img src={logo} alt="Audio Salvage UK" className="h-24 w-auto" />
           <p className="mt-2 text-lg text-white">Partner Portal</p>
         </div>
 
