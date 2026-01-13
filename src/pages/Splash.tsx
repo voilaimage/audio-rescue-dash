@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import logo from "@/assets/logo.png";
+import loginBg from "@/assets/login-bg.png";
 
 export default function Splash() {
   const navigate = useNavigate();
@@ -27,8 +28,19 @@ export default function Splash() {
   }, [user, profile, loading, navigate]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background">
-      <div className="animate-fade-in flex flex-col items-center gap-8">
+    <div 
+      className="flex min-h-screen flex-col items-center justify-center bg-background relative"
+      style={{
+        backgroundImage: `url(${loginBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {/* Dark overlay for better readability */}
+      <div className="absolute inset-0 bg-black/60" />
+      
+      <div className="animate-fade-in flex flex-col items-center gap-8 relative z-10">
         {/* Logo */}
         <div className="flex flex-col items-center gap-4">
           <img src={logo} alt="Audio Salvage UK" className="h-24 w-auto" />
@@ -42,7 +54,7 @@ export default function Splash() {
         </div>
       </div>
 
-      <p className="absolute bottom-8 text-center text-sm text-muted-foreground">
+      <p className="absolute bottom-8 text-center text-sm text-muted-foreground z-10">
         Free collection of high-end audio equipment
       </p>
     </div>
