@@ -117,7 +117,7 @@ export default function NewRequest() {
           </button>
           <div className="flex-1">
             <h1 className="font-display text-lg font-bold text-white">New Collection Request</h1>
-            <p className="text-xs text-muted-foreground">Step {step} of 2</p>
+            <p className="text-xs text-white">Step {step} of 2</p>
           </div>
           {/* Progress */}
           <div className="flex gap-1.5">
