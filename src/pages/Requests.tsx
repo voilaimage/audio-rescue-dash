@@ -7,7 +7,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ChevronRight, Package } from "lucide-react";
-import homeBg from "@/assets/home-bg.png";
+import appBg from "@/assets/app-bg.png";
 
 const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
   new: { bg: "bg-primary/10", text: "text-primary", label: "New" },
@@ -95,7 +95,7 @@ export default function Requests() {
       <div 
         className="min-h-screen px-5 py-6 safe-top"
         style={{
-          backgroundImage: `url(${homeBg})`,
+          backgroundImage: `url(${appBg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

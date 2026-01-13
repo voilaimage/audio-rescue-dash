@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ArrowLeft, Camera, X, Check, MapPin } from "lucide-react";
-import homeBg from "@/assets/home-bg.png";
+import appBg from "@/assets/app-bg.png";
 
 type Step = 1 | 2;
 
@@ -98,7 +98,7 @@ export default function NewRequest() {
       <div 
         className="min-h-screen px-5 py-5 safe-top"
         style={{
-          backgroundImage: `url(${homeBg})`,
+          backgroundImage: `url(${appBg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

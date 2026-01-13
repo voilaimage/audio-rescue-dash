@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Camera, ClipboardList, ChevronRight, Sparkles } from "lucide-react";
-import homeBg from "@/assets/home-bg.png";
+import appBg from "@/assets/app-bg.png";
 
 export default function Home() {
   const { profile } = useAuth();
@@ -12,7 +12,7 @@ export default function Home() {
       <div 
         className="min-h-screen px-5 py-6 safe-top"
         style={{
-          backgroundImage: `url(${homeBg})`,
+          backgroundImage: `url(${appBg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
