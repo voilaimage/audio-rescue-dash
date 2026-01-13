@@ -138,7 +138,7 @@ export default function Register() {
       
       <div className="mx-auto max-w-lg px-5 py-6 relative z-10">
         {/* Logo */}
-        <div className="mb-4">
+        <div className="mb-4 flex justify-center">
           <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
         </div>
 
