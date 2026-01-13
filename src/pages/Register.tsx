@@ -124,15 +124,18 @@ export default function Register() {
   const stepDescs = ["Tell us about your business", "Create your login credentials", "Where should we collect from?"];
 
   return (
-    <div 
-      className="min-h-screen bg-background relative"
-      style={{
-        backgroundImage: `url(${loginBg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background image with high contrast */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url(${loginBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          filter: 'contrast(2)',
+        }}
+      />
       {/* Dark overlay for better readability */}
       <div className="absolute inset-0 bg-black/60" />
       
