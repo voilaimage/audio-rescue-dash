@@ -13,6 +13,7 @@ import Register from "./pages/Register";
 import Home from "./pages/Home";
 import NewRequest from "./pages/NewRequest";
 import Requests from "./pages/Requests";
+import RequestDetail from "./pages/RequestDetail";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
@@ -48,6 +49,7 @@ function AppRoutes() {
       <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
       <Route path="/new-request" element={<ProtectedRoute><NewRequest /></ProtectedRoute>} />
       <Route path="/requests" element={<ProtectedRoute><Requests /></ProtectedRoute>} />
+      <Route path="/requests/:id" element={<ProtectedRoute><RequestDetail /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
