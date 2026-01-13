@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,15 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { LogOut, Save } from "lucide-react";
+import { LogOut, Save, Camera, User } from "lucide-react";
 
 export default function Profile() {
   const { profile, signOut, refreshProfile, user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     business_name: profile?.business_name || "",
@@ -28,6 +31,57 @@ export default function Profile() {
     postcode: profile?.postcode || "",
     driver_notes: profile?.driver_notes || "",
   });
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast({ variant: "destructive", title: "Invalid file", description: "Please upload an image file." });
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ variant: "destructive", title: "File too large", description: "Please upload an image under 2MB." });
+      return;
+    }
+
+    setUploadingAvatar(true);
+
+    try {
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${user.id}/avatar.${fileExt}`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      // Update profile with avatar URL
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: `${publicUrl}?t=${Date.now()}` })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      await refreshProfile();
+      toast({ title: "Profile picture updated!" });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Upload failed", description: error.message });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!user) return;
@@ -63,12 +117,46 @@ export default function Profile() {
     navigate("/login", { replace: true });
   };
 
+  const getInitials = () => {
+    if (profile?.contact_name) {
+      return profile.contact_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+    }
+    return "U";
+  };
+
   return (
     <MobileLayout>
       <div className="px-5 py-6 safe-top">
         <h1 className="mb-5 font-display text-2xl font-bold text-foreground">Profile</h1>
 
         <div className="space-y-4">
+          {/* Profile Picture */}
+          <div className="flex flex-col items-center space-y-3 rounded-xl border border-border bg-card p-4 shadow-card">
+            <div className="relative">
+              <Avatar className="h-24 w-24">
+                <AvatarImage src={(profile as any)?.avatar_url} alt={profile?.contact_name} />
+                <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                  {getInitials()}
+                </AvatarFallback>
+              </Avatar>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="absolute bottom-0 right-0 rounded-full bg-primary p-2 text-primary-foreground shadow-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+              >
+                {uploadingAvatar ? <LoadingSpinner size="sm" /> : <Camera className="h-4 w-4" />}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">Tap to change photo</p>
+          </div>
+
           {/* Business Info */}
           <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-card">
             <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Business Info</h3>

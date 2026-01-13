@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           address_line1: string
           address_line2: string | null
+          avatar_url: string | null
           business_name: string
           city: string
           contact_name: string
@@ -33,6 +34,7 @@ export type Database = {
         Insert: {
           address_line1: string
           address_line2?: string | null
+          avatar_url?: string | null
           business_name: string
           city: string
           contact_name: string
@@ -48,6 +50,7 @@ export type Database = {
         Update: {
           address_line1?: string
           address_line2?: string | null
+          avatar_url?: string | null
           business_name?: string
           city?: string
           contact_name?: string
