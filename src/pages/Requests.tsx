@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ChevronRight, Package } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
+import logo from "@/assets/logo-white.png";
 
 const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
   new: { bg: "bg-primary/10", text: "text-primary", label: "New" },
@@ -101,7 +102,12 @@ export default function Requests() {
           backgroundRepeat: 'no-repeat',
         }}
       >
-        <h1 className="mb-5 font-display text-2xl font-bold text-foreground">Past Requests</h1>
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
+        </div>
+
+        <h1 className="mb-5 font-display text-2xl font-bold text-white">Past Requests</h1>
 
         {requests.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card py-12 text-center">

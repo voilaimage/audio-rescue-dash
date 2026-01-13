@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LogOut, Save, Camera, Trash2 } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
+import logoWhite from "@/assets/logo-white.png";
 export default function Profile() {
   const { profile, signOut, refreshProfile, user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -168,7 +169,12 @@ export default function Profile() {
           backgroundRepeat: 'no-repeat',
         }}
       >
-        <h1 className="mb-5 font-display text-2xl font-bold text-foreground">Profile</h1>
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <img src={logoWhite} alt="Audio Salvage UK" className="h-16 w-auto" />
+        </div>
+
+        <h1 className="mb-5 font-display text-2xl font-bold text-white">Profile</h1>
 
         <div className="space-y-4">
           {/* Profile Picture */}
