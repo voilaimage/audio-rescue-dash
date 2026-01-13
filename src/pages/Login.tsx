@@ -117,7 +117,7 @@ export default function Login() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full touch-target font-semibold" disabled={loading}>
+              <Button type="submit" className="w-full touch-target font-semibold bg-[#f59f0a] hover:bg-[#f59f0a]/90 text-white" disabled={loading}>
                 {loading ? <LoadingSpinner size="sm" /> : "Sign In"}
               </Button>
             </form>
