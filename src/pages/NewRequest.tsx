@@ -106,23 +106,19 @@ export default function NewRequest() {
         }}
       >
         {/* Logo */}
-        <div className="flex justify-center mb-5">
+        <div className="mt-8 mb-4 flex justify-center">
           <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
         </div>
 
-        {/* Header */}
-        <div className="mb-5 flex items-center gap-3">
-          <button onClick={() => step === 1 ? navigate(-1) : setStep(1)} className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-foreground">
+        {/* Navigation & Progress */}
+        <div className="mb-6 mt-8 flex items-center justify-between">
+          <button onClick={() => step === 1 ? navigate(-1) : setStep(1)} className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="flex-1">
-            <h1 className="font-display text-lg font-bold text-white">New Collection Request</h1>
-            <p className="text-xs text-white">Step {step} of 2</p>
-          </div>
-          {/* Progress */}
           <div className="flex gap-1.5">
-            <div className={`h-1.5 w-6 rounded-full ${step >= 1 ? 'bg-primary' : 'bg-muted'}`} />
-            <div className={`h-1.5 w-6 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-muted'}`} />
+            {[1, 2].map((s) => (
+              <div key={s} className={`h-1.5 w-6 rounded-full transition-all ${s <= step ? "bg-primary" : "bg-muted"}`} />
+            ))}
           </div>
         </div>
 
