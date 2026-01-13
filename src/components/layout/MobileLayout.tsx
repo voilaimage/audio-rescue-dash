@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Plus, ClipboardList, User } from "lucide-react";
+import { Home, Plus, ClipboardList } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface MobileLayoutProps {
   children: React.ReactNode;
@@ -12,11 +14,18 @@ const navItems = [
   { path: "/home", icon: Home, label: "Home" },
   { path: "/new-request", icon: Plus, label: "New" },
   { path: "/requests", icon: ClipboardList, label: "Requests" },
-  { path: "/profile", icon: User, label: "Profile" },
 ];
 
 export function MobileLayout({ children, showNav = true, className }: MobileLayoutProps) {
   const location = useLocation();
+  const { profile } = useAuth();
+
+  const getInitials = () => {
+    if (profile?.contact_name) {
+      return profile.contact_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+    }
+    return "U";
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -45,6 +54,24 @@ export function MobileLayout({ children, showNav = true, className }: MobileLayo
                 </Link>
               );
             })}
+            {/* Profile with Avatar */}
+            <Link
+              to="/profile"
+              className={cn(
+                "flex flex-col items-center gap-1 px-4 py-2 transition-all touch-target",
+                location.pathname === "/profile"
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Avatar className={cn("h-5 w-5", location.pathname === "/profile" && "ring-2 ring-primary ring-offset-1 ring-offset-card")}>
+                <AvatarImage src={(profile as any)?.avatar_url} alt={profile?.contact_name} />
+                <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
+                  {getInitials()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs font-medium">Profile</span>
+            </Link>
           </div>
         </nav>
       )}
