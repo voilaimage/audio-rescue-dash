@@ -4,9 +4,11 @@ interface PinchZoomImageProps {
   src: string;
   alt: string;
   className?: string;
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
 }
 
-export function PinchZoomImage({ src, alt, className = "" }: PinchZoomImageProps) {
+export function PinchZoomImage({ src, alt, className = "", onSwipeLeft, onSwipeRight }: PinchZoomImageProps) {
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -18,6 +20,9 @@ export function PinchZoomImage({ src, alt, className = "" }: PinchZoomImageProps
   const lastTouchCenter = useRef<{ x: number; y: number } | null>(null);
   const dragStart = useRef<{ x: number; y: number } | null>(null);
   const positionStart = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  
+  // Swipe tracking
+  const swipeStart = useRef<{ x: number; y: number; time: number } | null>(null);
 
   // Reset zoom when image changes
   useEffect(() => {
@@ -44,10 +49,20 @@ export function PinchZoomImage({ src, alt, className = "" }: PinchZoomImageProps
       e.preventDefault();
       lastTouchDistance.current = getDistance(e.touches);
       lastTouchCenter.current = getCenter(e.touches);
-    } else if (e.touches.length === 1 && scale > 1) {
-      setIsDragging(true);
-      dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      positionStart.current = { ...position };
+      swipeStart.current = null; // Cancel swipe if pinching
+    } else if (e.touches.length === 1) {
+      // Track swipe start for all single touches
+      swipeStart.current = { 
+        x: e.touches[0].clientX, 
+        y: e.touches[0].clientY,
+        time: Date.now()
+      };
+      
+      if (scale > 1) {
+        setIsDragging(true);
+        dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        positionStart.current = { ...position };
+      }
     }
   }, [scale, position]);
 
@@ -80,12 +95,37 @@ export function PinchZoomImage({ src, alt, className = "" }: PinchZoomImageProps
     }
   }, [isDragging, scale]);
 
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    // Check for swipe gesture when not zoomed
+    if (scale === 1 && swipeStart.current && e.changedTouches.length === 1) {
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - swipeStart.current.x;
+      const deltaY = touch.clientY - swipeStart.current.y;
+      const deltaTime = Date.now() - swipeStart.current.time;
+      
+      const SWIPE_THRESHOLD = 50; // minimum distance
+      const SWIPE_TIME_LIMIT = 300; // maximum time in ms
+      const VERTICAL_TOLERANCE = 100; // max vertical movement
+      
+      if (
+        deltaTime < SWIPE_TIME_LIMIT && 
+        Math.abs(deltaX) > SWIPE_THRESHOLD && 
+        Math.abs(deltaY) < VERTICAL_TOLERANCE
+      ) {
+        if (deltaX > 0 && onSwipeRight) {
+          onSwipeRight();
+        } else if (deltaX < 0 && onSwipeLeft) {
+          onSwipeLeft();
+        }
+      }
+    }
+    
     lastTouchDistance.current = null;
     lastTouchCenter.current = null;
     setIsDragging(false);
     dragStart.current = null;
-  }, []);
+    swipeStart.current = null;
+  }, [scale, onSwipeLeft, onSwipeRight]);
 
   // Double tap to zoom
   const lastTap = useRef<number>(0);

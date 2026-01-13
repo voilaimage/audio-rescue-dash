@@ -215,11 +215,13 @@ export default function NewRequest() {
                     </button>
                   )}
 
-                  {/* Image with pinch-to-zoom */}
+                  {/* Image with pinch-to-zoom and swipe */}
                   <PinchZoomImage
                     src={previews[previewIndex]} 
                     alt={`Photo ${previewIndex + 1}`} 
                     className="flex items-center justify-center"
+                    onSwipeLeft={() => previews.length > 1 && setPreviewIndex((previewIndex + 1) % previews.length)}
+                    onSwipeRight={() => previews.length > 1 && setPreviewIndex((previewIndex - 1 + previews.length) % previews.length)}
                   />
 
                   {/* Next button */}
