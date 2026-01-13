@@ -26,7 +26,7 @@ export default function Home() {
             <div className="group rounded-xl border border-[#555555] bg-[#1d1d1d] p-5 shadow-card transition-all hover:border-primary/40 hover:bg-[#1d1d1d]/90">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-[#f59f0a]">
                     <Camera className="h-6 w-6 text-primary-foreground" />
                   </div>
                   <h2 className="font-display text-lg font-semibold text-foreground">
