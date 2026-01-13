@@ -123,9 +123,9 @@ export default function Login() {
             </form>
           </div>
 
-          <p className="mt-6 text-center text-sm text-muted-foreground">
+          <p className="mt-6 text-center text-sm text-white">
             Don't have an account?{" "}
-            <Link to="/register" className="font-medium text-primary hover:underline">
+            <Link to="/register" className="font-medium text-white underline hover:text-white/80">
               Register your business
             </Link>
           </p>
