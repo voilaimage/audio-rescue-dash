@@ -123,12 +123,12 @@ export default function Login() {
             </form>
           </div>
 
-          <p className="mt-6 text-center text-sm text-white">
-            Don't have an account?{" "}
+          <div className="mt-6 text-center text-sm text-white space-y-1">
+            <p>Don't have an account?</p>
             <Link to="/register" className="font-medium text-white underline hover:text-white/80">
               Register your business
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     </div>
