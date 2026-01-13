@@ -20,6 +20,7 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
+import { PinchZoomImage } from "@/components/PinchZoomImage";
 import appBg from "@/assets/app-bg.png";
 import logo from "@/assets/logo-white.png";
 type Step = 1 | 2;
@@ -214,11 +215,11 @@ export default function NewRequest() {
                     </button>
                   )}
 
-                  {/* Image */}
-                  <img 
+                  {/* Image with pinch-to-zoom */}
+                  <PinchZoomImage
                     src={previews[previewIndex]} 
                     alt={`Photo ${previewIndex + 1}`} 
-                    className="max-h-[80vh] max-w-full object-contain"
+                    className="flex items-center justify-center"
                   />
 
                   {/* Next button */}
