@@ -242,10 +242,10 @@ export default function Register() {
           </form>
         </div>
 
-        <p className="mt-5 text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <Link to="/login" className="font-medium text-primary hover:underline">Sign in</Link>
-        </p>
+        <div className="mt-6 text-center text-sm text-white space-y-1">
+          <p className="text-base">Already have an account?</p>
+          <Link to="/login" className="font-bold text-base text-primary underline hover:text-primary/80">Sign in</Link>
+        </div>
       </div>
     </div>
   );
