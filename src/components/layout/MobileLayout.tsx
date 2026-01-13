@@ -25,7 +25,7 @@ export function MobileLayout({ children, showNav = true, className }: MobileLayo
       </main>
       
       {showNav && (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-lg safe-bottom">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card safe-bottom">
           <div className="flex items-center justify-around py-2">
             {navItems.map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path;
@@ -40,7 +40,7 @@ export function MobileLayout({ children, showNav = true, className }: MobileLayo
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <Icon className={cn("h-6 w-6", isActive && "animate-scale-in")} />
+                  <Icon className={cn("h-5 w-5", isActive && "animate-scale-in")} />
                   <span className="text-xs font-medium">{label}</span>
                 </Link>
               );
