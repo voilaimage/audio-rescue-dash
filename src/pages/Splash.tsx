@@ -28,15 +28,17 @@ export default function Splash() {
   }, [user, profile, loading, navigate]);
 
   return (
-    <div 
-      className="flex min-h-screen flex-col items-center justify-center bg-background relative"
-      style={{
-        backgroundImage: `url(${loginBg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background relative overflow-hidden">
+      {/* Animated background image */}
+      <div 
+        className="absolute inset-0 animate-[splash-zoom_3s_ease-out_forwards]"
+        style={{
+          backgroundImage: `url(${loginBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
       {/* Dark overlay for better readability */}
       <div className="absolute inset-0 bg-black/60" />
       
