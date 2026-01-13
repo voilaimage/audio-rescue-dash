@@ -21,7 +21,9 @@ export default function NewRequest() {
   const [preferredWindow, setPreferredWindow] = useState("anytime");
   const [preferredDayRange, setPreferredDayRange] = useState("none");
   const [loading, setLoading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const navigate = useNavigate();
   const {
     profile,
@@ -126,7 +128,10 @@ export default function NewRequest() {
         {step === 1 && <div className="animate-fade-in space-y-5">
             <div className="space-y-3">
               <Label className="text-sm font-medium">Photos (1-10 required)</Label>
-              <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handlePhotoSelect} className="hidden" />
+              {/* Camera input - opens camera directly */}
+              <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" multiple onChange={handlePhotoSelect} className="hidden" />
+              {/* Gallery input - opens photo gallery */}
+              <input ref={galleryInputRef} type="file" accept="image/*" multiple onChange={handlePhotoSelect} className="hidden" />
               
               <div className="grid grid-cols-3 gap-2">
                 {previews.map((preview, i) => <div key={i} className="relative aspect-square overflow-hidden rounded-lg border border-border">
@@ -135,10 +140,32 @@ export default function NewRequest() {
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>)}
-                {photos.length < 10 && <button onClick={() => fileInputRef.current?.click()} className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-white bg-[#1d1d1d] hover:border-primary hover:bg-primary/5">
-                    <Camera className="h-6 w-6 text-white" />
-                    <span className="text-xs text-white">Add</span>
-                  </button>}
+                {photos.length < 10 && <div className="relative">
+                    <button onClick={() => setShowPhotoOptions(!showPhotoOptions)} className="flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-white bg-[#1d1d1d] hover:border-primary hover:bg-primary/5">
+                      <Camera className="h-6 w-6 text-white" />
+                      <span className="text-xs text-white">Add</span>
+                    </button>
+                    {showPhotoOptions && (
+                      <div className="absolute left-0 top-full z-50 mt-2 w-40 rounded-lg border border-[#555555] bg-[#1d1d1d] p-1 shadow-lg">
+                        <button 
+                          onClick={() => { cameraInputRef.current?.click(); setShowPhotoOptions(false); }}
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-white hover:bg-primary/20"
+                        >
+                          <Camera className="h-4 w-4" />
+                          Take Photo
+                        </button>
+                        <button 
+                          onClick={() => { galleryInputRef.current?.click(); setShowPhotoOptions(false); }}
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-white hover:bg-primary/20"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          Photo Gallery
+                        </button>
+                      </div>
+                    )}
+                  </div>}
               </div>
             </div>
 
