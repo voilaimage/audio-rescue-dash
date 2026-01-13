@@ -151,7 +151,7 @@ export default function Register() {
         </div>
 
         {/* Form */}
-        <div className="animate-fade-in rounded-xl border border-border bg-card/95 backdrop-blur-sm p-5 shadow-card">
+        <div className="animate-fade-in rounded-xl border border-[#555555] bg-[#1d1d1d] backdrop-blur-sm p-5 shadow-card">
           <form onSubmit={handleSubmit}>
             {/* Step Header */}
             <div className="mb-5 flex items-center gap-3">
@@ -161,24 +161,24 @@ export default function Register() {
                 {step === 3 && <MapPin className="h-5 w-5 text-primary" />}
               </div>
               <div>
-                <h2 className="font-display text-lg font-semibold">{stepTitles[step - 1]}</h2>
-                <p className="text-sm text-muted-foreground">{stepDescs[step - 1]}</p>
+                <h2 className="font-display text-lg font-semibold text-white">{stepTitles[step - 1]}</h2>
+                <p className="text-sm text-gray-400">{stepDescs[step - 1]}</p>
               </div>
             </div>
 
             {step === 1 && (
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label className="text-sm">Business Name *</Label>
-                  <Input value={formData.business_name} onChange={(e) => updateField("business_name", e.target.value)} placeholder="Your Business Ltd" required />
+                  <Label className="text-sm text-white">Business Name *</Label>
+                  <Input value={formData.business_name} onChange={(e) => updateField("business_name", e.target.value)} placeholder="Your Business Ltd" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-sm">Contact Name *</Label>
-                  <Input value={formData.contact_name} onChange={(e) => updateField("contact_name", e.target.value)} placeholder="John Smith" required />
+                  <Label className="text-sm text-white">Contact Name *</Label>
+                  <Input value={formData.contact_name} onChange={(e) => updateField("contact_name", e.target.value)} placeholder="John Smith" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-sm">Phone Number *</Label>
-                  <Input type="tel" value={formData.phone} onChange={(e) => updateField("phone", e.target.value)} placeholder="07xxx xxxxxx" required />
+                  <Label className="text-sm text-white">Phone Number *</Label>
+                  <Input type="tel" value={formData.phone} onChange={(e) => updateField("phone", e.target.value)} placeholder="07xxx xxxxxx" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
                 </div>
                 <Button type="button" onClick={handleNext} className="mt-4 w-full touch-target font-semibold">
                   Continue <ArrowRight className="ml-2 h-4 w-4" />
@@ -189,16 +189,16 @@ export default function Register() {
             {step === 2 && (
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label className="text-sm">Email *</Label>
-                  <Input type="email" value={formData.email} onChange={(e) => updateField("email", e.target.value)} placeholder="your@email.com" required />
+                  <Label className="text-sm text-white">Email *</Label>
+                  <Input type="email" value={formData.email} onChange={(e) => updateField("email", e.target.value)} placeholder="your@email.com" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-sm">Password *</Label>
-                  <Input type="password" value={formData.password} onChange={(e) => updateField("password", e.target.value)} placeholder="••••••••" required />
+                  <Label className="text-sm text-white">Password *</Label>
+                  <Input type="password" value={formData.password} onChange={(e) => updateField("password", e.target.value)} placeholder="••••••••" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-sm">Confirm Password *</Label>
-                  <Input type="password" value={formData.confirmPassword} onChange={(e) => updateField("confirmPassword", e.target.value)} placeholder="••••••••" required />
+                  <Label className="text-sm text-white">Confirm Password *</Label>
+                  <Input type="password" value={formData.confirmPassword} onChange={(e) => updateField("confirmPassword", e.target.value)} placeholder="••••••••" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
                 </div>
                 <Button type="button" onClick={handleNext} className="mt-4 w-full touch-target font-semibold">
                   Continue <ArrowRight className="ml-2 h-4 w-4" />
@@ -209,26 +209,26 @@ export default function Register() {
             {step === 3 && (
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label className="text-sm">Address Line 1 *</Label>
-                  <Input value={formData.address_line1} onChange={(e) => updateField("address_line1", e.target.value)} placeholder="123 High Street" required />
+                  <Label className="text-sm text-white">Address Line 1 *</Label>
+                  <Input value={formData.address_line1} onChange={(e) => updateField("address_line1", e.target.value)} placeholder="123 High Street" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-sm">Address Line 2</Label>
-                  <Input value={formData.address_line2} onChange={(e) => updateField("address_line2", e.target.value)} placeholder="Unit 5, Business Park" />
+                  <Label className="text-sm text-white">Address Line 2</Label>
+                  <Input value={formData.address_line2} onChange={(e) => updateField("address_line2", e.target.value)} placeholder="Unit 5, Business Park" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label className="text-sm">City *</Label>
-                    <Input value={formData.city} onChange={(e) => updateField("city", e.target.value)} placeholder="London" required />
+                    <Label className="text-sm text-white">City *</Label>
+                    <Input value={formData.city} onChange={(e) => updateField("city", e.target.value)} placeholder="London" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-sm">Postcode *</Label>
-                    <Input value={formData.postcode} onChange={(e) => updateField("postcode", e.target.value)} placeholder="SW1A 1AA" required />
+                    <Label className="text-sm text-white">Postcode *</Label>
+                    <Input value={formData.postcode} onChange={(e) => updateField("postcode", e.target.value)} placeholder="SW1A 1AA" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-sm">Driver Notes (Optional)</Label>
-                  <Textarea value={formData.driver_notes} onChange={(e) => updateField("driver_notes", e.target.value)} placeholder="Parking instructions, access codes, etc." rows={2} className="resize-none" />
+                  <Label className="text-sm text-white">Driver Notes (Optional)</Label>
+                  <Textarea value={formData.driver_notes} onChange={(e) => updateField("driver_notes", e.target.value)} placeholder="Parking instructions, access codes, etc." rows={2} className="resize-none bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" />
                 </div>
                 <Button type="submit" className="mt-4 w-full touch-target font-semibold" disabled={loading}>
                   {loading ? <LoadingSpinner size="sm" /> : <><Check className="mr-2 h-4 w-4" /> Complete Registration</>}
