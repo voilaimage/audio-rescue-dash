@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import logo from "@/assets/logo.png";
+import loginBg from "@/assets/login-bg.png";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -52,8 +53,19 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
+    <div 
+      className="flex min-h-screen flex-col bg-background relative"
+      style={{
+        backgroundImage: `url(${loginBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {/* Dark overlay for better readability */}
+      <div className="absolute inset-0 bg-black/60" />
+      
+      <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 relative z-10">
         {/* Logo */}
         <div className="mb-10 flex flex-col items-center">
           <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
@@ -62,8 +74,8 @@ export default function Login() {
 
         {/* Login Form */}
         <div className="w-full max-w-sm animate-fade-in">
-          <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-            <h2 className="mb-6 text-center font-display text-xl font-semibold">
+          <div className="rounded-xl border border-border bg-card/95 backdrop-blur-sm p-6 shadow-card">
+            <h2 className="mb-6 text-center font-display text-xl font-semibold text-foreground">
               Welcome Back
             </h2>
 
