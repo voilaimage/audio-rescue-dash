@@ -12,7 +12,7 @@ export default function Home() {
         {/* Welcome Header */}
         <div className="mb-6 animate-fade-in">
           <p className="text-sm text-muted-foreground">Welcome back,</p>
-          <h1 className="font-display text-2xl font-bold text-foreground">
+          <h1 className="font-display text-2xl font-bold text-white">
             {profile?.contact_name || "Partner"}
           </h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
@@ -48,7 +48,7 @@ export default function Home() {
                   <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-[#f59f0a]">
                     <ClipboardList className="h-6 w-6 text-white" />
                   </div>
-                  <h2 className="font-display text-lg font-semibold text-foreground">
+                  <h2 className="font-display text-lg font-semibold text-white">
                     View Past Requests
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -68,7 +68,7 @@ export default function Home() {
               <Sparkles className="h-4 w-4 text-white" />
             </div>
             <div>
-              <h3 className="text-sm font-medium text-foreground">How it works</h3>
+              <h3 className="text-sm font-medium text-white">How it works</h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 Submit photos of faulty or unsellable high-end audio equipment.
                 We'll arrange a free collection at a time that suits you.
