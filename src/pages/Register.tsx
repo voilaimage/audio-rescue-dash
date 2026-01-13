@@ -133,8 +133,8 @@ export default function Register() {
         backgroundRepeat: 'no-repeat',
       }}
     >
-      {/* Dark overlay for better readability */}
-      <div className="absolute inset-0 bg-black/60" />
+      
+
       
       <div className="mx-auto max-w-lg px-5 py-6 relative z-10">
         {/* Header */}

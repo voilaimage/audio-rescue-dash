@@ -39,8 +39,8 @@ export default function Splash() {
           backgroundRepeat: 'no-repeat',
         }}
       />
-      {/* Dark overlay for better readability */}
-      <div className="absolute inset-0 bg-black/60" />
+      
+
       
       <div className="animate-fade-in flex flex-col items-center gap-8 relative z-10">
         {/* Logo */}
