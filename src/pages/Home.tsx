@@ -29,7 +29,7 @@ export default function Home() {
                   <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-[#f59f0a]">
                     <Camera className="h-6 w-6 text-primary-foreground" />
                   </div>
-                  <h2 className="font-display text-lg font-semibold text-foreground">
+                  <h2 className="font-display text-lg font-semibold text-white">
                     New Collection Request
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
