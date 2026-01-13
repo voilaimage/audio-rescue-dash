@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <MobileLayout>
       <div 
-        className="min-h-full px-5 py-6 safe-top"
+        className="min-h-screen px-5 py-6 safe-top"
         style={{
           backgroundImage: `url(${homeBg})`,
           backgroundSize: 'cover',

@@ -115,7 +115,7 @@ export default function RequestDetail() {
       )}
 
       <div 
-        className="min-h-full safe-top"
+        className="min-h-screen safe-top"
         style={{
           backgroundImage: `url(${homeBg})`,
           backgroundSize: 'cover',
