@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ArrowLeft, ArrowRight, Building2, User, MapPin, Check } from "lucide-react";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo-white.png";
 import loginBg from "@/assets/login-bg.png";
 
 type Step = 1 | 2 | 3;
