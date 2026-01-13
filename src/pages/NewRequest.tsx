@@ -58,8 +58,8 @@ export default function NewRequest() {
         .insert({
           user_id: user.id,
           description,
-          preferred_window: preferredWindow,
-          preferred_day_range: preferredDayRange,
+          preferred_window: preferredWindow as "anytime" | "morning" | "afternoon" | "evening",
+          preferred_day_range: preferredDayRange as "none" | "tomorrow" | "3_days" | "week",
         })
         .select()
         .single();
