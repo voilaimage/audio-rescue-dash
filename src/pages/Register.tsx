@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ArrowLeft, ArrowRight, Building2, User, MapPin, Check } from "lucide-react";
 import logo from "@/assets/logo.png";
+import loginBg from "@/assets/login-bg.png";
 
 type Step = 1 | 2 | 3;
 
@@ -123,8 +124,19 @@ export default function Register() {
   const stepDescs = ["Tell us about your business", "Create your login credentials", "Where should we collect from?"];
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-lg px-5 py-6">
+    <div 
+      className="min-h-screen bg-background relative"
+      style={{
+        backgroundImage: `url(${loginBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {/* Dark overlay for better readability */}
+      <div className="absolute inset-0 bg-black/60" />
+      
+      <div className="mx-auto max-w-lg px-5 py-6 relative z-10">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <button onClick={() => (step === 1 ? navigate("/login") : handleBack())} className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-foreground">
@@ -139,7 +151,7 @@ export default function Register() {
         </div>
 
         {/* Form */}
-        <div className="animate-fade-in rounded-xl border border-border bg-card p-5 shadow-card">
+        <div className="animate-fade-in rounded-xl border border-border bg-card/95 backdrop-blur-sm p-5 shadow-card">
           <form onSubmit={handleSubmit}>
             {/* Step Header */}
             <div className="mb-5 flex items-center gap-3">
