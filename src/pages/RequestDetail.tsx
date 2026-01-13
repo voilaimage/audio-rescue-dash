@@ -6,6 +6,7 @@ import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { format } from "date-fns";
 import { ArrowLeft, MapPin, Clock, Calendar, Package } from "lucide-react";
+import homeBg from "@/assets/home-bg.png";
 
 const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
   new: { bg: "bg-primary/10", text: "text-primary", label: "New" },
@@ -113,7 +114,15 @@ export default function RequestDetail() {
         </div>
       )}
 
-      <div className="safe-top">
+      <div 
+        className="min-h-full safe-top"
+        style={{
+          backgroundImage: `url(${homeBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
         {/* Header */}
         <div className="sticky top-0 z-10 border-b border-border bg-background px-5 py-4">
           <div className="flex items-center gap-3">
