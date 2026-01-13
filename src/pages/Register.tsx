@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ArrowLeft, ArrowRight, Building2, User, MapPin, Check } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 type Step = 1 | 2 | 3;
 
@@ -129,9 +130,10 @@ export default function Register() {
           <button onClick={() => (step === 1 ? navigate("/login") : handleBack())} className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-foreground">
             <ArrowLeft className="h-5 w-5" />
           </button>
+          <img src={logo} alt="Audio Salvage UK" className="h-8 w-auto" />
           <div className="flex gap-1.5">
             {[1, 2, 3].map((s) => (
-              <div key={s} className={`h-1.5 w-8 rounded-full transition-all ${s <= step ? "bg-primary" : "bg-muted"}`} />
+              <div key={s} className={`h-1.5 w-6 rounded-full transition-all ${s <= step ? "bg-primary" : "bg-muted"}`} />
             ))}
           </div>
         </div>
