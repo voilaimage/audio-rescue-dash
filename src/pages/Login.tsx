@@ -72,7 +72,7 @@ export default function Login() {
 
         {/* Login Form */}
         <div className="w-full max-w-sm animate-fade-in">
-          <div className="rounded-xl border border-gray-500 bg-gray-800 backdrop-blur-sm p-6 shadow-card">
+          <div className="rounded-xl border border-[#555555] bg-[#1d1d1d] backdrop-blur-sm p-6 shadow-card">
             <h2 className="mb-6 text-center font-display text-xl font-semibold text-white">
               Welcome Back
             </h2>
@@ -88,7 +88,7 @@ export default function Login() {
                     placeholder="your@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 bg-gray-300 border-gray-400 text-gray-900 placeholder:text-gray-500"
+                    className="pl-10 bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500"
                     required
                   />
                 </div>
@@ -104,13 +104,13 @@ export default function Login() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 bg-gray-300 border-gray-400 text-gray-900 placeholder:text-gray-500"
+                    className="pl-10 pr-10 bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
