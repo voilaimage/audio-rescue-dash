@@ -144,7 +144,7 @@ export default function Register() {
 
         {/* Navigation & Progress */}
         <div className="mb-6 mt-8 flex items-center justify-between">
-          <button onClick={() => (step === 1 ? navigate("/login") : handleBack())} className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-foreground">
+          <button onClick={() => (step === 1 ? navigate("/login") : handleBack())} className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex gap-1.5">
