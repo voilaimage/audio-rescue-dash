@@ -9,7 +9,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { ArrowLeft, Camera, X, Check, MapPin } from "lucide-react";
+import { ArrowLeft, Camera, X, Check, MapPin, ImageIcon } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import appBg from "@/assets/app-bg.png";
 import logo from "@/assets/logo-white.png";
 type Step = 1 | 2;
@@ -23,7 +29,7 @@ export default function NewRequest() {
   const [loading, setLoading] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
-  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  
   const navigate = useNavigate();
   const {
     profile,
@@ -140,32 +146,32 @@ export default function NewRequest() {
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>)}
-                {photos.length < 10 && <div className="relative">
-                    <button onClick={() => setShowPhotoOptions(!showPhotoOptions)} className="flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-white bg-[#1d1d1d] hover:border-primary hover:bg-primary/5">
-                      <Camera className="h-6 w-6 text-white" />
-                      <span className="text-xs text-white">Add</span>
-                    </button>
-                    {showPhotoOptions && (
-                      <div className="absolute left-0 top-full z-50 mt-2 w-40 rounded-lg border border-[#555555] bg-[#1d1d1d] p-1 shadow-lg">
-                        <button 
-                          onClick={() => { cameraInputRef.current?.click(); setShowPhotoOptions(false); }}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-white hover:bg-primary/20"
-                        >
-                          <Camera className="h-4 w-4" />
-                          Take Photo
-                        </button>
-                        <button 
-                          onClick={() => { galleryInputRef.current?.click(); setShowPhotoOptions(false); }}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-white hover:bg-primary/20"
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          Photo Gallery
-                        </button>
-                      </div>
-                    )}
-                  </div>}
+                {photos.length < 10 && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-white bg-[#1d1d1d] hover:border-primary hover:bg-primary/5">
+                        <Camera className="h-6 w-6 text-white" />
+                        <span className="text-xs text-white">Add</span>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="bg-[#1d1d1d] border-[#555555]">
+                      <DropdownMenuItem 
+                        onClick={() => cameraInputRef.current?.click()}
+                        className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
+                      >
+                        <Camera className="mr-2 h-4 w-4" />
+                        Take Photo
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => galleryInputRef.current?.click()}
+                        className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
+                      >
+                        <ImageIcon className="mr-2 h-4 w-4" />
+                        Photo Gallery
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
 
