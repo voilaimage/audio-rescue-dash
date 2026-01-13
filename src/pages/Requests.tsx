@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { ChevronRight, Package } from "lucide-react";
+import { ChevronRight, Package, ArrowLeft } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
 import logo from "@/assets/logo-white.png";
 const statusConfig: Record<string, {
@@ -41,6 +41,7 @@ const statusConfig: Record<string, {
   }
 };
 export default function Requests() {
+  const navigate = useNavigate();
   const {
     user
   } = useAuth();
@@ -101,9 +102,19 @@ export default function Requests() {
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
     }}>
-        {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
+        {/* Header with back button */}
+        <div className="flex items-center gap-4 mb-6">
+          <button 
+            onClick={() => navigate("/home")} 
+            className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div className="flex-1 flex justify-center">
+            <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
+          </div>
+          {/* Spacer to balance the layout */}
+          <div className="w-10" />
         </div>
 
         <h1 className="mb-5 font-display text-white text-lg font-light">Past Requests</h1>
