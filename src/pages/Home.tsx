@@ -64,8 +64,8 @@ export default function Home() {
         {/* Info Card */}
         <div className="mt-6 animate-fade-in rounded-lg border border-[#555555] bg-[#1d1d1d] p-4">
           <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f59f0a]">
-              <Sparkles className="h-4 w-4 text-white" />
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#f59f0a]">
+              <Sparkles className="h-6 w-6 text-white" />
             </div>
             <div>
               <h3 className="font-display text-lg font-semibold text-white">How it works</h3>
