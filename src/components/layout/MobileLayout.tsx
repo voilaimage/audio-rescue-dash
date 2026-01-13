@@ -34,7 +34,8 @@ export function MobileLayout({ children, showNav = true, className }: MobileLayo
       </main>
       
       {showNav && (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-card/80 backdrop-blur-md safe-bottom">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black safe-bottom">
+          <div className="h-0.5 bg-primary" />
           <div className="flex items-center justify-around py-2">
             {navItems.map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path;
@@ -46,7 +47,7 @@ export function MobileLayout({ children, showNav = true, className }: MobileLayo
                     "flex flex-col items-center gap-1 px-4 py-2 transition-all touch-target",
                     isActive
                       ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
+                      : "text-white hover:text-primary"
                   )}
                 >
                   <Icon className={cn("h-5 w-5", isActive && "animate-scale-in")} />
@@ -61,10 +62,10 @@ export function MobileLayout({ children, showNav = true, className }: MobileLayo
                 "flex flex-col items-center gap-1 px-4 py-2 transition-all touch-target",
                 location.pathname === "/profile"
                   ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-white hover:text-primary"
               )}
             >
-              <Avatar className={cn("h-5 w-5", location.pathname === "/profile" && "ring-2 ring-primary ring-offset-1 ring-offset-card")}>
+              <Avatar className={cn("h-5 w-5", location.pathname === "/profile" && "ring-2 ring-primary ring-offset-1 ring-offset-black")}>
                 <AvatarImage src={(profile as any)?.avatar_url} alt={profile?.contact_name} />
                 <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
                   {getInitials()}
