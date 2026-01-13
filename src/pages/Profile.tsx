@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LogOut, Save, Camera, Trash2 } from "lucide-react";
-
+import homeBg from "@/assets/home-bg.png";
 export default function Profile() {
   const { profile, signOut, refreshProfile, user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -159,7 +159,15 @@ export default function Profile() {
 
   return (
     <MobileLayout>
-      <div className="px-5 py-6 safe-top">
+      <div 
+        className="min-h-full px-5 py-6 safe-top"
+        style={{
+          backgroundImage: `url(${homeBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
         <h1 className="mb-5 font-display text-2xl font-bold text-foreground">Profile</h1>
 
         <div className="space-y-4">
