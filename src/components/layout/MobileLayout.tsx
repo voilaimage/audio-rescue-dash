@@ -67,7 +67,7 @@ export function MobileLayout({ children, showNav = true, className }: MobileLayo
             >
               <Avatar className={cn("h-5 w-5", location.pathname === "/profile" && "ring-2 ring-primary ring-offset-1 ring-offset-black")}>
                 <AvatarImage src={(profile as any)?.avatar_url} alt={profile?.contact_name} />
-                <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
+                <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>
