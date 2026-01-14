@@ -65,9 +65,9 @@ export function MobileLayout({ children, showNav = true, className }: MobileLayo
                   : "text-white hover:text-primary"
               )}
             >
-              <Avatar className={cn("h-6 w-6", location.pathname === "/profile" && "ring-2 ring-primary ring-offset-1 ring-offset-black")}>
+              <Avatar className={cn("h-7 w-7", location.pathname === "/profile" && "ring-2 ring-primary ring-offset-1 ring-offset-black")}>
                 <AvatarImage src={(profile as any)?.avatar_url} alt={profile?.contact_name} />
-                <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                <AvatarFallback className="bg-primary/10 text-primary text-base font-semibold">
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>
