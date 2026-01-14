@@ -39,7 +39,7 @@ export default function Home() {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-5 pb-6">
+        <div className="flex-1 overflow-y-auto px-5 pb-24">
           {/* Main Action Buttons */}
           <div className="space-y-3">
             <Link to="/new-request" className="block">
