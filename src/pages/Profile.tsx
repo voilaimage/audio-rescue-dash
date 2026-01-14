@@ -205,7 +205,7 @@ export default function Profile() {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-5 pb-6">
+        <div className="flex-1 overflow-y-auto px-5 pb-24">
           <div className="space-y-4">
           {/* Profile Picture */}
           <div className="flex flex-col items-center space-y-3 rounded-xl border border-[#555555] bg-[#1d1d1d] p-4 shadow-card">

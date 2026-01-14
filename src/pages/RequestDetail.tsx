@@ -150,7 +150,7 @@ export default function RequestDetail() {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+        <div className="flex-1 overflow-y-auto px-5 py-5 pb-24 space-y-5">
           {/* Photos Gallery */}
           {request.request_photos && request.request_photos.length > 0 && (
             <div className="space-y-3">
