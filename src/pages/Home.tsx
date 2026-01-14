@@ -62,7 +62,7 @@ export default function Home() {
             </Link>
 
             <Link to="/requests" className="block">
-              <div className="group rounded-xl border border-[#555555] bg-[#1d1d1d] p-5 shadow-card transition-all hover:border-muted-foreground/30">
+              <div className="group rounded-xl border border-[#555555] bg-[#1d1d1d] p-5 shadow-card transition-all hover:border-primary/40 hover:bg-[#1d1d1d]/90">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-[#f59f0a]">
