@@ -371,8 +371,8 @@ export default function Profile() {
             {loading ? <LoadingSpinner size="sm" /> : <><Save className="mr-2 h-4 w-4" /> Save Changes</>}
           </Button>
 
-          <Button onClick={handleSignOut} variant="outline" className="w-full touch-target text-destructive hover:bg-destructive/10 hover:text-destructive">
-            <LogOut className="mr-2 h-4 w-4" /> Sign Out
+          <Button onClick={handleSignOut} variant="outline" className="w-full touch-target border-primary text-black hover:bg-primary/10 hover:text-black">
+            <LogOut className="mr-2 h-4 w-4 text-black" /> Sign Out
           </Button>
           </div>
         </div>
