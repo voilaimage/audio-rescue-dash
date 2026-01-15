@@ -135,16 +135,20 @@ export default function Register() {
     >
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-lg px-5 py-6 pb-12 relative z-10">
-          {/* Logo */}
-          <div className="mt-8 mb-4 flex justify-center">
-            <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
-          </div>
-
-          {/* Navigation & Progress */}
-          <div className="mb-6 mt-8 flex items-center justify-between">
+          {/* Back button and Logo row */}
+          <div className="flex items-center gap-4 mt-8 mb-6">
             <button onClick={() => (step === 1 ? navigate("/login") : handleBack())} className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
               <ArrowLeft className="h-5 w-5" />
             </button>
+            <div className="flex-1 flex justify-center">
+              <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
+            </div>
+            {/* Spacer to balance the layout */}
+            <div className="w-10" />
+          </div>
+
+          {/* Progress */}
+          <div className="mb-6 flex justify-center">
             <div className="flex gap-1.5">
               {[1, 2, 3].map((s) => (
                 <div key={s} className={`h-1.5 w-6 rounded-full transition-all ${s <= step ? "bg-primary" : "bg-muted"}`} />
