@@ -126,15 +126,15 @@ export default function NewRequest() {
             <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
           </div>
 
+          {/* Title */}
+          <h1 className="mt-4 mb-6 text-center text-white text-lg font-light">New Collection Request</h1>
+
           {/* Navigation & Progress */}
-          <div className="mb-6 flex items-center gap-3">
+          <div className="mb-6 flex items-center justify-between">
             <button onClick={() => step === 1 ? navigate(-1) : setStep(1)} className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <div className="flex-1">
-              <h1 className="text-lg text-white font-light">New Collection Request</h1>
-              <p className="text-xs text-muted-foreground">Step {step} of 2</p>
-            </div>
+            <p className="text-sm text-white">Step {step} of 2</p>
             <div className="flex gap-1.5">
               {[1, 2].map(s => <div key={s} className={`h-1.5 w-6 rounded-full transition-all ${s <= step ? "bg-primary" : "bg-muted"}`} />)}
             </div>
