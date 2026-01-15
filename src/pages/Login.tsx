@@ -57,7 +57,7 @@ export default function Login() {
       className="h-screen flex flex-col bg-background relative overflow-hidden"
       style={{
         backgroundImage: `url(${authBg})`,
-        backgroundSize: '100% 100%',
+        backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
       }}
