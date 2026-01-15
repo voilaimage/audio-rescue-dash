@@ -125,126 +125,125 @@ export default function Register() {
 
   return (
     <div 
-      className="min-h-screen bg-background relative"
+      className="h-screen flex flex-col bg-background relative overflow-hidden"
       style={{
         backgroundImage: `url(${authBg})`,
-        backgroundSize: 'cover',
+        backgroundSize: '100% 100%',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
       }}
     >
-      
-
-      
-      <div className="mx-auto max-w-lg px-5 py-6 relative z-10">
-        {/* Logo */}
-        <div className="mt-8 mb-4 flex justify-center">
-          <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
-        </div>
-
-        {/* Navigation & Progress */}
-        <div className="mb-6 mt-8 flex items-center justify-between">
-          <button onClick={() => (step === 1 ? navigate("/login") : handleBack())} className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="flex gap-1.5">
-            {[1, 2, 3].map((s) => (
-              <div key={s} className={`h-1.5 w-6 rounded-full transition-all ${s <= step ? "bg-primary" : "bg-muted"}`} />
-            ))}
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-lg px-5 py-6 pb-12 relative z-10">
+          {/* Logo */}
+          <div className="mt-8 mb-4 flex justify-center">
+            <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
           </div>
-        </div>
 
-        {/* Form */}
-        <div className="animate-fade-in rounded-xl border border-[#555555] bg-[#1d1d1d] backdrop-blur-sm p-5 shadow-card">
-          <form onSubmit={handleSubmit}>
-            {/* Step Header */}
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                {step === 1 && <Building2 className="h-5 w-5 text-primary" />}
-                {step === 2 && <User className="h-5 w-5 text-primary" />}
-                {step === 3 && <MapPin className="h-5 w-5 text-primary" />}
-              </div>
-              <div>
-                <h2 className="font-display text-lg font-semibold text-white">{stepTitles[step - 1]}</h2>
-                <p className="text-sm text-gray-400">{stepDescs[step - 1]}</p>
-              </div>
+          {/* Navigation & Progress */}
+          <div className="mb-6 mt-8 flex items-center justify-between">
+            <button onClick={() => (step === 1 ? navigate("/login") : handleBack())} className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="flex gap-1.5">
+              {[1, 2, 3].map((s) => (
+                <div key={s} className={`h-1.5 w-6 rounded-full transition-all ${s <= step ? "bg-primary" : "bg-muted"}`} />
+              ))}
             </div>
+          </div>
 
-            {step === 1 && (
-              <div className="space-y-3">
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-white">Business Name *</Label>
-                  <Input value={formData.business_name} onChange={(e) => updateField("business_name", e.target.value)} placeholder="Your Business Ltd" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
+          {/* Form */}
+          <div className="animate-fade-in rounded-xl border border-[#555555] bg-[#1d1d1d] backdrop-blur-sm p-5 shadow-card">
+            <form onSubmit={handleSubmit}>
+              {/* Step Header */}
+              <div className="mb-5 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                  {step === 1 && <Building2 className="h-5 w-5 text-primary" />}
+                  {step === 2 && <User className="h-5 w-5 text-primary" />}
+                  {step === 3 && <MapPin className="h-5 w-5 text-primary" />}
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-white">Contact Name *</Label>
-                  <Input value={formData.contact_name} onChange={(e) => updateField("contact_name", e.target.value)} placeholder="John Smith" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
+                <div>
+                  <h2 className="font-display text-lg font-semibold text-white">{stepTitles[step - 1]}</h2>
+                  <p className="text-sm text-gray-400">{stepDescs[step - 1]}</p>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-white">Phone Number *</Label>
-                  <Input type="tel" value={formData.phone} onChange={(e) => updateField("phone", e.target.value)} placeholder="07xxx xxxxxx" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
-                </div>
-                <Button type="button" onClick={handleNext} className="mt-4 w-full touch-target font-semibold">
-                  Continue <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
               </div>
-            )}
 
-            {step === 2 && (
-              <div className="space-y-3">
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-white">Email *</Label>
-                  <Input type="email" value={formData.email} onChange={(e) => updateField("email", e.target.value)} placeholder="your@email.com" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-white">Password *</Label>
-                  <Input type="password" value={formData.password} onChange={(e) => updateField("password", e.target.value)} placeholder="••••••••" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-white">Confirm Password *</Label>
-                  <Input type="password" value={formData.confirmPassword} onChange={(e) => updateField("confirmPassword", e.target.value)} placeholder="••••••••" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
-                </div>
-                <Button type="button" onClick={handleNext} className="mt-4 w-full touch-target font-semibold">
-                  Continue <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            )}
-
-            {step === 3 && (
-              <div className="space-y-3">
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-white">Address Line 1 *</Label>
-                  <Input value={formData.address_line1} onChange={(e) => updateField("address_line1", e.target.value)} placeholder="123 High Street" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-white">Address Line 2</Label>
-                  <Input value={formData.address_line2} onChange={(e) => updateField("address_line2", e.target.value)} placeholder="Unit 5, Business Park" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
+              {step === 1 && (
+                <div className="space-y-3">
                   <div className="space-y-1.5">
-                    <Label className="text-sm text-white">City *</Label>
-                    <Input value={formData.city} onChange={(e) => updateField("city", e.target.value)} placeholder="London" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
+                    <Label className="text-sm text-white">Business Name *</Label>
+                    <Input value={formData.business_name} onChange={(e) => updateField("business_name", e.target.value)} placeholder="Your Business Ltd" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-sm text-white">Postcode *</Label>
-                    <Input value={formData.postcode} onChange={(e) => updateField("postcode", e.target.value)} placeholder="SW1A 1AA" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
+                    <Label className="text-sm text-white">Contact Name *</Label>
+                    <Input value={formData.contact_name} onChange={(e) => updateField("contact_name", e.target.value)} placeholder="John Smith" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
                   </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm text-white">Phone Number *</Label>
+                    <Input type="tel" value={formData.phone} onChange={(e) => updateField("phone", e.target.value)} placeholder="07xxx xxxxxx" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
+                  </div>
+                  <Button type="button" onClick={handleNext} className="mt-4 w-full touch-target font-semibold">
+                    Continue <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-white">Driver Notes (Optional)</Label>
-                  <Textarea value={formData.driver_notes} onChange={(e) => updateField("driver_notes", e.target.value)} placeholder="Parking instructions, access codes, etc." rows={2} className="resize-none bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" />
-                </div>
-                <Button type="submit" className="mt-4 w-full touch-target font-semibold" disabled={loading}>
-                  {loading ? <LoadingSpinner size="sm" /> : <><Check className="mr-2 h-4 w-4" /> Complete Registration</>}
-                </Button>
-              </div>
-            )}
-          </form>
-        </div>
+              )}
 
-        <div className="mt-6 text-center text-sm text-white space-y-1">
-          <p className="text-base">Already have an account?</p>
-          <Link to="/login" className="font-extrabold text-base text-primary underline hover:text-primary/80">Sign in</Link>
+              {step === 2 && (
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-sm text-white">Email *</Label>
+                    <Input type="email" value={formData.email} onChange={(e) => updateField("email", e.target.value)} placeholder="your@email.com" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm text-white">Password *</Label>
+                    <Input type="password" value={formData.password} onChange={(e) => updateField("password", e.target.value)} placeholder="••••••••" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm text-white">Confirm Password *</Label>
+                    <Input type="password" value={formData.confirmPassword} onChange={(e) => updateField("confirmPassword", e.target.value)} placeholder="••••••••" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
+                  </div>
+                  <Button type="button" onClick={handleNext} className="mt-4 w-full touch-target font-semibold">
+                    Continue <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-sm text-white">Address Line 1 *</Label>
+                    <Input value={formData.address_line1} onChange={(e) => updateField("address_line1", e.target.value)} placeholder="123 High Street" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm text-white">Address Line 2</Label>
+                    <Input value={formData.address_line2} onChange={(e) => updateField("address_line2", e.target.value)} placeholder="Unit 5, Business Park" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-sm text-white">City *</Label>
+                      <Input value={formData.city} onChange={(e) => updateField("city", e.target.value)} placeholder="London" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-sm text-white">Postcode *</Label>
+                      <Input value={formData.postcode} onChange={(e) => updateField("postcode", e.target.value)} placeholder="SW1A 1AA" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm text-white">Driver Notes (Optional)</Label>
+                    <Textarea value={formData.driver_notes} onChange={(e) => updateField("driver_notes", e.target.value)} placeholder="Parking instructions, access codes, etc." rows={2} className="resize-none bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" />
+                  </div>
+                  <Button type="submit" className="mt-4 w-full touch-target font-semibold" disabled={loading}>
+                    {loading ? <LoadingSpinner size="sm" /> : <><Check className="mr-2 h-4 w-4" /> Complete Registration</>}
+                  </Button>
+                </div>
+              )}
+            </form>
+          </div>
+
+          <div className="mt-6 text-center text-sm text-white space-y-1">
+            <p className="text-base">Already have an account?</p>
+            <Link to="/login" className="font-extrabold text-base text-primary underline hover:text-primary/80">Sign in</Link>
+          </div>
         </div>
       </div>
     </div>
