@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,16 +33,33 @@ export default function Profile() {
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    business_name: profile?.business_name || "",
-    contact_name: profile?.contact_name || "",
-    phone: profile?.phone || "",
-    email: profile?.email || "",
-    address_line1: profile?.address_line1 || "",
-    address_line2: profile?.address_line2 || "",
-    city: profile?.city || "",
-    postcode: profile?.postcode || "",
-    driver_notes: profile?.driver_notes || "",
+    business_name: "",
+    contact_name: "",
+    phone: "",
+    email: "",
+    address_line1: "",
+    address_line2: "",
+    city: "",
+    postcode: "",
+    driver_notes: "",
   });
+
+  // Sync form data when profile loads or changes
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        business_name: profile.business_name || "",
+        contact_name: profile.contact_name || "",
+        phone: profile.phone || "",
+        email: profile.email || "",
+        address_line1: profile.address_line1 || "",
+        address_line2: profile.address_line2 || "",
+        city: profile.city || "",
+        postcode: profile.postcode || "",
+        driver_notes: profile.driver_notes || "",
+      });
+    }
+  }, [profile]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
