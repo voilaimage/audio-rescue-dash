@@ -5,9 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
-import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { ArrowLeft, MapPin, Clock, Calendar, Package, Trash2, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Calendar, Package } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
 import logo from "@/assets/logo-white.png";
 
@@ -37,11 +36,9 @@ export default function RequestDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const [request, setRequest] = useState<RequestWithPhotos | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   // Get original URLs from request photos
   const originalPhotoUrls = request?.request_photos?.map(p => p.file_url) || [];
@@ -93,59 +90,6 @@ export default function RequestDetail() {
     };
   }, [id, navigate]);
 
-  const handleDeletePhoto = async (photoIndex: number) => {
-    if (!request?.request_photos?.[photoIndex]) return;
-    
-    const photo = request.request_photos[photoIndex];
-    setDeleting(true);
-    
-    try {
-      // Extract file path from the URL
-      const urlParts = photo.file_url.split('/request-photos/');
-      const filePath = urlParts[1];
-      
-      // Delete from storage
-      if (filePath) {
-        await supabase.storage.from('request-photos').remove([filePath]);
-      }
-      
-      // Delete from database
-      const { error } = await supabase
-        .from('request_photos')
-        .delete()
-        .eq('id', photo.id);
-      
-      if (error) throw error;
-      
-      // Update local state
-      setRequest(prev => {
-        if (!prev) return prev;
-        const updatedPhotos = prev.request_photos?.filter((_, i) => i !== photoIndex) || [];
-        return { ...prev, request_photos: updatedPhotos };
-      });
-      
-      // Close lightbox if no more photos or adjust index
-      if ((request.request_photos?.length || 0) <= 1) {
-        setSelectedPhotoIndex(null);
-      } else if (photoIndex >= (request.request_photos?.length || 0) - 1) {
-        setSelectedPhotoIndex(Math.max(0, photoIndex - 1));
-      }
-      
-      toast({
-        title: "Photo deleted",
-        description: "The photo has been removed from this request."
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Failed to delete photo",
-        description: error.message
-      });
-    } finally {
-      setDeleting(false);
-    }
-  };
-
   if (loading) {
     return (
       <MobileLayout showNav={false}>
@@ -167,62 +111,14 @@ export default function RequestDetail() {
       {/* Photo Lightbox */}
       {selectedPhotoIndex !== null && signedUrls[selectedPhotoIndex] && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setSelectedPhotoIndex(null);
-          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/90 p-4"
+          onClick={() => setSelectedPhotoIndex(null)}
         >
-          {/* Close button */}
-          <button 
-            onClick={() => setSelectedPhotoIndex(null)}
-            className="absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
-          >
-            <X className="h-5 w-5" />
-          </button>
-
-          {/* Previous button */}
-          {(request.request_photos?.length || 0) > 1 && (
-            <button 
-              onClick={() => setSelectedPhotoIndex((selectedPhotoIndex - 1 + (request.request_photos?.length || 1)) % (request.request_photos?.length || 1))}
-              className="absolute left-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-          )}
-
-          {/* Image */}
           <img
             src={signedUrls[selectedPhotoIndex]}
             alt=""
-            className="max-h-[80vh] max-w-full rounded-lg object-contain"
+            className="max-h-full max-w-full rounded-lg object-contain"
           />
-
-          {/* Next button */}
-          {(request.request_photos?.length || 0) > 1 && (
-            <button 
-              onClick={() => setSelectedPhotoIndex((selectedPhotoIndex + 1) % (request.request_photos?.length || 1))}
-              className="absolute right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
-          )}
-
-          {/* Delete button */}
-          <button 
-            onClick={() => handleDeletePhoto(selectedPhotoIndex)}
-            disabled={deleting}
-            className="absolute bottom-6 z-10 flex items-center gap-2 rounded-full bg-destructive px-4 py-2 text-white hover:bg-destructive/90 disabled:opacity-50"
-          >
-            {deleting ? <LoadingSpinner size="sm" /> : <Trash2 className="h-4 w-4" />}
-            {deleting ? "Deleting..." : "Delete Photo"}
-          </button>
-
-          {/* Photo counter */}
-          {(request.request_photos?.length || 0) > 1 && (
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-white/20 px-3 py-1 text-sm text-white">
-              {selectedPhotoIndex + 1} / {request.request_photos?.length}
-            </div>
-          )}
         </div>
       )}
 
