@@ -85,14 +85,16 @@ export default function NewRequest() {
           error: uploadError
         } = await supabase.storage.from("request-photos").upload(fileName, photo);
         if (uploadError) throw uploadError;
-        const {
-          data: {
-            publicUrl
-          }
-        } = supabase.storage.from("request-photos").getPublicUrl(fileName);
+        
+        // Store the file path reference (bucket is now private, we'll use signed URLs to display)
+        // Format: https://project.supabase.co/storage/v1/object/public/request-photos/path
+        // We store this format so we can extract the path later for signed URL generation
+        const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const fileUrl = `${baseUrl}/storage/v1/object/public/request-photos/${fileName}`;
+        
         await supabase.from("request_photos").insert({
           request_id: request.id,
-          file_url: publicUrl
+          file_url: fileUrl
         });
       }
       toast({

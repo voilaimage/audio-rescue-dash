@@ -6,6 +6,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { format } from "date-fns";
 import { ArrowLeft, MapPin, Clock, Calendar, Package, Phone, Mail, Building2, User } from "lucide-react";
 
@@ -39,8 +40,14 @@ export default function AdminRequestDetail() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
   const [newStatus, setNewStatus] = useState<string>("");
+
+  // Get original URLs from request photos
+  const originalPhotoUrls = request?.request_photos?.map(p => p.file_url) || [];
+  
+  // Use signed URLs for private bucket access
+  const { signedUrls, loading: urlsLoading } = useSignedUrls(originalPhotoUrls);
 
   useEffect(() => {
     if (!id) return;
@@ -106,12 +113,12 @@ export default function AdminRequestDetail() {
   return (
     <AdminLayout>
       {/* Photo Lightbox */}
-      {selectedPhoto && (
+      {selectedPhotoIndex !== null && signedUrls[selectedPhotoIndex] && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/90 p-4"
-          onClick={() => setSelectedPhoto(null)}
+          onClick={() => setSelectedPhotoIndex(null)}
         >
-          <img src={selectedPhoto} alt="" className="max-h-full max-w-full rounded-lg object-contain" />
+          <img src={signedUrls[selectedPhotoIndex]} alt="" className="max-h-full max-w-full rounded-lg object-contain" />
         </div>
       )}
 
@@ -147,13 +154,20 @@ export default function AdminRequestDetail() {
                   Photos ({request.request_photos.length})
                 </h3>
                 <div className="grid grid-cols-4 gap-3">
-                  {request.request_photos.map((photo) => (
+                  {request.request_photos.map((photo, index) => (
                     <button
                       key={photo.id}
-                      onClick={() => setSelectedPhoto(photo.file_url)}
+                      onClick={() => setSelectedPhotoIndex(index)}
                       className="aspect-square overflow-hidden rounded-lg border border-[#333]"
+                      disabled={urlsLoading}
                     >
-                      <img src={photo.file_url} alt="" className="h-full w-full object-cover transition-transform hover:scale-105" />
+                      {urlsLoading ? (
+                        <div className="h-full w-full flex items-center justify-center bg-[#28292b]">
+                          <LoadingSpinner size="sm" />
+                        </div>
+                      ) : (
+                        <img src={signedUrls[index] || ""} alt="" className="h-full w-full object-cover transition-transform hover:scale-105" />
+                      )}
                     </button>
                   ))}
                 </div>
