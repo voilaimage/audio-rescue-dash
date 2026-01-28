@@ -9,7 +9,7 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-const navItems = [
+const sidebarItems = [
   { path: "/admin", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/admin/requests", icon: ClipboardList, label: "All Requests" },
 ];
@@ -25,50 +25,49 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212]">
-      {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-40 border-b border-[#333] bg-black">
-        <div className="flex h-16 items-center justify-between px-6">
+    <div className="flex min-h-screen bg-[#121212]">
+      {/* Sidebar */}
+      <aside className="fixed left-0 top-0 z-40 h-screen w-60 bg-black">
+        <div className="absolute right-0 top-0 h-full w-0.5 bg-primary" />
+        <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-3">
-              <img src={logoWhite} alt="Audio Salvage UK" className="h-8 w-auto" />
-              <span className="text-xs text-gray-400">Admin</span>
-            </div>
-
-            {/* Nav Items */}
-            <nav className="flex items-center gap-1">
-              {navItems.map(({ path, icon: Icon, label }) => {
-                const isActive = location.pathname === path;
-                return (
-                  <Link
-                    key={path}
-                    to={path}
-                    className={cn(
-                      "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all",
-                      isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-white hover:bg-white/10 hover:text-primary"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {label}
-                  </Link>
-                );
-              })}
-            </nav>
+          <div className="border-b border-[#333] px-5 py-5">
+            <img src={logoWhite} alt="Audio Salvage UK" className="h-10 w-auto" />
+            <p className="mt-1 text-xs text-gray-400">Admin Dashboard</p>
           </div>
 
+          {/* Nav Items */}
+          <nav className="flex-1 space-y-1 p-3">
+            {sidebarItems.map(({ path, icon: Icon, label }) => {
+              const isActive = location.pathname === path;
+              return (
+                <Link
+                  key={path}
+                  to={path}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-white hover:bg-white/10 hover:text-primary"
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
+
           {/* User Section */}
-          <div className="flex items-center gap-4">
-            <div className="text-right">
+          <div className="border-t border-[#333] p-3">
+            <div className="mb-3 rounded-lg bg-white/10 p-3">
               <p className="text-sm font-medium text-white">{profile?.contact_name}</p>
               <p className="text-xs text-gray-400">{profile?.email}</p>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="gap-2 text-white hover:bg-white/10 hover:text-destructive"
+              className="w-full justify-start gap-2 text-white hover:bg-white/10 hover:text-destructive"
               onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4" />
@@ -76,10 +75,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </Button>
           </div>
         </div>
-      </header>
+      </aside>
 
-      {/* Main Content - Full Width */}
-      <main className="p-6 text-white">{children}</main>
+      {/* Main Content */}
+      <main className="ml-60 flex-1 p-6 text-white">{children}</main>
     </div>
   );
 }
