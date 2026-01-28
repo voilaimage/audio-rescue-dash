@@ -4,6 +4,7 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { format } from "date-fns";
 import { ArrowLeft, MapPin, Clock, Calendar, Package } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
@@ -37,7 +38,13 @@ export default function RequestDetail() {
   const { profile } = useAuth();
   const [request, setRequest] = useState<RequestWithPhotos | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
+
+  // Get original URLs from request photos
+  const originalPhotoUrls = request?.request_photos?.map(p => p.file_url) || [];
+  
+  // Use signed URLs for private bucket access
+  const { signedUrls, loading: urlsLoading } = useSignedUrls(originalPhotoUrls);
 
   useEffect(() => {
     if (!id) return;
@@ -102,13 +109,13 @@ export default function RequestDetail() {
   return (
     <MobileLayout showNav={false}>
       {/* Photo Lightbox */}
-      {selectedPhoto && (
+      {selectedPhotoIndex !== null && signedUrls[selectedPhotoIndex] && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/90 p-4"
-          onClick={() => setSelectedPhoto(null)}
+          onClick={() => setSelectedPhotoIndex(null)}
         >
           <img
-            src={selectedPhoto}
+            src={signedUrls[selectedPhotoIndex]}
             alt=""
             className="max-h-full max-w-full rounded-lg object-contain"
           />
@@ -158,17 +165,24 @@ export default function RequestDetail() {
                 Photos ({request.request_photos.length})
               </h3>
               <div className="grid grid-cols-3 gap-2">
-                {request.request_photos.map((photo) => (
+                {request.request_photos.map((photo, index) => (
                   <button
                     key={photo.id}
-                    onClick={() => setSelectedPhoto(photo.file_url)}
+                    onClick={() => setSelectedPhotoIndex(index)}
                     className="aspect-square overflow-hidden rounded-lg border border-border"
+                    disabled={urlsLoading}
                   >
-                    <img
-                      src={photo.file_url}
-                      alt=""
-                      className="h-full w-full object-cover transition-transform hover:scale-105"
-                    />
+                    {urlsLoading ? (
+                      <div className="h-full w-full flex items-center justify-center bg-muted">
+                        <LoadingSpinner size="sm" />
+                      </div>
+                    ) : (
+                      <img
+                        src={signedUrls[index] || ""}
+                        alt=""
+                        className="h-full w-full object-cover transition-transform hover:scale-105"
+                      />
+                    )}
                   </button>
                 ))}
               </div>

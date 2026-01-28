@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ChevronRight, Package, ArrowLeft } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
 import logo from "@/assets/logo-white.png";
+
 const statusConfig: Record<string, {
   bg: string;
   text: string;
@@ -40,6 +42,28 @@ const statusConfig: Record<string, {
     label: "Cancelled"
   }
 };
+
+// Component for displaying request thumbnail with signed URL
+function RequestThumbnail({ url, loading }: { url: string | null; loading: boolean }) {
+  if (loading) {
+    return (
+      <div className="h-14 w-14 shrink-0 rounded-lg bg-muted flex items-center justify-center">
+        <LoadingSpinner size="sm" />
+      </div>
+    );
+  }
+  
+  if (!url) return null;
+  
+  return (
+    <img 
+      src={url} 
+      alt="" 
+      className="h-14 w-14 shrink-0 rounded-lg object-cover" 
+    />
+  );
+}
+
 export default function Requests() {
   const navigate = useNavigate();
   const {
@@ -47,6 +71,27 @@ export default function Requests() {
   } = useAuth();
   const [requests, setRequests] = useState<RequestWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Get first photo URL from each request for thumbnails
+  const thumbnailUrls = useMemo(() => 
+    requests.map(r => r.request_photos?.[0]?.file_url || null).filter((url): url is string => url !== null),
+    [requests]
+  );
+
+  // Use signed URLs for thumbnails
+  const { signedUrls, loading: urlsLoading } = useSignedUrls(thumbnailUrls);
+
+  // Create a map from original URL to signed URL for easy lookup
+  const signedUrlMap = useMemo(() => {
+    const map = new Map<string, string>();
+    thumbnailUrls.forEach((url, index) => {
+      if (signedUrls[index]) {
+        map.set(url, signedUrls[index]!);
+      }
+    });
+    return map;
+  }, [thumbnailUrls, signedUrls]);
+
   useEffect(() => {
     if (!user) return;
     const fetchRequests = async () => {
@@ -88,6 +133,7 @@ export default function Requests() {
       supabase.removeChannel(channel);
     };
   }, [user]);
+
   if (loading) {
     return <MobileLayout>
         <div className="flex h-64 items-center justify-center">
@@ -135,12 +181,18 @@ export default function Requests() {
             <div className="space-y-3">
               {requests.map(request => {
                 const status = statusConfig[request.status] || statusConfig.new;
+                const firstPhotoUrl = request.request_photos?.[0]?.file_url;
+                const signedUrl = firstPhotoUrl ? signedUrlMap.get(firstPhotoUrl) : null;
+                
                 return (
                   <Link key={request.id} to={`/requests/${request.id}`} className="block">
                     <div className="group rounded-xl border border-border bg-card p-4 shadow-card transition-all hover:border-muted-foreground/30">
                       <div className="flex gap-3">
-                        {request.request_photos?.[0] && (
-                          <img src={request.request_photos[0].file_url} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
+                        {firstPhotoUrl && (
+                          <RequestThumbnail 
+                            url={signedUrl || null} 
+                            loading={urlsLoading && !!firstPhotoUrl}
+                          />
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="truncate text-sm font-medium text-foreground">{request.description}</p>
