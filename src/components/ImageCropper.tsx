@@ -147,9 +147,9 @@ export function ImageCropper({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm bg-[#1d1d1d] border-[#555555]">
+      <DialogContent className="max-w-sm bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-white">Crop Photo</DialogTitle>
+          <DialogTitle className="text-card-foreground">Crop Photo</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -187,7 +187,7 @@ export function ImageCropper({
           <div className="space-y-3">
             {/* Zoom Control */}
             <div className="flex items-center gap-3">
-              <ZoomOut className="h-4 w-4 text-gray-400" />
+              <ZoomOut className="h-4 w-4 text-muted-foreground" />
               <Slider
                 value={[zoom]}
                 onValueChange={([value]) => setZoom(value)}
@@ -196,15 +196,15 @@ export function ImageCropper({
                 step={0.1}
                 className="flex-1"
               />
-              <ZoomIn className="h-4 w-4 text-gray-400" />
+              <ZoomIn className="h-4 w-4 text-muted-foreground" />
             </div>
 
             {/* Rotate Button */}
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={handleRotate}
-              className="w-full border-[#555555] text-white hover:bg-[#28292b]"
+              className="w-full"
             >
               <RotateCw className="mr-2 h-4 w-4" /> Rotate 90°
             </Button>
@@ -216,7 +216,7 @@ export function ImageCropper({
               type="button"
               variant="outline"
               onClick={onClose}
-              className="flex-1 border-[#555555] text-white hover:bg-[#28292b]"
+              className="flex-1"
             >
               <X className="mr-2 h-4 w-4" /> Cancel
             </Button>
@@ -230,7 +230,7 @@ export function ImageCropper({
             </Button>
           </div>
 
-          <p className="text-center text-xs text-gray-400">
+          <p className="text-center text-xs text-muted-foreground">
             Drag to reposition • Image will be compressed to {maxSizeKB}KB
           </p>
         </div>
