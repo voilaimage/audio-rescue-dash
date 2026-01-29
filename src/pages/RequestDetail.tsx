@@ -132,7 +132,7 @@ export default function RequestDetail() {
         }}
       >
         {/* Fixed Header */}
-        <div className="flex-shrink-0 border-b border-border/50 bg-background/80 backdrop-blur-md px-5 py-4">
+        <div className="flex-shrink-0 border-b border-border/50 bg-black px-5 py-4">
           {/* Logo */}
           <div className="flex justify-center mb-4">
             <img src={logo} alt="Audio Salvage UK" className="h-16 w-auto" />
@@ -146,7 +146,7 @@ export default function RequestDetail() {
             </button>
             <div className="flex-1">
               <h1 className="font-display text-lg font-bold text-white">Request Details</h1>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-primary">
                 {format(new Date(request.created_at), "d MMMM yyyy 'at' h:mm a")}
               </p>
             </div>
