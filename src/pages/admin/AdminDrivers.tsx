@@ -313,12 +313,11 @@ export default function AdminDrivers() {
                       <div className="flex items-center justify-end gap-2">
                         {invite.status === "pending" && (
                           <Button
-                            variant="outline"
                             size="sm"
-                            className="gap-1 border-[#333] text-white hover:bg-white/10"
+                            className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
                             onClick={() => copyInviteLink(invite.invite_token)}
                           >
-                            <Copy className="h-3 w-3" />
+                            <Copy className="h-3.5 w-3.5" />
                             Copy Link
                           </Button>
                         )}
