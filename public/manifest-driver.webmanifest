@@ -1,0 +1,29 @@
+{
+  "name": "Audio Salvage Driver",
+  "short_name": "Driver App",
+  "description": "Audio Salvage UK Driver App - Manage collection jobs",
+  "theme_color": "#f59f0a",
+  "background_color": "#121212",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "/driver-login",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/driver-pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/driver-pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/driver-pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

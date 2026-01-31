@@ -133,12 +133,6 @@ export default function Login() {
                   Register your business
                 </Link>
               </div>
-              <div className="pt-2 border-t border-[#333]">
-                <p className="text-sm text-gray-400">Are you a driver?</p>
-                <Link to="/driver-login" className="font-medium text-sm text-primary underline hover:text-primary/80">
-                  Driver Portal →
-                </Link>
-              </div>
             </div>
           </div>
         </div>
