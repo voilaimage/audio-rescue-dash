@@ -6,26 +6,12 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { format } from "date-fns";
-import { ArrowLeft, MapPin, Clock, Package, Phone, User, FileText, Camera, Sun, Sunset, Moon, Timer, Calendar } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Package, Phone, User, FileText, Camera, Calendar } from "lucide-react";
 
 const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
   accepted: { bg: "bg-primary/10", text: "text-primary", label: "Accepted" },
   scheduled: { bg: "bg-warning/10", text: "text-warning", label: "Scheduled" },
   collected: { bg: "bg-info/10", text: "text-info", label: "Collected" },
-};
-
-const windowConfig: Record<string, { icon: typeof Sun; label: string }> = {
-  anytime: { icon: Clock, label: "Anytime" },
-  morning: { icon: Sun, label: "Morning (9am-12pm)" },
-  afternoon: { icon: Sunset, label: "Afternoon (12pm-5pm)" },
-  evening: { icon: Moon, label: "Evening (5pm-8pm)" },
-};
-
-const dayRangeLabels: Record<string, string> = {
-  none: "No preference",
-  tomorrow: "Tomorrow",
-  "3_days": "Within 3 days",
-  week: "Within a week",
 };
 
 export default function DriverJobDetail() {
@@ -123,7 +109,7 @@ export default function DriverJobDetail() {
         </div>
 
         <div className="grid grid-cols-3 gap-5">
-          {/* Left Column - Job Info */}
+          {/* Left Column - Customer Photos */}
           <div className="col-span-2 space-y-5">
             {/* Customer Photos */}
             {request.request_photos && request.request_photos.length > 0 && (
@@ -158,93 +144,9 @@ export default function DriverJobDetail() {
                 </div>
               </div>
             )}
-
-            {/* Description */}
-            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
-              <div className="mb-3 flex items-center gap-2">
-                <Package className="h-4 w-4 text-primary" />
-                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                  Request Description
-                </h3>
-              </div>
-              <p className="text-sm text-white leading-relaxed">{request.description}</p>
-            </div>
-
-            {/* Schedule Window */}
-            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
-              <div className="mb-3 flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" />
-                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                  Scheduled Collection
-                </h3>
-              </div>
-              {request.scheduled_start ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <Calendar className="h-5 w-5 text-white" />
-                    <p className="text-lg font-semibold text-white">
-                      {format(new Date(request.scheduled_start), "EEEE, d MMMM yyyy")}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Clock className="h-5 w-5 text-white" />
-                    <p className="text-lg font-medium text-white">
-                      {format(new Date(request.scheduled_start), "h:mm a")}
-                      {request.scheduled_end && (
-                        <span className="text-gray-400"> – {format(new Date(request.scheduled_end), "h:mm a")}</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3 rounded-lg bg-white/5 px-4 py-3">
-                  <Calendar className="h-5 w-5 text-gray-400" />
-                  <p className="text-sm text-gray-400">Not yet scheduled by admin</p>
-                </div>
-              )}
-            </div>
-
-            {/* Customer Preferences */}
-            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
-              <div className="mb-4 flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-primary" />
-                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                  Customer Preferences
-                </h3>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-start gap-3">
-                  {(() => {
-                    const WindowIcon = windowConfig[request.preferred_window || "anytime"]?.icon || Clock;
-                    return (
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">
-                        <WindowIcon className="h-5 w-5 text-primary" />
-                      </div>
-                    );
-                  })()}
-                  <div>
-                    <p className="text-xs text-gray-400 mb-0.5">Preferred Window</p>
-                    <p className="text-sm font-semibold text-white">
-                      {windowConfig[request.preferred_window || "anytime"]?.label}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">
-                    <Timer className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 mb-0.5">Preferred Timeframe</p>
-                    <p className="text-sm font-semibold text-white">
-                      {dayRangeLabels[request.preferred_day_range || "none"]}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
-          {/* Right Column - Business Info & Actions */}
+          {/* Right Column - Pickup Details & Job Info */}
           <div className="space-y-5">
             {/* Mark as Collected Button */}
             {canMarkCollected && (
@@ -321,6 +223,51 @@ export default function DriverJobDetail() {
                 <p className="text-sm text-white leading-relaxed">{profile.driver_notes}</p>
               </div>
             )}
+
+            {/* Request Description */}
+            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <Package className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                  Request Description
+                </h3>
+              </div>
+              <p className="text-sm text-white leading-relaxed">{request.description}</p>
+            </div>
+
+            {/* Scheduled Collection */}
+            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <Clock className="h-5 w-5 text-primary" />
+                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                  Scheduled Collection
+                </h3>
+              </div>
+              {request.scheduled_start ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-5 w-5 text-white" />
+                    <p className="text-sm font-semibold text-white">
+                      {format(new Date(request.scheduled_start), "EEEE, d MMMM yyyy")}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-5 w-5 text-white" />
+                    <p className="text-sm font-medium text-white">
+                      {format(new Date(request.scheduled_start), "h:mm a")}
+                      {request.scheduled_end && (
+                        <span className="text-gray-400"> – {format(new Date(request.scheduled_end), "h:mm a")}</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 rounded-lg bg-white/5 px-4 py-3">
+                  <Calendar className="h-5 w-5 text-gray-400" />
+                  <p className="text-sm text-gray-400">Not yet scheduled by admin</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
