@@ -43,6 +43,50 @@ export type Database = {
           },
         ]
       }
+      driver_invites: {
+        Row: {
+          completed_at: string | null
+          contact_name: string
+          coverage_areas: string[] | null
+          created_at: string
+          id: string
+          invite_token: string
+          phone: string
+          profile_id: string | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          contact_name: string
+          coverage_areas?: string[] | null
+          created_at?: string
+          id?: string
+          invite_token?: string
+          phone: string
+          profile_id?: string | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          contact_name?: string
+          coverage_areas?: string[] | null
+          created_at?: string
+          id?: string
+          invite_token?: string
+          phone?: string
+          profile_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_invites_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address_line1: string
