@@ -25,6 +25,7 @@ import AdminDrivers from "./pages/admin/AdminDrivers";
 
 // Driver Pages
 import DriverLogin from "./pages/DriverLogin";
+import DriverInstall from "./pages/DriverInstall";
 import DriverHome from "./pages/driver/DriverHome";
 import DriverJobDetail from "./pages/driver/DriverJobDetail";
 import MarkCollected from "./pages/driver/MarkCollected";
@@ -75,6 +76,7 @@ function AppRoutes() {
       <Route path="/" element={<Splash />} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/driver-login" element={<PublicRoute><DriverLogin /></PublicRoute>} />
+      <Route path="/driver-install" element={<DriverInstall />} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
       
       {/* Customer Routes */}
