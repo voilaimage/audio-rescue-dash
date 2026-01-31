@@ -39,18 +39,16 @@ export default function DriverSetup() {
     }
 
     const fetchInvite = async () => {
+      // Use secure RPC function to fetch invite by token (prevents exposing all invites)
       const { data, error } = await supabase
-        .from("driver_invites")
-        .select("id, contact_name, phone, status, coverage_areas")
-        .eq("invite_token", token)
-        .maybeSingle();
+        .rpc("get_driver_invite_by_token", { _token: token });
 
-      if (error || !data) {
+      if (error || !data || data.length === 0) {
         setError("Invite not found or has expired");
-      } else if (data.status === "completed") {
+      } else if (data[0].status === "completed") {
         setError("This invite has already been used");
       } else {
-        setInvite(data);
+        setInvite(data[0]);
       }
       setLoading(false);
     };
