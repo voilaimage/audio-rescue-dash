@@ -39,13 +39,8 @@ export default function Login() {
       if (profile?.role === "admin") {
         navigate("/admin", { replace: true });
       } else if (profile?.role === "driver") {
-        // Redirect drivers to their dedicated login
-        await supabase.auth.signOut();
-        toast({
-          title: "Driver Access",
-          description: "Please use the Driver Portal to sign in.",
-        });
-        navigate("/driver-login", { replace: true });
+        // Redirect drivers to their portal
+        navigate("/driver", { replace: true });
       } else {
         navigate("/home", { replace: true });
       }
