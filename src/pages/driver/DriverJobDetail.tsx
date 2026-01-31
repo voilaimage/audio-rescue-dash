@@ -171,25 +171,38 @@ export default function DriverJobDetail() {
             </div>
 
             {/* Schedule Window */}
-            {request.scheduled_start && (
-              <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
-                <div className="mb-3 flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-primary" />
-                  <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                    Scheduled Window
-                  </h3>
-                </div>
-                <p className="text-sm text-white">
-                  {format(new Date(request.scheduled_start), "EEEE, d MMMM yyyy")}
-                </p>
-                <p className="text-sm text-gray-400">
-                  {format(new Date(request.scheduled_start), "h:mm a")}
-                  {request.scheduled_end && (
-                    <> – {format(new Date(request.scheduled_end), "h:mm a")}</>
-                  )}
-                </p>
+            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <Clock className="h-5 w-5 text-primary" />
+                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                  Scheduled Collection
+                </h3>
               </div>
-            )}
+              {request.scheduled_start ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-5 w-5 text-white" />
+                    <p className="text-lg font-semibold text-white">
+                      {format(new Date(request.scheduled_start), "EEEE, d MMMM yyyy")}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-5 w-5 text-white" />
+                    <p className="text-lg font-medium text-white">
+                      {format(new Date(request.scheduled_start), "h:mm a")}
+                      {request.scheduled_end && (
+                        <span className="text-gray-400"> – {format(new Date(request.scheduled_end), "h:mm a")}</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 rounded-lg bg-white/5 px-4 py-3">
+                  <Calendar className="h-5 w-5 text-gray-400" />
+                  <p className="text-sm text-gray-400">Not yet scheduled by admin</p>
+                </div>
+              )}
+            </div>
 
             {/* Customer Preferences */}
             <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
