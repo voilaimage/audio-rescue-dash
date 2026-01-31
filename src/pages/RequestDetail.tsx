@@ -14,6 +14,7 @@ const statusConfig: Record<string, { bg: string; text: string; label: string }> 
   new: { bg: "bg-primary/10", text: "text-primary", label: "New" },
   accepted: { bg: "bg-primary/10", text: "text-primary", label: "Accepted" },
   scheduled: { bg: "bg-warning/10", text: "text-warning", label: "Scheduled" },
+  collected: { bg: "bg-info/10", text: "text-info", label: "Collected" },
   completed: { bg: "bg-success/10", text: "text-success", label: "Completed" },
   cancelled: { bg: "bg-destructive/10", text: "text-destructive", label: "Cancelled" },
 };
@@ -263,24 +264,92 @@ export default function RequestDetail() {
               Timeline
             </h3>
             <div className="space-y-3">
+              {/* Requested */}
               <div className="flex items-center gap-3">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
                   <span className="text-xs">✓</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Request Submitted</p>
+                  <p className="text-sm font-medium text-foreground">Requested</p>
                   <p className="text-xs text-muted-foreground">
                     {format(new Date(request.created_at), "d MMM yyyy 'at' h:mm a")}
                   </p>
                 </div>
               </div>
-              {request.status !== "new" && (
+
+              {/* Accepted */}
+              {(request.accepted_at || ['accepted', 'scheduled', 'collected', 'completed'].includes(request.status)) && (
                 <div className="flex items-center gap-3">
-                  <div className={`flex h-6 w-6 items-center justify-center rounded-full ${status.bg} ${status.text}`}>
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-primary">
                     <span className="text-xs">✓</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">{status.label}</p>
+                    <p className="text-sm font-medium text-foreground">Accepted</p>
+                    <p className="text-xs text-muted-foreground">
+                      {request.accepted_at 
+                        ? format(new Date(request.accepted_at), "d MMM yyyy 'at' h:mm a")
+                        : "Status updated"}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Scheduled */}
+              {request.scheduled_start && (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-warning/20 text-warning">
+                    <span className="text-xs">✓</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Scheduled</p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(new Date(request.scheduled_start), "d MMM yyyy")}
+                      {request.scheduled_end && (
+                        <> – {format(new Date(request.scheduled_end), "h:mm a")}</>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Collected */}
+              {request.collected_at && (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-info/20 text-info">
+                    <span className="text-xs">✓</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Collected</p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(new Date(request.collected_at), "d MMM yyyy 'at' h:mm a")}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Completed */}
+              {request.status === 'completed' && (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success/20 text-success">
+                    <span className="text-xs">✓</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Completed</p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(new Date(request.updated_at), "d MMM yyyy 'at' h:mm a")}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Cancelled */}
+              {request.status === 'cancelled' && (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-destructive/20 text-destructive">
+                    <span className="text-xs">✗</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Cancelled</p>
                     <p className="text-xs text-muted-foreground">
                       {format(new Date(request.updated_at), "d MMM yyyy 'at' h:mm a")}
                     </p>

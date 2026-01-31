@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Error fetching profile:', error);
       return null;
     }
-    return data as Profile;
+    return data as unknown as Profile;
   };
 
   const refreshProfile = async () => {

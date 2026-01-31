@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, LogOut } from "lucide-react";
+import { LayoutDashboard, ClipboardList, LogOut, Truck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import logoWhite from "@/assets/logo-white.png";
@@ -12,6 +12,7 @@ interface AdminLayoutProps {
 const sidebarItems = [
   { path: "/admin", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/admin/requests", icon: ClipboardList, label: "All Requests" },
+  { path: "/driver", icon: Truck, label: "Driver Mode" },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {

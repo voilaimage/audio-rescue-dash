@@ -4,16 +4,19 @@ import { AdminLayout } from "@/components/layout/AdminLayout";
 import { supabase, RequestWithPhotos, Profile } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { format } from "date-fns";
-import { ArrowLeft, MapPin, Clock, Calendar, Package, Phone, Mail, Building2, User } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Calendar, Package, Phone, Mail, Building2, User, Truck } from "lucide-react";
 
 const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
   new: { bg: "bg-primary/10", text: "text-primary", label: "New" },
   accepted: { bg: "bg-primary/10", text: "text-primary", label: "Accepted" },
   scheduled: { bg: "bg-warning/10", text: "text-warning", label: "Scheduled" },
+  collected: { bg: "bg-info/10", text: "text-info", label: "Collected" },
   completed: { bg: "bg-success/10", text: "text-success", label: "Completed" },
   cancelled: { bg: "bg-destructive/10", text: "text-destructive", label: "Cancelled" },
 };
@@ -40,8 +43,14 @@ export default function AdminRequestDetail() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [schedulingUpdating, setSchedulingUpdating] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
   const [newStatus, setNewStatus] = useState<string>("");
+  
+  // Scheduling state
+  const [scheduledDate, setScheduledDate] = useState<string>("");
+  const [scheduledStartTime, setScheduledStartTime] = useState<string>("");
+  const [scheduledEndTime, setScheduledEndTime] = useState<string>("");
 
   // Get original URLs from request photos
   const originalPhotoUrls = request?.request_photos?.map(p => p.file_url) || [];
@@ -55,7 +64,7 @@ export default function AdminRequestDetail() {
     const fetchRequest = async () => {
       const { data, error } = await supabase
         .from("requests")
-        .select("*, request_photos(*), profiles(*)")
+        .select("*, request_photos(*), profiles!requests_user_id_fkey(*)")
         .eq("id", id)
         .single();
 
@@ -65,10 +74,22 @@ export default function AdminRequestDetail() {
         return;
       }
 
-      const requestData = data as RequestWithPhotos;
+      const requestData = data as unknown as RequestWithPhotos;
       setRequest(requestData);
       setProfile(requestData.profiles as Profile);
       setNewStatus(requestData.status);
+      
+      // Initialize scheduling fields
+      if (requestData.scheduled_start) {
+        const startDate = new Date(requestData.scheduled_start);
+        setScheduledDate(format(startDate, "yyyy-MM-dd"));
+        setScheduledStartTime(format(startDate, "HH:mm"));
+      }
+      if (requestData.scheduled_end) {
+        const endDate = new Date(requestData.scheduled_end);
+        setScheduledEndTime(format(endDate, "HH:mm"));
+      }
+      
       setLoading(false);
     };
 
@@ -80,19 +101,68 @@ export default function AdminRequestDetail() {
 
     setUpdating(true);
     try {
+      const updateData: any = { status: newStatus };
+      
+      // Set accepted_at when status changes to accepted
+      if (newStatus === "accepted" && request.status === "new") {
+        updateData.accepted_at = new Date().toISOString();
+      }
+      
       const { error } = await supabase
         .from("requests")
-        .update({ status: newStatus as any })
+        .update(updateData)
         .eq("id", request.id);
 
       if (error) throw error;
 
-      setRequest({ ...request, status: newStatus as any });
+      setRequest({ ...request, ...updateData });
       toast({ title: "Status updated", description: `Request marked as ${statusConfig[newStatus].label}` });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Update failed", description: error.message });
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleScheduleUpdate = async () => {
+    if (!request || !scheduledDate) return;
+
+    setSchedulingUpdating(true);
+    try {
+      const scheduledStart = new Date(`${scheduledDate}T${scheduledStartTime || "09:00"}`);
+      const scheduledEnd = scheduledEndTime 
+        ? new Date(`${scheduledDate}T${scheduledEndTime}`)
+        : null;
+
+      const updateData: any = {
+        scheduled_start: scheduledStart.toISOString(),
+        scheduled_end: scheduledEnd?.toISOString() || null,
+      };
+
+      // Auto-set status to scheduled if currently accepted or new
+      if (["new", "accepted"].includes(request.status)) {
+        updateData.status = "scheduled";
+        if (request.status === "new") {
+          updateData.accepted_at = new Date().toISOString();
+        }
+      }
+
+      const { error } = await supabase
+        .from("requests")
+        .update(updateData)
+        .eq("id", request.id);
+
+      if (error) throw error;
+
+      setRequest({ ...request, ...updateData });
+      if (updateData.status) {
+        setNewStatus(updateData.status);
+      }
+      toast({ title: "Schedule updated", description: "Collection has been scheduled" });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Scheduling failed", description: error.message });
+    } finally {
+      setSchedulingUpdating(false);
     }
   };
 
@@ -223,6 +293,7 @@ export default function AdminRequestDetail() {
                     <SelectItem value="new">New</SelectItem>
                     <SelectItem value="accepted">Accepted</SelectItem>
                     <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="collected">Collected</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="cancelled">Cancelled</SelectItem>
                   </SelectContent>
@@ -237,7 +308,64 @@ export default function AdminRequestDetail() {
               </div>
             </div>
 
-            {/* Business Info */}
+            {/* Schedule Collection */}
+            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <Truck className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Schedule Collection</h3>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="schedule-date" className="text-xs text-gray-400 mb-1 block">Date</Label>
+                  <Input
+                    id="schedule-date"
+                    type="date"
+                    value={scheduledDate}
+                    onChange={(e) => setScheduledDate(e.target.value)}
+                    className="bg-[#28292b] border-[#333] text-white"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label htmlFor="schedule-start" className="text-xs text-gray-400 mb-1 block">Start Time</Label>
+                    <Input
+                      id="schedule-start"
+                      type="time"
+                      value={scheduledStartTime}
+                      onChange={(e) => setScheduledStartTime(e.target.value)}
+                      className="bg-[#28292b] border-[#333] text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="schedule-end" className="text-xs text-gray-400 mb-1 block">End Time</Label>
+                    <Input
+                      id="schedule-end"
+                      type="time"
+                      value={scheduledEndTime}
+                      onChange={(e) => setScheduledEndTime(e.target.value)}
+                      className="bg-[#28292b] border-[#333] text-white"
+                    />
+                  </div>
+                </div>
+                {request.scheduled_start && (
+                  <p className="text-xs text-gray-400">
+                    Currently scheduled: {format(new Date(request.scheduled_start), "d MMM yyyy")}
+                    {request.scheduled_end && (
+                      <> ({format(new Date(request.scheduled_start), "h:mm a")} - {format(new Date(request.scheduled_end), "h:mm a")})</>
+                    )}
+                  </p>
+                )}
+                <Button
+                  onClick={handleScheduleUpdate}
+                  disabled={schedulingUpdating || !scheduledDate}
+                  variant="secondary"
+                  className="w-full"
+                >
+                  {schedulingUpdating ? <LoadingSpinner size="sm" /> : "Update Schedule"}
+                </Button>
+              </div>
+            </div>
+
             <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
               <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-gray-400">Business Details</h3>
               <div className="space-y-4">
