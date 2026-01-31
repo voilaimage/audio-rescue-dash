@@ -204,25 +204,25 @@ export default function DriverJobDetail() {
                   {(() => {
                     const WindowIcon = windowConfig[request.preferred_window || "anytime"]?.icon || Clock;
                     return (
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                        <WindowIcon className="h-4 w-4 text-primary" />
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">
+                        <WindowIcon className="h-5 w-5 text-primary" />
                       </div>
                     );
                   })()}
                   <div>
-                    <p className="text-xs text-gray-400">Preferred Window</p>
-                    <p className="text-sm font-medium text-white">
+                    <p className="text-xs text-gray-400 mb-0.5">Preferred Window</p>
+                    <p className="text-sm font-semibold text-white">
                       {windowConfig[request.preferred_window || "anytime"]?.label}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <Timer className="h-4 w-4 text-primary" />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">
+                    <Timer className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400">Preferred Timeframe</p>
-                    <p className="text-sm font-medium text-white">
+                    <p className="text-xs text-gray-400 mb-0.5">Preferred Timeframe</p>
+                    <p className="text-sm font-semibold text-white">
                       {dayRangeLabels[request.preferred_day_range || "none"]}
                     </p>
                   </div>

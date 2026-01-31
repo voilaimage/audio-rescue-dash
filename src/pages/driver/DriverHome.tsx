@@ -188,31 +188,31 @@ export default function DriverHome() {
                           </div>
                         )}
                         {!request.scheduled_start && (
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-1">
                             {request.preferred_window && request.preferred_window !== "anytime" && (
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-2 rounded-md bg-primary/10 px-2 py-1">
                                 {(() => {
                                   const WindowIcon = windowConfig[request.preferred_window]?.icon || Clock;
-                                  return <WindowIcon className="h-3.5 w-3.5 text-primary" />;
+                                  return <WindowIcon className="h-4 w-4 text-primary" />;
                                 })()}
-                                <span className="text-xs text-primary">
+                                <span className="text-xs font-medium text-primary">
                                   {windowConfig[request.preferred_window]?.label}
                                 </span>
                               </div>
                             )}
                             {request.preferred_day_range && request.preferred_day_range !== "none" && (
-                              <div className="flex items-center gap-1.5">
-                                <Timer className="h-3.5 w-3.5 text-gray-400" />
-                                <span className="text-xs text-gray-400">
+                              <div className="flex items-center gap-2 rounded-md bg-white/5 px-2 py-1">
+                                <Timer className="h-4 w-4 text-white" />
+                                <span className="text-xs font-medium text-white">
                                   {dayRangeLabels[request.preferred_day_range]}
                                 </span>
                               </div>
                             )}
                             {(!request.preferred_window || request.preferred_window === "anytime") && 
                              (!request.preferred_day_range || request.preferred_day_range === "none") && (
-                              <div className="flex items-center gap-1.5">
-                                <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                                <span className="text-xs text-gray-400">Flexible timing</span>
+                              <div className="flex items-center gap-2 rounded-md bg-white/5 px-2 py-1">
+                                <Calendar className="h-4 w-4 text-white" />
+                                <span className="text-xs font-medium text-white">Flexible timing</span>
                               </div>
                             )}
                           </div>
