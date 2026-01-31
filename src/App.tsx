@@ -23,6 +23,7 @@ import AdminRequests from "./pages/admin/AdminRequests";
 import AdminRequestDetail from "./pages/admin/AdminRequestDetail";
 
 // Driver Pages
+import DriverLogin from "./pages/DriverLogin";
 import DriverHome from "./pages/driver/DriverHome";
 import DriverJobDetail from "./pages/driver/DriverJobDetail";
 import MarkCollected from "./pages/driver/MarkCollected";
@@ -72,6 +73,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Splash />} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/driver-login" element={<PublicRoute><DriverLogin /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
       
       {/* Customer Routes */}

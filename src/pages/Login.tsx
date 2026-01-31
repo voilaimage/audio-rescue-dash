@@ -38,6 +38,14 @@ export default function Login() {
 
       if (profile?.role === "admin") {
         navigate("/admin", { replace: true });
+      } else if (profile?.role === "driver") {
+        // Redirect drivers to their dedicated login
+        await supabase.auth.signOut();
+        toast({
+          title: "Driver Access",
+          description: "Please use the Driver Portal to sign in.",
+        });
+        navigate("/driver-login", { replace: true });
       } else {
         navigate("/home", { replace: true });
       }
@@ -123,11 +131,19 @@ export default function Login() {
               </form>
             </div>
 
-            <div className="mt-6 text-center text-sm text-white space-y-1 pb-8">
-              <p className="text-base">Don't have an account?</p>
-              <Link to="/register" className="font-bold text-base text-[#f59f0a] underline hover:text-[#f59f0a]/80">
-                Register your business
-              </Link>
+            <div className="mt-6 text-center text-sm text-white space-y-3 pb-8">
+              <div>
+                <p className="text-base">Don't have an account?</p>
+                <Link to="/register" className="font-bold text-base text-[#f59f0a] underline hover:text-[#f59f0a]/80">
+                  Register your business
+                </Link>
+              </div>
+              <div className="pt-2 border-t border-[#333]">
+                <p className="text-sm text-gray-400">Are you a driver?</p>
+                <Link to="/driver-login" className="font-medium text-sm text-primary underline hover:text-primary/80">
+                  Driver Portal →
+                </Link>
+              </div>
             </div>
           </div>
         </div>
