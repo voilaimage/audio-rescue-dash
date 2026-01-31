@@ -312,8 +312,8 @@ export default function AdminRequestDetail() {
               <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-gray-400">Collection Preferences</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10">
-                    <Clock className="h-4 w-4 text-white" />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <Clock className="h-4 w-4 text-primary" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-400">Preferred Window</p>
@@ -321,8 +321,8 @@ export default function AdminRequestDetail() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10">
-                    <Calendar className="h-4 w-4 text-white" />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <Calendar className="h-4 w-4 text-primary" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-400">Preferred Timeframe</p>
