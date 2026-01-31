@@ -5,12 +5,26 @@ import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, isToday, isFuture, isPast, startOfDay } from "date-fns";
-import { MapPin, Clock, ChevronRight, Building2, Calendar } from "lucide-react";
+import { MapPin, Clock, ChevronRight, Building2, Calendar, Sun, Sunset, Moon, Timer } from "lucide-react";
 
 const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
   accepted: { bg: "bg-primary/10", text: "text-primary", label: "Accepted" },
   scheduled: { bg: "bg-warning/10", text: "text-warning", label: "Scheduled" },
   collected: { bg: "bg-info/10", text: "text-info", label: "Collected" },
+};
+
+const windowConfig: Record<string, { icon: typeof Sun; label: string }> = {
+  anytime: { icon: Clock, label: "Anytime" },
+  morning: { icon: Sun, label: "Morning" },
+  afternoon: { icon: Sunset, label: "Afternoon" },
+  evening: { icon: Moon, label: "Evening" },
+};
+
+const dayRangeLabels: Record<string, string> = {
+  none: "No preference",
+  tomorrow: "Tomorrow",
+  "3_days": "Within 3 days",
+  week: "Within a week",
 };
 
 export default function DriverHome() {
@@ -174,9 +188,33 @@ export default function DriverHome() {
                           </div>
                         )}
                         {!request.scheduled_start && (
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-gray-400" />
-                            <p className="text-sm text-gray-400">Not scheduled</p>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                            {request.preferred_window && request.preferred_window !== "anytime" && (
+                              <div className="flex items-center gap-1.5">
+                                {(() => {
+                                  const WindowIcon = windowConfig[request.preferred_window]?.icon || Clock;
+                                  return <WindowIcon className="h-3.5 w-3.5 text-primary" />;
+                                })()}
+                                <span className="text-xs text-primary">
+                                  {windowConfig[request.preferred_window]?.label}
+                                </span>
+                              </div>
+                            )}
+                            {request.preferred_day_range && request.preferred_day_range !== "none" && (
+                              <div className="flex items-center gap-1.5">
+                                <Timer className="h-3.5 w-3.5 text-gray-400" />
+                                <span className="text-xs text-gray-400">
+                                  {dayRangeLabels[request.preferred_day_range]}
+                                </span>
+                              </div>
+                            )}
+                            {(!request.preferred_window || request.preferred_window === "anytime") && 
+                             (!request.preferred_day_range || request.preferred_day_range === "none") && (
+                              <div className="flex items-center gap-1.5">
+                                <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                                <span className="text-xs text-gray-400">Flexible timing</span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

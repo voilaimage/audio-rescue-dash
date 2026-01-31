@@ -6,12 +6,26 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { format } from "date-fns";
-import { ArrowLeft, MapPin, Clock, Package, Phone, User, FileText, Camera } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Package, Phone, User, FileText, Camera, Sun, Sunset, Moon, Timer, Calendar } from "lucide-react";
 
 const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
   accepted: { bg: "bg-primary/10", text: "text-primary", label: "Accepted" },
   scheduled: { bg: "bg-warning/10", text: "text-warning", label: "Scheduled" },
   collected: { bg: "bg-info/10", text: "text-info", label: "Collected" },
+};
+
+const windowConfig: Record<string, { icon: typeof Sun; label: string }> = {
+  anytime: { icon: Clock, label: "Anytime" },
+  morning: { icon: Sun, label: "Morning (9am-12pm)" },
+  afternoon: { icon: Sunset, label: "Afternoon (12pm-5pm)" },
+  evening: { icon: Moon, label: "Evening (5pm-8pm)" },
+};
+
+const dayRangeLabels: Record<string, string> = {
+  none: "No preference",
+  tomorrow: "Tomorrow",
+  "3_days": "Within 3 days",
+  week: "Within a week",
 };
 
 export default function DriverJobDetail() {
@@ -176,6 +190,45 @@ export default function DriverJobDetail() {
                 </p>
               </div>
             )}
+
+            {/* Customer Preferences */}
+            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                  Customer Preferences
+                </h3>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-start gap-3">
+                  {(() => {
+                    const WindowIcon = windowConfig[request.preferred_window || "anytime"]?.icon || Clock;
+                    return (
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                        <WindowIcon className="h-4 w-4 text-primary" />
+                      </div>
+                    );
+                  })()}
+                  <div>
+                    <p className="text-xs text-gray-400">Preferred Window</p>
+                    <p className="text-sm font-medium text-white">
+                      {windowConfig[request.preferred_window || "anytime"]?.label}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <Timer className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">Preferred Timeframe</p>
+                    <p className="text-sm font-medium text-white">
+                      {dayRangeLabels[request.preferred_day_range || "none"]}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Business Info & Actions */}
