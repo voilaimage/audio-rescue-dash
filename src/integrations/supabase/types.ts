@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      collection_proof_photos: {
+        Row: {
+          created_at: string
+          file_url: string
+          id: string
+          request_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_url: string
+          id?: string
+          request_id: string
+        }
+        Update: {
+          created_at?: string
+          file_url?: string
+          id?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_proof_photos_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address_line1: string
@@ -96,6 +125,12 @@ export type Database = {
       }
       requests: {
         Row: {
+          accepted_at: string | null
+          collected_at: string | null
+          collected_by: string | null
+          collection_notes: string | null
+          collection_pin: string | null
+          collection_proof_photo_url: string | null
           created_at: string
           description: string
           id: string
@@ -105,11 +140,19 @@ export type Database = {
           preferred_window:
             | Database["public"]["Enums"]["preferred_window"]
             | null
+          scheduled_end: string | null
+          scheduled_start: string | null
           status: Database["public"]["Enums"]["request_status"]
           updated_at: string
           user_id: string
         }
         Insert: {
+          accepted_at?: string | null
+          collected_at?: string | null
+          collected_by?: string | null
+          collection_notes?: string | null
+          collection_pin?: string | null
+          collection_proof_photo_url?: string | null
           created_at?: string
           description: string
           id?: string
@@ -119,11 +162,19 @@ export type Database = {
           preferred_window?:
             | Database["public"]["Enums"]["preferred_window"]
             | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
           status?: Database["public"]["Enums"]["request_status"]
           updated_at?: string
           user_id: string
         }
         Update: {
+          accepted_at?: string | null
+          collected_at?: string | null
+          collected_by?: string | null
+          collection_notes?: string | null
+          collection_pin?: string | null
+          collection_proof_photo_url?: string | null
           created_at?: string
           description?: string
           id?: string
@@ -133,11 +184,20 @@ export type Database = {
           preferred_window?:
             | Database["public"]["Enums"]["preferred_window"]
             | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
           status?: Database["public"]["Enums"]["request_status"]
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "requests_collected_by_fkey"
+            columns: ["collected_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "requests_user_id_fkey"
             columns: ["user_id"]
@@ -161,9 +221,10 @@ export type Database = {
         | "new"
         | "accepted"
         | "scheduled"
+        | "collected"
         | "completed"
         | "cancelled"
-      user_role: "customer" | "admin"
+      user_role: "customer" | "admin" | "driver"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -297,10 +358,11 @@ export const Constants = {
         "new",
         "accepted",
         "scheduled",
+        "collected",
         "completed",
         "cancelled",
       ],
-      user_role: ["customer", "admin"],
+      user_role: ["customer", "admin", "driver"],
     },
   },
 } as const
