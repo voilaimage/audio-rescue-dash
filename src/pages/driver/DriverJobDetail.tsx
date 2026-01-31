@@ -90,7 +90,7 @@ export default function DriverJobDetail() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/driver")}
-              className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20"
+              className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
