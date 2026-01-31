@@ -75,29 +75,23 @@ serve(async (req) => {
     const email = `driver-${normalizePhone(invite.phone)}@audio-salvage.driver`;
 
     // Create user (or reset password if it already exists)
-    let userId: string | null = null;
-    const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { phone: invite.phone },
-    });
+    // We prefer to check existence first to avoid relying on provider-specific error messages.
+    let userId: string | null = await findUserIdByEmail(supabaseAdmin, email);
 
-    if (createError) {
-      const msg = (createError as any).message?.toLowerCase?.() ?? String(createError);
-      if (msg.includes("already") && msg.includes("registered")) {
-        userId = await findUserIdByEmail(supabaseAdmin, email);
-        if (!userId) throw new Error("Account exists but could not be located");
-
-        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-          password,
-          email_confirm: true,
-        } as any);
-        if (updateError) throw updateError;
-      } else {
-        throw createError;
-      }
+    if (userId) {
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+        password,
+        email_confirm: true,
+      } as any);
+      if (updateError) throw updateError;
     } else {
+      const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { phone: invite.phone },
+      });
+      if (createError) throw createError;
       userId = createData.user?.id ?? null;
     }
 
