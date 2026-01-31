@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { supabase, Profile } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,41 +22,50 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MapPin, Truck, Mail, Phone, Trash2 } from "lucide-react";
+import { Plus, MapPin, Truck, Phone, Trash2, Copy, Clock, CheckCircle, Link as LinkIcon } from "lucide-react";
+
+type DriverInvite = {
+  id: string;
+  contact_name: string;
+  phone: string;
+  invite_token: string;
+  status: string;
+  coverage_areas: string[];
+  created_at: string;
+  completed_at: string | null;
+  profile_id: string | null;
+};
 
 export default function AdminDrivers() {
-  const [drivers, setDrivers] = useState<Profile[]>([]);
+  const [invites, setInvites] = useState<DriverInvite[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const { toast } = useToast();
 
-  // Form state
+  // Form state - simplified to just name and phone
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
     contact_name: "",
     phone: "",
     coverage_areas: "",
   });
 
-  const fetchDrivers = async () => {
+  const fetchInvites = async () => {
     const { data, error } = await supabase
-      .from("profiles")
+      .from("driver_invites")
       .select("*")
-      .eq("role", "driver")
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Error fetching drivers:", error);
+      console.error("Error fetching driver invites:", error);
     }
 
-    setDrivers((data as Profile[]) || []);
+    setInvites((data as DriverInvite[]) || []);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchDrivers();
+    fetchInvites();
   }, []);
 
   const handleCreateDriver = async (e: React.FormEvent) => {
@@ -64,59 +73,42 @@ export default function AdminDrivers() {
     setCreating(true);
 
     try {
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/driver-login`,
-        },
-      });
-
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("Failed to create user");
-
       // Parse coverage areas
       const coverageAreas = formData.coverage_areas
         .split(",")
         .map((area) => area.trim().toUpperCase())
         .filter((area) => area.length > 0);
 
-      // Create profile with driver role
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: authData.user.id,
-        email: formData.email,
-        contact_name: formData.contact_name,
-        phone: formData.phone,
-        role: "driver",
-        business_name: "Driver",
-        address_line1: "N/A",
-        city: "N/A",
-        postcode: "N/A",
-        coverage_areas: coverageAreas,
-      });
+      // Create invite record
+      const { data, error } = await supabase
+        .from("driver_invites")
+        .insert({
+          contact_name: formData.contact_name,
+          phone: formData.phone,
+          coverage_areas: coverageAreas,
+        })
+        .select()
+        .single();
 
-      if (profileError) throw profileError;
+      if (error) throw error;
 
       toast({
-        title: "Driver created",
-        description: `${formData.contact_name} has been added as a driver.`,
+        title: "Driver invite created",
+        description: "Copy the link and send it to the driver.",
       });
 
       // Reset form and close dialog
       setFormData({
-        email: "",
-        password: "",
         contact_name: "",
         phone: "",
         coverage_areas: "",
       });
       setCreateDialogOpen(false);
-      fetchDrivers();
+      fetchInvites();
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Failed to create driver",
+        title: "Failed to create invite",
         description: error.message,
       });
     } finally {
@@ -124,32 +116,69 @@ export default function AdminDrivers() {
     }
   };
 
-  const handleDeleteDriver = async (driver: Profile) => {
-    if (!confirm(`Are you sure you want to delete ${driver.contact_name}?`)) {
+  const handleDeleteInvite = async (invite: DriverInvite) => {
+    if (!confirm(`Are you sure you want to delete ${invite.contact_name}?`)) {
       return;
     }
 
     try {
-      // Delete profile (auth user will be orphaned but that's okay)
       const { error } = await supabase
-        .from("profiles")
+        .from("driver_invites")
         .delete()
-        .eq("id", driver.id);
+        .eq("id", invite.id);
 
       if (error) throw error;
 
       toast({
-        title: "Driver deleted",
-        description: `${driver.contact_name} has been removed.`,
+        title: "Invite deleted",
+        description: `${invite.contact_name} has been removed.`,
       });
 
-      fetchDrivers();
+      fetchInvites();
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Failed to delete driver",
+        title: "Failed to delete invite",
         description: error.message,
       });
+    }
+  };
+
+  const getInviteLink = (token: string) => {
+    return `${window.location.origin}/driver-setup/${token}`;
+  };
+
+  const copyInviteLink = (token: string) => {
+    const link = getInviteLink(token);
+    navigator.clipboard.writeText(link);
+    toast({
+      title: "Link copied!",
+      description: "Send this link to the driver via WhatsApp or SMS.",
+    });
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "pending":
+        return (
+          <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400">
+            <Clock className="h-3 w-3 mr-1" />
+            Pending
+          </Badge>
+        );
+      case "completed":
+        return (
+          <Badge variant="secondary" className="bg-green-500/20 text-green-400">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Active
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="secondary" className="bg-gray-500/20 text-gray-400">
+            {status}
+          </Badge>
+        );
     }
   };
 
@@ -170,7 +199,7 @@ export default function AdminDrivers() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-2xl font-bold text-white">Drivers</h1>
-            <p className="text-sm text-gray-400">Manage driver accounts and coverage areas</p>
+            <p className="text-sm text-gray-400">Create invite links and manage driver accounts</p>
           </div>
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
@@ -181,56 +210,35 @@ export default function AdminDrivers() {
             </DialogTrigger>
             <DialogContent className="bg-[#1d1d1d] border-[#333]">
               <DialogHeader>
-                <DialogTitle className="text-white">Create Driver Account</DialogTitle>
+                <DialogTitle className="text-white">Create Driver Invite</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleCreateDriver} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="contact_name" className="text-white">Full Name</Label>
+                  <Label htmlFor="contact_name" className="text-white">Driver Name</Label>
                   <Input
                     id="contact_name"
                     value={formData.contact_name}
                     onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
                     className="bg-[#28292b] border-[#555] text-white"
+                    placeholder="John Smith"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="bg-[#28292b] border-[#555] text-white"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-white">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="bg-[#28292b] border-[#555] text-white"
-                    minLength={6}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-white">Phone</Label>
+                  <Label htmlFor="phone" className="text-white">Mobile Number</Label>
                   <Input
                     id="phone"
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="bg-[#28292b] border-[#555] text-white"
+                    placeholder="07123 456789"
                     required
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="coverage_areas" className="text-white">
-                    Coverage Areas (postcodes, comma-separated)
+                    Coverage Areas (optional)
                   </Label>
                   <Input
                     id="coverage_areas"
@@ -244,7 +252,7 @@ export default function AdminDrivers() {
                   </p>
                 </div>
                 <Button type="submit" className="w-full" disabled={creating}>
-                  {creating ? <LoadingSpinner size="sm" /> : "Create Driver"}
+                  {creating ? <LoadingSpinner size="sm" /> : "Create Invite Link"}
                 </Button>
               </form>
             </DialogContent>
@@ -252,53 +260,45 @@ export default function AdminDrivers() {
         </div>
 
         {/* Drivers Table */}
-        {drivers.length === 0 ? (
+        {invites.length === 0 ? (
           <div className="rounded-xl border border-[#333] bg-[#1d1d1d] px-5 py-12 text-center">
             <Truck className="mx-auto h-12 w-12 text-gray-500 mb-4" />
             <p className="text-gray-400">No drivers yet</p>
-            <p className="text-sm text-gray-500 mt-1">Create a driver account to get started</p>
+            <p className="text-sm text-gray-500 mt-1">Create an invite link to add a driver</p>
           </div>
         ) : (
           <div className="rounded-xl border border-[#333] bg-[#1d1d1d] overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="border-[#333] hover:bg-transparent">
-                  <TableHead className="text-gray-400">Name</TableHead>
-                  <TableHead className="text-gray-400">Contact</TableHead>
+                  <TableHead className="text-gray-400">Driver</TableHead>
+                  <TableHead className="text-gray-400">Status</TableHead>
                   <TableHead className="text-gray-400">Coverage Areas</TableHead>
                   <TableHead className="text-gray-400 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {drivers.map((driver) => (
-                  <TableRow key={driver.id} className="border-[#333] hover:bg-white/5">
+                {invites.map((invite) => (
+                  <TableRow key={invite.id} className="border-[#333] hover:bg-white/5">
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
                           <Truck className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium text-white">{driver.contact_name}</p>
-                          <p className="text-sm text-gray-400">Driver</p>
+                          <p className="font-medium text-white">{invite.contact_name}</p>
+                          <div className="flex items-center gap-1 text-sm text-gray-400">
+                            <Phone className="h-3 w-3" />
+                            {invite.phone}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-sm text-gray-300">
-                          <Mail className="h-3 w-3" />
-                          {driver.email}
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-300">
-                          <Phone className="h-3 w-3" />
-                          {driver.phone}
-                        </div>
-                      </div>
-                    </TableCell>
+                    <TableCell>{getStatusBadge(invite.status)}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {driver.coverage_areas && driver.coverage_areas.length > 0 ? (
-                          driver.coverage_areas.map((area) => (
+                        {invite.coverage_areas && invite.coverage_areas.length > 0 ? (
+                          invite.coverage_areas.map((area) => (
                             <Badge key={area} variant="secondary" className="bg-primary/20 text-primary">
                               <MapPin className="h-3 w-3 mr-1" />
                               {area}
@@ -310,14 +310,27 @@ export default function AdminDrivers() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDeleteDriver(driver)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        {invite.status === "pending" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1 border-[#333] text-white hover:bg-white/10"
+                            onClick={() => copyInviteLink(invite.invite_token)}
+                          >
+                            <Copy className="h-3 w-3" />
+                            Copy Link
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDeleteInvite(invite)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
