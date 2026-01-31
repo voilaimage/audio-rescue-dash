@@ -145,7 +145,11 @@ export default function AdminDrivers() {
   };
 
   const getInviteLink = (token: string) => {
-    return `${window.location.origin}/driver-setup/${token}`;
+    // Always use the published URL for driver invites so they work without preview authentication
+    const baseUrl = import.meta.env.PROD 
+      ? window.location.origin 
+      : "https://audio-rescue-dash.lovable.app";
+    return `${baseUrl}/driver-setup/${token}`;
   };
 
   const copyInviteLink = (token: string) => {
