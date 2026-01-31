@@ -178,7 +178,11 @@ export default function DriverHome() {
                         </div>
                         {request.scheduled_start && (
                           <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-gray-400" />
+                            <Calendar className="h-4 w-4 text-primary" />
+                            <p className="text-sm font-medium text-white">
+                              {format(new Date(request.scheduled_start), "EEE d MMM")}
+                            </p>
+                            <Clock className="h-4 w-4 text-gray-400 ml-2" />
                             <p className="text-sm text-gray-400">
                               {format(new Date(request.scheduled_start), "h:mm a")}
                               {request.scheduled_end && (
