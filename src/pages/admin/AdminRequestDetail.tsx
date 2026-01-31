@@ -447,12 +447,12 @@ export default function AdminRequestDetail() {
                     </div>
                   </div>
                 )}
-                <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
+                <Select value={selectedDriverId || "unassigned"} onValueChange={(val) => setSelectedDriverId(val === "unassigned" ? "" : val)}>
                   <SelectTrigger className="bg-[#28292b] border-[#333] text-white">
                     <SelectValue placeholder="Select a driver" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Unassigned</SelectItem>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
                     {drivers.map(driver => (
                       <SelectItem key={driver.id} value={driver.id}>
                         {driver.contact_name}
