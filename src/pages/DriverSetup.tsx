@@ -85,7 +85,7 @@ export default function DriverSetup() {
       // Create email from phone (using phone as unique identifier)
       const email = `driver-${invite!.phone.replace(/\D/g, "")}@audio-salvage.driver`;
 
-      // Sign up the driver
+      // Try to sign up the driver
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -96,6 +96,40 @@ export default function DriverSetup() {
           },
         },
       });
+
+      // If user already exists, try to sign them in instead
+      if (authError?.message?.toLowerCase().includes("already registered")) {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (signInError) {
+          // If sign in fails, the password is wrong - they need to use the login page
+          toast({
+            variant: "destructive",
+            title: "Account already exists",
+            description: "This phone number is already registered. Please use the driver login page.",
+          });
+          setTimeout(() => navigate("/driver-login"), 2000);
+          return;
+        }
+
+        // Successfully signed in - update invite if needed and proceed
+        if (signInData.user) {
+          await supabase
+            .from("driver_invites")
+            .update({
+              status: "completed",
+              completed_at: new Date().toISOString(),
+              profile_id: signInData.user.id,
+            })
+            .eq("id", invite!.id);
+
+          setStep("install");
+          return;
+        }
+      }
 
       if (authError) throw authError;
       if (!authData.user) throw new Error("Failed to create account");
