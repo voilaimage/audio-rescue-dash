@@ -190,6 +190,40 @@ export default function DriverJobDetail() {
               </div>
             </div>
 
+            {/* Scheduled Collection */}
+            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <Clock className="h-5 w-5 text-primary" />
+                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                  Scheduled Collection
+                </h3>
+              </div>
+              {request.scheduled_start ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-5 w-5 text-white" />
+                    <p className="text-sm font-semibold text-white">
+                      {format(new Date(request.scheduled_start), "EEEE, d MMMM yyyy")}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-5 w-5 text-white" />
+                    <p className="text-sm font-medium text-white">
+                      {format(new Date(request.scheduled_start), "h:mm a")}
+                      {request.scheduled_end && (
+                        <span className="text-gray-400"> – {format(new Date(request.scheduled_end), "h:mm a")}</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 rounded-lg bg-white/5 px-4 py-3">
+                  <Calendar className="h-5 w-5 text-gray-400" />
+                  <p className="text-sm text-gray-400">Not yet scheduled by admin</p>
+                </div>
+              )}
+            </div>
+
             {/* Address */}
             <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
               <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-gray-400">
@@ -233,40 +267,6 @@ export default function DriverJobDetail() {
                 </h3>
               </div>
               <p className="text-sm text-white leading-relaxed">{request.description}</p>
-            </div>
-
-            {/* Scheduled Collection */}
-            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
-              <div className="mb-3 flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" />
-                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                  Scheduled Collection
-                </h3>
-              </div>
-              {request.scheduled_start ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <Calendar className="h-5 w-5 text-white" />
-                    <p className="text-sm font-semibold text-white">
-                      {format(new Date(request.scheduled_start), "EEEE, d MMMM yyyy")}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Clock className="h-5 w-5 text-white" />
-                    <p className="text-sm font-medium text-white">
-                      {format(new Date(request.scheduled_start), "h:mm a")}
-                      {request.scheduled_end && (
-                        <span className="text-gray-400"> – {format(new Date(request.scheduled_end), "h:mm a")}</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3 rounded-lg bg-white/5 px-4 py-3">
-                  <Calendar className="h-5 w-5 text-gray-400" />
-                  <p className="text-sm text-gray-400">Not yet scheduled by admin</p>
-                </div>
-              )}
             </div>
           </div>
         </div>
