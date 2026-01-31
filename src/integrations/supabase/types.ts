@@ -51,6 +51,7 @@ export type Database = {
           business_name: string
           city: string
           contact_name: string
+          coverage_areas: string[] | null
           created_at: string
           driver_notes: string | null
           email: string
@@ -67,6 +68,7 @@ export type Database = {
           business_name: string
           city: string
           contact_name: string
+          coverage_areas?: string[] | null
           created_at?: string
           driver_notes?: string | null
           email: string
@@ -83,6 +85,7 @@ export type Database = {
           business_name?: string
           city?: string
           contact_name?: string
+          coverage_areas?: string[] | null
           created_at?: string
           driver_notes?: string | null
           email?: string
@@ -126,6 +129,7 @@ export type Database = {
       requests: {
         Row: {
           accepted_at: string | null
+          assigned_driver_id: string | null
           collected_at: string | null
           collected_by: string | null
           collection_notes: string | null
@@ -148,6 +152,7 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          assigned_driver_id?: string | null
           collected_at?: string | null
           collected_by?: string | null
           collection_notes?: string | null
@@ -170,6 +175,7 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          assigned_driver_id?: string | null
           collected_at?: string | null
           collected_by?: string | null
           collection_notes?: string | null
@@ -191,6 +197,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "requests_assigned_driver_id_fkey"
+            columns: ["assigned_driver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "requests_collected_by_fkey"
             columns: ["collected_by"]

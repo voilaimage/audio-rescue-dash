@@ -15,6 +15,7 @@ export type Profile = {
   driver_notes: string | null;
   avatar_url: string | null;
   role: 'customer' | 'admin' | 'driver';
+  coverage_areas: string[];
   created_at: string;
   updated_at: string;
 };
@@ -22,6 +23,7 @@ export type Profile = {
 export type Request = {
   id: string;
   user_id: string;
+  assigned_driver_id: string | null;
   description: string;
   preferred_window: 'anytime' | 'morning' | 'afternoon' | 'evening' | null;
   preferred_day_range: 'none' | 'tomorrow' | '3_days' | 'week' | null;
@@ -56,4 +58,5 @@ export type RequestWithPhotos = Request & {
   request_photos: RequestPhoto[];
   collection_proof_photos?: CollectionProofPhoto[];
   profiles?: Profile;
+  assigned_driver?: Profile;
 };
