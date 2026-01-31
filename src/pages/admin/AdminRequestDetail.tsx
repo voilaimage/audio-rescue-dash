@@ -41,11 +41,14 @@ export default function AdminRequestDetail() {
   const { toast } = useToast();
   const [request, setRequest] = useState<RequestWithPhotos | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [drivers, setDrivers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [schedulingUpdating, setSchedulingUpdating] = useState(false);
+  const [driverUpdating, setDriverUpdating] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
   const [newStatus, setNewStatus] = useState<string>("");
+  const [selectedDriverId, setSelectedDriverId] = useState<string>("");
   
   // Scheduling state
   const [scheduledDate, setScheduledDate] = useState<string>("");
@@ -61,23 +64,33 @@ export default function AdminRequestDetail() {
   useEffect(() => {
     if (!id) return;
 
-    const fetchRequest = async () => {
-      const { data, error } = await supabase
-        .from("requests")
-        .select("*, request_photos(*), profiles!requests_user_id_fkey(*)")
-        .eq("id", id)
-        .single();
+    const fetchData = async () => {
+      // Fetch request and drivers in parallel
+      const [requestResult, driversResult] = await Promise.all([
+        supabase
+          .from("requests")
+          .select("*, request_photos(*), profiles!requests_user_id_fkey(*)")
+          .eq("id", id)
+          .single(),
+        supabase
+          .from("profiles")
+          .select("*")
+          .eq("role", "driver")
+          .order("contact_name"),
+      ]);
 
-      if (error) {
-        console.error("Error fetching request:", error);
+      if (requestResult.error) {
+        console.error("Error fetching request:", requestResult.error);
         navigate("/admin/requests", { replace: true });
         return;
       }
 
-      const requestData = data as unknown as RequestWithPhotos;
+      const requestData = requestResult.data as unknown as RequestWithPhotos;
       setRequest(requestData);
       setProfile(requestData.profiles as Profile);
       setNewStatus(requestData.status);
+      setSelectedDriverId(requestData.assigned_driver_id || "");
+      setDrivers((driversResult.data as Profile[]) || []);
       
       // Initialize scheduling fields
       if (requestData.scheduled_start) {
@@ -93,7 +106,7 @@ export default function AdminRequestDetail() {
       setLoading(false);
     };
 
-    fetchRequest();
+    fetchData();
   }, [id, navigate]);
 
   const handleStatusUpdate = async () => {
@@ -165,6 +178,47 @@ export default function AdminRequestDetail() {
       setSchedulingUpdating(false);
     }
   };
+
+  const handleDriverAssignment = async () => {
+    if (!request) return;
+
+    setDriverUpdating(true);
+    try {
+      const assignedDriverId = selectedDriverId === "" ? null : selectedDriverId;
+      
+      const { error } = await supabase
+        .from("requests")
+        .update({ assigned_driver_id: assignedDriverId })
+        .eq("id", request.id);
+
+      if (error) throw error;
+
+      setRequest({ ...request, assigned_driver_id: assignedDriverId });
+      
+      const driverName = drivers.find(d => d.id === assignedDriverId)?.contact_name;
+      toast({ 
+        title: assignedDriverId ? "Driver assigned" : "Driver unassigned", 
+        description: assignedDriverId ? `Assigned to ${driverName}` : "Driver has been removed from this request"
+      });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Assignment failed", description: error.message });
+    } finally {
+      setDriverUpdating(false);
+    }
+  };
+
+  // Get suggested drivers based on postcode match
+  const getSuggestedDrivers = () => {
+    if (!profile?.postcode) return [];
+    const postcodePrefix = profile.postcode.split(" ")[0].toUpperCase();
+    return drivers.filter(driver => 
+      driver.coverage_areas?.some(area => 
+        postcodePrefix.startsWith(area) || area.startsWith(postcodePrefix)
+      )
+    );
+  };
+
+  const suggestedDrivers = getSuggestedDrivers();
 
   if (loading) {
     return (
@@ -362,6 +416,67 @@ export default function AdminRequestDetail() {
                   className="w-full"
                 >
                   {schedulingUpdating ? <LoadingSpinner size="sm" /> : "Update Schedule"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Assign Driver */}
+            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <Truck className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Assign Driver</h3>
+              </div>
+              <div className="space-y-3">
+                {suggestedDrivers.length > 0 && (
+                  <div className="rounded-lg bg-primary/10 p-3">
+                    <p className="text-xs text-primary mb-2">Suggested for {profile?.postcode}:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {suggestedDrivers.map(driver => (
+                        <button
+                          key={driver.id}
+                          onClick={() => setSelectedDriverId(driver.id)}
+                          className={`text-xs px-2 py-1 rounded-full transition-colors ${
+                            selectedDriverId === driver.id 
+                              ? "bg-primary text-white" 
+                              : "bg-white/10 text-white hover:bg-white/20"
+                          }`}
+                        >
+                          {driver.contact_name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
+                  <SelectTrigger className="bg-[#28292b] border-[#333] text-white">
+                    <SelectValue placeholder="Select a driver" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Unassigned</SelectItem>
+                    {drivers.map(driver => (
+                      <SelectItem key={driver.id} value={driver.id}>
+                        {driver.contact_name}
+                        {driver.coverage_areas && driver.coverage_areas.length > 0 && (
+                          <span className="text-gray-400 ml-2">
+                            ({driver.coverage_areas.slice(0, 3).join(", ")})
+                          </span>
+                        )}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {request.assigned_driver_id && (
+                  <p className="text-xs text-gray-400">
+                    Currently assigned: {drivers.find(d => d.id === request.assigned_driver_id)?.contact_name || "Unknown"}
+                  </p>
+                )}
+                <Button
+                  onClick={handleDriverAssignment}
+                  disabled={driverUpdating || selectedDriverId === (request.assigned_driver_id || "")}
+                  variant="secondary"
+                  className="w-full"
+                >
+                  {driverUpdating ? <LoadingSpinner size="sm" /> : "Update Assignment"}
                 </Button>
               </div>
             </div>
