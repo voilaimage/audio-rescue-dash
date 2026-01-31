@@ -82,83 +82,26 @@ export default function DriverSetup() {
     setSubmitting(true);
 
     try {
-      // Create email from phone (using phone as unique identifier)
-      const email = `driver-${invite!.phone.replace(/\D/g, "")}@audio-salvage.driver`;
-
-      // Try to sign up the driver
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/driver`,
-          data: {
-            phone: invite!.phone,
-          },
+      // Do the account provisioning + invite completion server-side so it works even if
+      // the driver already exists (password reset) and so we can mark the invite as Active.
+      const { data, error } = await supabase.functions.invoke("driver-setup", {
+        body: {
+          invite_token: token,
+          password,
         },
       });
 
-      // If user already exists, try to sign them in instead
-      if (authError?.message?.toLowerCase().includes("already registered")) {
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      if (error) throw error;
 
-        if (signInError) {
-          // If sign in fails, the password is wrong - they need to use the login page
-          toast({
-            variant: "destructive",
-            title: "Account already exists",
-            description: "This phone number is already registered. Please use the driver login page.",
-          });
-          setTimeout(() => navigate("/driver-login"), 2000);
-          return;
-        }
+      const email = (data as any)?.email as string | undefined;
+      if (!email) throw new Error("Setup succeeded but no email was returned");
 
-        // Successfully signed in - update invite if needed and proceed
-        if (signInData.user) {
-          await supabase
-            .from("driver_invites")
-            .update({
-              status: "completed",
-              completed_at: new Date().toISOString(),
-              profile_id: signInData.user.id,
-            })
-            .eq("id", invite!.id);
-
-          setStep("install");
-          return;
-        }
-      }
-
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("Failed to create account");
-
-      // Create profile
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: authData.user.id,
+      // Sign in so the driver can proceed into the app
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
-        contact_name: invite!.contact_name,
-        phone: invite!.phone,
-        role: "driver",
-        business_name: "Driver",
-        address_line1: "N/A",
-        city: "N/A",
-        postcode: "N/A",
-        coverage_areas: invite!.coverage_areas || [],
+        password,
       });
-
-      if (profileError) throw profileError;
-
-      // Update invite status
-      await supabase
-        .from("driver_invites")
-        .update({
-          status: "completed",
-          completed_at: new Date().toISOString(),
-          profile_id: authData.user.id,
-        })
-        .eq("id", invite!.id);
+      if (signInError) throw signInError;
 
       setStep("install");
     } catch (err: any) {
