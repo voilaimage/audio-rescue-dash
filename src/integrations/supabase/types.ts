@@ -269,6 +269,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_driver_invite_by_token: {
+        Args: { _token: string }
+        Returns: {
+          contact_name: string
+          coverage_areas: string[]
+          id: string
+          phone: string
+          status: string
+        }[]
+      }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_admin_or_driver: { Args: { _user_id: string }; Returns: boolean }
       is_driver: { Args: { _user_id: string }; Returns: boolean }
