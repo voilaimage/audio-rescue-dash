@@ -12,6 +12,7 @@ const statusConfig: Record<string, { bg: string; text: string; label: string }> 
   new: { bg: "bg-primary/10", text: "text-primary", label: "New" },
   accepted: { bg: "bg-primary/10", text: "text-primary", label: "Accepted" },
   scheduled: { bg: "bg-warning/10", text: "text-warning", label: "Scheduled" },
+  collected: { bg: "bg-info/10", text: "text-info", label: "Collected" },
   completed: { bg: "bg-success/10", text: "text-success", label: "Completed" },
   cancelled: { bg: "bg-destructive/10", text: "text-destructive", label: "Cancelled" },
 };
@@ -28,10 +29,10 @@ export default function AdminRequests() {
     const fetchRequests = async () => {
       const { data } = await supabase
         .from("requests")
-        .select("*, request_photos(*), profiles(*)")
+        .select("*, request_photos(*), profiles!requests_user_id_fkey(*)")
         .order("created_at", { ascending: false });
 
-      setRequests((data as RequestWithPhotos[]) || []);
+      setRequests((data as unknown as RequestWithPhotos[]) || []);
       setLoading(false);
     };
 
@@ -123,6 +124,7 @@ export default function AdminRequests() {
               <SelectItem value="new">New</SelectItem>
               <SelectItem value="accepted">Accepted</SelectItem>
               <SelectItem value="scheduled">Scheduled</SelectItem>
+              <SelectItem value="collected">Collected</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>

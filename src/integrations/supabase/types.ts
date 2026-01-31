@@ -213,6 +213,8 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_admin_or_driver: { Args: { _user_id: string }; Returns: boolean }
+      is_driver: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       preferred_day_range: "none" | "tomorrow" | "3_days" | "week"

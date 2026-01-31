@@ -46,6 +46,10 @@
     --warning: 38 92% 50%;
     --warning-foreground: 221 39% 11%;
 
+    /* Blue - info/collected states */
+    --info: 210 100% 50%;
+    --info-foreground: 0 0% 100%;
+
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 38 96% 51%;
