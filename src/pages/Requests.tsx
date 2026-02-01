@@ -191,7 +191,7 @@ export default function Requests() {
                 
                 return (
                   <Link key={request.id} to={`/requests/${request.id}`} className="block">
-                    <div className="group rounded-xl border border-border bg-card p-4 shadow-card transition-all hover:border-muted-foreground/30">
+                    <div className="group rounded-xl border border-[#555555] bg-[#1d1d1d] p-4 shadow-card transition-all hover:border-primary/40">
                       <div className="flex gap-3">
                         {firstPhotoUrl && (
                           <RequestThumbnail 
