@@ -5,6 +5,7 @@ import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { format } from "date-fns";
 import { Search, ChevronRight } from "lucide-react";
 
@@ -38,6 +39,26 @@ export default function AdminRequests() {
 
     fetchRequests();
   }, []);
+
+  // Get thumbnail URLs for signed URL generation
+  const thumbnailUrls = useMemo(() => 
+    requests.map(r => r.request_photos?.[0]?.file_url || null).filter((url): url is string => url !== null),
+    [requests]
+  );
+
+  // Use signed URLs for thumbnails
+  const { signedUrls, loading: urlsLoading } = useSignedUrls(thumbnailUrls);
+
+  // Create a map from original URL to signed URL for easy lookup
+  const signedUrlMap = useMemo(() => {
+    const map = new Map<string, string>();
+    thumbnailUrls.forEach((url, index) => {
+      if (signedUrls[index]) {
+        map.set(url, signedUrls[index]!);
+      }
+    });
+    return map;
+  }, [thumbnailUrls, signedUrls]);
 
   // Get unique cities for filter
   const cities = useMemo(() => {
@@ -187,16 +208,28 @@ export default function AdminRequests() {
               ) : (
                 filteredRequests.map((request) => {
                   const status = statusConfig[request.status] || statusConfig.new;
+                  const firstPhotoUrl = request.request_photos?.[0]?.file_url;
+                  const signedUrl = firstPhotoUrl ? signedUrlMap.get(firstPhotoUrl) : null;
                     return (
                       <tr key={request.id} className="hover:bg-white/5">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
-                            {request.request_photos?.[0] && (
+                            {firstPhotoUrl && urlsLoading ? (
+                              <div className="h-10 w-10 shrink-0 rounded-lg bg-[#28292b] flex items-center justify-center">
+                                <LoadingSpinner size="sm" />
+                              </div>
+                            ) : firstPhotoUrl && signedUrl ? (
                               <img
-                                src={request.request_photos[0].file_url}
+                                src={signedUrl}
                                 alt=""
                                 className="h-10 w-10 shrink-0 rounded-lg object-cover"
                               />
+                            ) : (
+                              <div className="h-10 w-10 shrink-0 rounded-lg bg-primary flex items-center justify-center">
+                                <span className="text-white font-semibold text-sm">
+                                  {request.profiles?.business_name?.charAt(0).toUpperCase() || "B"}
+                                </span>
+                              </div>
                             )}
                             <div>
                               <p className="text-sm font-medium text-white">
