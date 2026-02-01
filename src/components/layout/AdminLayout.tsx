@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, ClipboardList, LogOut, Truck, Users } from "lucide-react";
@@ -20,6 +21,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut, profile } = useAuth();
+
+  useEffect(() => {
+    document.title = "Audio Salvage Admin";
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
