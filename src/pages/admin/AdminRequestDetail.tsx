@@ -73,10 +73,11 @@ export default function AdminRequestDetail() {
           .eq("id", id)
           .single(),
         supabase
-          .from("profiles")
-          .select("*")
-          .eq("role", "driver")
-          .order("contact_name"),
+          .from("driver_invites")
+          .select("profile_id, profiles!driver_invites_profile_id_fkey(*)")
+          .eq("status", "completed")
+          .not("profile_id", "is", null)
+          .order("profiles(contact_name)"),
       ]);
 
       if (requestResult.error) {
@@ -86,7 +87,10 @@ export default function AdminRequestDetail() {
       }
 
       const requestData = requestResult.data as unknown as RequestWithPhotos;
-      const driversList = (driversResult.data as Profile[]) || [];
+      // Extract profiles from the joined driver_invites result
+      const driversList = (driversResult.data || [])
+        .map((invite: any) => invite.profiles)
+        .filter((profile: Profile | null): profile is Profile => profile !== null);
       
       // Check if assigned driver still exists
       const assignedDriverExists = requestData.assigned_driver_id 
