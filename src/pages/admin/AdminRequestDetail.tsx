@@ -86,11 +86,19 @@ export default function AdminRequestDetail() {
       }
 
       const requestData = requestResult.data as unknown as RequestWithPhotos;
+      const driversList = (driversResult.data as Profile[]) || [];
+      
+      // Check if assigned driver still exists
+      const assignedDriverExists = requestData.assigned_driver_id 
+        ? driversList.some(d => d.id === requestData.assigned_driver_id)
+        : true;
+      
       setRequest(requestData);
       setProfile(requestData.profiles as Profile);
       setNewStatus(requestData.status);
-      setSelectedDriverId(requestData.assigned_driver_id || "");
-      setDrivers((driversResult.data as Profile[]) || []);
+      // If driver was deleted, default to unassigned in the select
+      setSelectedDriverId(assignedDriverExists ? (requestData.assigned_driver_id || "") : "");
+      setDrivers(driversList);
       
       // Initialize scheduling fields
       if (requestData.scheduled_start) {
@@ -465,11 +473,25 @@ export default function AdminRequestDetail() {
                     ))}
                   </SelectContent>
                 </Select>
-                {request.assigned_driver_id && (
-                  <p className="text-xs text-gray-400">
-                    Currently assigned: {drivers.find(d => d.id === request.assigned_driver_id)?.contact_name || "Unknown"}
-                  </p>
-                )}
+                {request.assigned_driver_id && (() => {
+                  const assignedDriver = drivers.find(d => d.id === request.assigned_driver_id);
+                  const isDriverDeleted = !assignedDriver;
+                  
+                  return isDriverDeleted ? (
+                    <div className="rounded-lg bg-destructive/10 border border-destructive p-3">
+                      <p className="text-xs text-destructive font-medium">
+                        ⚠️ Previously assigned driver has been deleted
+                      </p>
+                      <p className="text-xs text-destructive/70 mt-1">
+                        Please assign a new driver to this request.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400">
+                      Currently assigned: {assignedDriver.contact_name}
+                    </p>
+                  );
+                })()}
                 <Button
                   onClick={handleDriverAssignment}
                   disabled={driverUpdating || selectedDriverId === (request.assigned_driver_id || "")}
