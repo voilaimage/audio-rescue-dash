@@ -34,26 +34,17 @@ export default function AdminDashboard() {
     fetchRequests();
   }, []);
 
-  if (loading) {
-    return (
-      <AdminLayout>
-        <div className="flex h-64 items-center justify-center">
-          <LoadingSpinner />
-        </div>
-      </AdminLayout>
-    );
-  }
-
-  const counts = {
+  // Calculate counts and recent requests (moved before hooks that depend on them)
+  const counts = useMemo(() => ({
     new: requests.filter((r) => r.status === "new").length,
     accepted: requests.filter((r) => r.status === "accepted").length,
     scheduled: requests.filter((r) => r.status === "scheduled").length,
     collected: requests.filter((r) => r.status === "collected").length,
     completed: requests.filter((r) => r.status === "completed").length,
     cancelled: requests.filter((r) => r.status === "cancelled").length,
-  };
+  }), [requests]);
 
-  const recentRequests = requests.slice(0, 5);
+  const recentRequests = useMemo(() => requests.slice(0, 5), [requests]);
 
   // Get thumbnail URLs for signed URL generation
   const thumbnailUrls = useMemo(() => 
@@ -61,7 +52,7 @@ export default function AdminDashboard() {
     [recentRequests]
   );
 
-  // Use signed URLs for thumbnails
+  // Use signed URLs for thumbnails - must be called before any early returns
   const { signedUrls, loading: urlsLoading } = useSignedUrls(thumbnailUrls);
 
   // Create a map from original URL to signed URL
@@ -74,6 +65,17 @@ export default function AdminDashboard() {
     });
     return map;
   }, [thumbnailUrls, signedUrls]);
+
+  // Early return for loading state - AFTER all hooks are called
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex h-64 items-center justify-center">
+          <LoadingSpinner />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
