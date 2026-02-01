@@ -11,7 +11,7 @@ import { ArrowLeft, MapPin, Clock, Package, Phone, User, FileText, Camera, Calen
 const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
   accepted: { bg: "bg-primary/10", text: "text-primary", label: "Accepted" },
   scheduled: { bg: "bg-warning/10", text: "text-warning", label: "Scheduled" },
-  collected: { bg: "bg-info/10", text: "text-info", label: "Collected" },
+  collected: { bg: "bg-success/10", text: "text-success", label: "Collected" },
 };
 
 export default function DriverJobDetail() {
