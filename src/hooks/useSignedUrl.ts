@@ -13,12 +13,16 @@ function extractFilePath(url: string, bucketName: string): string | null {
     
     let pathStart = url.indexOf(publicPattern);
     if (pathStart !== -1) {
-      return decodeURIComponent(url.substring(pathStart + publicPattern.length).split('?')[0]);
+      // Keep path as-is without decoding - Supabase API needs the raw path
+      const rawPath = url.substring(pathStart + publicPattern.length).split('?')[0];
+      // Decode first then re-encode to ensure consistent encoding
+      return decodeURIComponent(rawPath);
     }
     
     pathStart = url.indexOf(signedPattern);
     if (pathStart !== -1) {
-      return decodeURIComponent(url.substring(pathStart + signedPattern.length).split('?')[0]);
+      const rawPath = url.substring(pathStart + signedPattern.length).split('?')[0];
+      return decodeURIComponent(rawPath);
     }
     
     // Try to parse as URL and extract path after bucket name
