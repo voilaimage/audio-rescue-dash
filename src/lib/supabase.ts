@@ -33,6 +33,7 @@ export type Request = {
   accepted_at: string | null;
   collected_at: string | null;
   collected_by: string | null;
+  collected_by_name: string | null;
   collection_notes: string | null;
   collection_proof_photo_url: string | null;
   collection_pin: string | null;
