@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ImageCropper } from "@/components/ImageCropper";
-import { LogOut, Save, Camera, Trash2, ImageIcon, ChevronDown } from "lucide-react";
+import { Save, Camera, Trash2, ImageIcon, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +22,7 @@ import appBg from "@/assets/app-bg.png";
 import logoWhite from "@/assets/logo-white.png";
 
 export default function Profile() {
-  const { profile, signOut, refreshProfile, user } = useAuth();
+  const { profile, refreshProfile, user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [cropperOpen, setCropperOpen] = useState(false);
@@ -188,10 +188,6 @@ export default function Profile() {
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/login", { replace: true });
-  };
 
   const getInitials = () => {
     if (profile?.contact_name) {
@@ -386,10 +382,6 @@ export default function Profile() {
 
           <Button onClick={handleSave} disabled={loading} className="w-full touch-target font-semibold">
             {loading ? <LoadingSpinner size="sm" /> : <><Save className="mr-2 h-4 w-4" /> Save Changes</>}
-          </Button>
-
-          <Button onClick={handleSignOut} variant="outline" className="w-full touch-target border-primary text-black hover:bg-primary/10 hover:text-black">
-            <LogOut className="mr-2 h-4 w-4 text-black" /> Sign Out
           </Button>
           </div>
         </div>
