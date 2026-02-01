@@ -11,8 +11,7 @@ const statusCounts = {
   new: { label: "New", icon: Package, color: "bg-primary/10 text-primary" },
   accepted: { label: "Accepted", icon: Clock, color: "bg-primary/10 text-primary" },
   scheduled: { label: "Scheduled", icon: Calendar, color: "bg-warning/10 text-warning" },
-  collected: { label: "Collected", icon: CheckCircle, color: "bg-info/10 text-info" },
-  completed: { label: "Completed", icon: CheckCircle, color: "bg-success/10 text-success" },
+  collected: { label: "Collected", icon: CheckCircle, color: "bg-success/10 text-success" },
   cancelled: { label: "Cancelled", icon: XCircle, color: "bg-destructive/10 text-destructive" },
 };
 
@@ -35,12 +34,12 @@ export default function AdminDashboard() {
   }, []);
 
   // Calculate counts and recent requests (moved before hooks that depend on them)
+  // Note: "collected" count includes both "collected" and "completed" statuses as they represent the same state
   const counts = useMemo(() => ({
     new: requests.filter((r) => r.status === "new").length,
     accepted: requests.filter((r) => r.status === "accepted").length,
     scheduled: requests.filter((r) => r.status === "scheduled").length,
-    collected: requests.filter((r) => r.status === "collected").length,
-    completed: requests.filter((r) => r.status === "completed").length,
+    collected: requests.filter((r) => r.status === "collected" || r.status === "completed").length,
     cancelled: requests.filter((r) => r.status === "cancelled").length,
   }), [requests]);
 
@@ -87,7 +86,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-6 gap-4">
+        <div className="grid grid-cols-5 gap-4">
           {Object.entries(statusCounts).map(([key, { label, icon: Icon, color }]) => (
             <div
               key={key}
