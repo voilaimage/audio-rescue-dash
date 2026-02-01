@@ -5,9 +5,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
-import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { ChevronRight, Package, ArrowLeft } from "lucide-react";
+import { ChevronRight, Package, ArrowLeft, Trash2, X } from "lucide-react";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import appBg from "@/assets/app-bg.png";
 import logo from "@/assets/logo-white.png";
 
@@ -15,36 +25,43 @@ const statusConfig: Record<string, {
   bg: string;
   text: string;
   label: string;
+  canCancel: boolean;
 }> = {
   new: {
     bg: "bg-primary/10",
     text: "text-primary",
-    label: "New"
+    label: "New",
+    canCancel: true
   },
   accepted: {
     bg: "bg-primary/10",
     text: "text-primary",
-    label: "Accepted"
+    label: "Accepted",
+    canCancel: true
   },
   scheduled: {
     bg: "bg-warning/10",
     text: "text-warning",
-    label: "Scheduled"
+    label: "Scheduled",
+    canCancel: true
   },
   collected: {
     bg: "bg-success/10",
     text: "text-success",
-    label: "Collected"
+    label: "Collected",
+    canCancel: false
   },
   completed: {
     bg: "bg-success/10",
     text: "text-success",
-    label: "Completed"
+    label: "Completed",
+    canCancel: false
   },
   cancelled: {
     bg: "bg-destructive/10",
     text: "text-destructive",
-    label: "Cancelled"
+    label: "Cancelled",
+    canCancel: false
   }
 };
 
@@ -71,11 +88,12 @@ function RequestThumbnail({ url, loading }: { url: string | null; loading: boole
 
 export default function Requests() {
   const navigate = useNavigate();
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
   const [requests, setRequests] = useState<RequestWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<RequestWithPhotos | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   // Get first photo URL from each request for thumbnails
   const thumbnailUrls = useMemo(() => 
@@ -139,6 +157,63 @@ export default function Requests() {
     };
   }, [user]);
 
+  const handleCancelRequest = async () => {
+    if (!selectedRequest) return;
+    
+    setCancelling(true);
+    try {
+      const isNew = selectedRequest.status === 'new';
+      
+      if (isNew) {
+        // Delete the request entirely if it's new (not yet processed)
+        // First delete photos from storage
+        if (selectedRequest.request_photos && selectedRequest.request_photos.length > 0) {
+          const filePaths = selectedRequest.request_photos.map(photo => {
+            const url = photo.file_url;
+            const pathMatch = url.match(/request-photos\/(.+)$/);
+            return pathMatch ? pathMatch[1] : null;
+          }).filter(Boolean) as string[];
+          
+          if (filePaths.length > 0) {
+            await supabase.storage.from('request-photos').remove(filePaths);
+          }
+        }
+        
+        // Delete the request (cascades to photos table)
+        const { error } = await supabase
+          .from('requests')
+          .delete()
+          .eq('id', selectedRequest.id);
+          
+        if (error) throw error;
+        toast.success('Request deleted successfully');
+      } else {
+        // Cancel the request if it's already been processed
+        const { error } = await supabase
+          .from('requests')
+          .update({ status: 'cancelled' })
+          .eq('id', selectedRequest.id);
+          
+        if (error) throw error;
+        toast.success('Request cancelled successfully');
+      }
+    } catch (error) {
+      console.error('Error cancelling request:', error);
+      toast.error('Failed to cancel request');
+    } finally {
+      setCancelling(false);
+      setCancelDialogOpen(false);
+      setSelectedRequest(null);
+    }
+  };
+
+  const openCancelDialog = (e: React.MouseEvent, request: RequestWithPhotos) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedRequest(request);
+    setCancelDialogOpen(true);
+  };
+
   if (loading) {
     return <MobileLayout>
         <div className="flex h-64 items-center justify-center">
@@ -190,33 +265,84 @@ export default function Requests() {
                 const signedUrl = firstPhotoUrl ? signedUrlMap.get(firstPhotoUrl) : null;
                 
                 return (
-                  <Link key={request.id} to={`/requests/${request.id}`} className="block">
-                    <div className="group rounded-xl border border-[#555555] bg-[#1d1d1d] p-4 shadow-card transition-all hover:border-primary/40">
-                      <div className="flex gap-3">
-                        {firstPhotoUrl && (
-                          <RequestThumbnail 
-                            url={signedUrl || null} 
-                            loading={urlsLoading && !!firstPhotoUrl}
-                          />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="truncate text-sm font-medium text-foreground">{request.description}</p>
-                          <p className="mt-0.5 text-xs text-white">
-                            {format(new Date(request.created_at), "d MMM yyyy")}
-                          </p>
-                          <span className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${status.bg} ${status.text}`}>
-                            {status.label}
-                          </span>
+                  <div key={request.id} className="group relative">
+                    <Link to={`/requests/${request.id}`} className="block">
+                      <div className="rounded-xl border border-[#555555] bg-[#1d1d1d] p-4 shadow-card transition-all hover:border-primary/40">
+                        <div className="flex gap-3">
+                          {firstPhotoUrl && (
+                            <RequestThumbnail 
+                              url={signedUrl || null} 
+                              loading={urlsLoading && !!firstPhotoUrl}
+                            />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="truncate text-sm font-medium text-foreground">{request.description}</p>
+                            <p className="mt-0.5 text-xs text-white">
+                              {format(new Date(request.created_at), "d MMM yyyy")}
+                            </p>
+                            <span className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${status.bg} ${status.text}`}>
+                              {status.label}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {status.canCancel && (
+                              <button
+                                onClick={(e) => openCancelDialog(e, request)}
+                                className="flex h-8 w-8 items-center justify-center rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                                aria-label={request.status === 'new' ? 'Delete request' : 'Cancel request'}
+                              >
+                                {request.status === 'new' ? (
+                                  <Trash2 className="h-4 w-4" />
+                                ) : (
+                                  <X className="h-4 w-4" />
+                                )}
+                              </button>
+                            )}
+                            <ChevronRight className="h-5 w-5 shrink-0 text-white transition-transform group-hover:translate-x-1" />
+                          </div>
                         </div>
-                        <ChevronRight className="h-5 w-5 shrink-0 self-center text-white transition-transform group-hover:translate-x-1" />
                       </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </div>
                 );
               })}
             </div>
           )}
         </div>
+
+        {/* Cancel/Delete Confirmation Dialog */}
+        <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+          <AlertDialogContent className="bg-[#1d1d1d] border-[#555555]">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">
+                {selectedRequest?.status === 'new' ? 'Delete Request?' : 'Cancel Request?'}
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-white/60">
+                {selectedRequest?.status === 'new' 
+                  ? 'This will permanently delete this request and all associated photos. This action cannot be undone.'
+                  : 'This will cancel your collection request. The team will be notified. This action cannot be undone.'}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="bg-[#2a2a2a] border-[#555555] text-white hover:bg-[#3a3a3a] hover:text-white">
+                Go Back
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleCancelRequest}
+                disabled={cancelling}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {cancelling ? (
+                  <LoadingSpinner size="sm" />
+                ) : selectedRequest?.status === 'new' ? (
+                  'Delete'
+                ) : (
+                  'Cancel Request'
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </MobileLayout>;
 }
