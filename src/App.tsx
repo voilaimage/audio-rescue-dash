@@ -33,45 +33,45 @@ import MarkCollected from "./pages/driver/MarkCollected";
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ 
-  children, 
-  allowedRoles = ["customer"] 
-}: { 
-  children: React.ReactNode; 
-  allowedRoles?: Array<"customer" | "admin" | "driver">;
-}) {
-  const { user, profile, loading } = useAuth();
-
-  if (loading) return <LoadingScreen />;
-  if (!user) return <Navigate to="/login" replace />;
-  
-  // Redirect based on role
-  if (profile?.role === "admin" && !allowedRoles.includes("admin")) {
-    return <Navigate to="/admin" replace />;
-  }
-  if (profile?.role === "driver" && !allowedRoles.includes("driver")) {
-    return <Navigate to="/driver" replace />;
-  }
-  if (profile?.role === "customer" && !allowedRoles.includes("customer")) {
-    // Customer trying to access admin/driver routes
-    return <Navigate to="/home" replace />;
-  }
-
-  return <>{children}</>;
-}
-
-function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { user, profile, loading } = useAuth();
-
-  if (loading) return <LoadingScreen />;
-  if (user && profile?.role === "admin") return <Navigate to="/admin" replace />;
-  if (user && profile?.role === "driver") return <Navigate to="/driver" replace />;
-  if (user && profile) return <Navigate to="/home" replace />;
-
-  return <>{children}</>;
-}
-
 function AppRoutes() {
+  const { user, profile, loading } = useAuth();
+
+  // Protected Route wrapper - defined inside AppRoutes where AuthProvider is available
+  const ProtectedRoute = ({ 
+    children, 
+    allowedRoles = ["customer"] 
+  }: { 
+    children: React.ReactNode; 
+    allowedRoles?: Array<"customer" | "admin" | "driver">;
+  }) => {
+    if (loading) return <LoadingScreen />;
+    if (!user) return <Navigate to="/login" replace />;
+    
+    // Redirect based on role
+    if (profile?.role === "admin" && !allowedRoles.includes("admin")) {
+      return <Navigate to="/admin" replace />;
+    }
+    if (profile?.role === "driver" && !allowedRoles.includes("driver")) {
+      return <Navigate to="/driver" replace />;
+    }
+    if (profile?.role === "customer" && !allowedRoles.includes("customer")) {
+      // Customer trying to access admin/driver routes
+      return <Navigate to="/home" replace />;
+    }
+
+    return <>{children}</>;
+  };
+
+  // Public Route wrapper - defined inside AppRoutes where AuthProvider is available
+  const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+    if (loading) return <LoadingScreen />;
+    if (user && profile?.role === "admin") return <Navigate to="/admin" replace />;
+    if (user && profile?.role === "driver") return <Navigate to="/driver" replace />;
+    if (user && profile) return <Navigate to="/home" replace />;
+
+    return <>{children}</>;
+  };
+
   return (
     <Routes>
       <Route path="/" element={<Splash />} />
