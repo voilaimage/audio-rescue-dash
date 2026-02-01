@@ -208,7 +208,7 @@ export default function Requests() {
                             {status.label}
                           </span>
                         </div>
-                        <ChevronRight className="h-5 w-5 shrink-0 self-center text-muted-foreground transition-transform group-hover:translate-x-1" />
+                        <ChevronRight className="h-5 w-5 shrink-0 self-center text-white transition-transform group-hover:translate-x-1" />
                       </div>
                     </div>
                   </Link>
