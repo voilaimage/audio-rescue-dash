@@ -266,7 +266,7 @@ export default function AdminRequests() {
                         <td className="px-4 py-3">
                           <Link
                             to={`/admin/requests/${request.id}`}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-white/10 hover:text-white"
+                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white"
                           >
                             <ChevronRight className="h-4 w-4" />
                           </Link>
