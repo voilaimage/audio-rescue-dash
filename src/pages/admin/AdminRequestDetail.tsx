@@ -188,11 +188,37 @@ export default function AdminRequestDetail() {
   };
 
   const handleScheduleUpdate = async () => {
-    if (!request || !scheduledDate) return;
+    if (!request) return;
+
+    // Validate all required fields
+    if (!scheduledDate) {
+      toast({ 
+        variant: "destructive", 
+        title: "Date required", 
+        description: "Please select a collection date." 
+      });
+      return;
+    }
+    if (!scheduledStartTime) {
+      toast({ 
+        variant: "destructive", 
+        title: "Time required", 
+        description: "Please select a start time." 
+      });
+      return;
+    }
+    if (!selectedDriverId && !request.assigned_driver_id) {
+      toast({ 
+        variant: "destructive", 
+        title: "Driver required", 
+        description: "Please assign a driver before scheduling." 
+      });
+      return;
+    }
 
     setSchedulingUpdating(true);
     try {
-      const scheduledStart = new Date(`${scheduledDate}T${scheduledStartTime || "09:00"}`);
+      const scheduledStart = new Date(`${scheduledDate}T${scheduledStartTime}`);
       const scheduledEnd = scheduledEndTime 
         ? new Date(`${scheduledDate}T${scheduledEndTime}`)
         : null;
@@ -201,6 +227,11 @@ export default function AdminRequestDetail() {
         scheduled_start: scheduledStart.toISOString(),
         scheduled_end: scheduledEnd?.toISOString() || null,
       };
+
+      // Also assign driver if one is selected but not yet saved
+      if (selectedDriverId && selectedDriverId !== request.assigned_driver_id) {
+        updateData.assigned_driver_id = selectedDriverId;
+      }
 
       // Auto-set status to scheduled if currently accepted or new
       if (["new", "accepted"].includes(request.status)) {
