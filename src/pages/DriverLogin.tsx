@@ -138,12 +138,7 @@ export default function DriverLogin() {
               </form>
             </div>
 
-            <div className="mt-6 text-center text-sm text-white space-y-1 pb-8">
-              <p className="text-base text-gray-400">Are you a partner?</p>
-              <Link to="/login" className="font-bold text-base text-[#f59f0a] underline hover:text-[#f59f0a]/80">
-                Go to Partner Portal
-              </Link>
-            </div>
+            <div className="pb-8" />
           </div>
         </div>
       </div>
