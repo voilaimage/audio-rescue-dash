@@ -4,8 +4,9 @@ import { DriverLayout } from "@/components/layout/DriverLayout";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format, isToday, isFuture, isPast, startOfDay } from "date-fns";
+import { format, isToday, isFuture, startOfDay } from "date-fns";
 import { MapPin, Clock, ChevronRight, Building2, Calendar, Sun, Sunset, Moon, Timer } from "lucide-react";
+import { JobThumbnail } from "@/components/driver/JobThumbnail";
 
 const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
   accepted: { bg: "bg-primary/10", text: "text-primary", label: "Accepted" },
@@ -155,11 +156,7 @@ export default function DriverHome() {
                     >
                       {/* Photo */}
                       {request.request_photos?.[0] && (
-                        <img
-                          src={request.request_photos[0].file_url}
-                          alt=""
-                          className="h-16 w-16 shrink-0 rounded-lg object-cover"
-                        />
+                        <JobThumbnail fileUrl={request.request_photos[0].file_url} />
                       )}
 
                       {/* Info */}
