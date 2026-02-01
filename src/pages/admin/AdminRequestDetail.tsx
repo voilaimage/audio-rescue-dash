@@ -132,6 +132,26 @@ export default function AdminRequestDetail() {
   const handleStatusUpdate = async () => {
     if (!request || newStatus === request.status) return;
 
+    // Validate requirements for collected status
+    if (newStatus === "collected") {
+      if (!request.scheduled_start) {
+        toast({ 
+          variant: "destructive", 
+          title: "Schedule required", 
+          description: "Please schedule a collection date before marking as collected." 
+        });
+        return;
+      }
+      if (!request.assigned_driver_id) {
+        toast({ 
+          variant: "destructive", 
+          title: "Driver required", 
+          description: "Please assign a driver before marking as collected." 
+        });
+        return;
+      }
+    }
+
     setUpdating(true);
     try {
       const updateData: any = { status: newStatus };
@@ -139,6 +159,16 @@ export default function AdminRequestDetail() {
       // Set accepted_at when status changes to accepted
       if (newStatus === "accepted" && request.status === "new") {
         updateData.accepted_at = new Date().toISOString();
+      }
+
+      // When marking as collected, also store the driver name
+      if (newStatus === "collected" && request.assigned_driver_id) {
+        const assignedDriver = drivers.find(d => d.id === request.assigned_driver_id);
+        if (assignedDriver) {
+          updateData.collected_by_name = assignedDriver.contact_name;
+          updateData.collected_at = new Date().toISOString();
+          updateData.collected_by = request.assigned_driver_id;
+        }
       }
       
       const { error } = await supabase
