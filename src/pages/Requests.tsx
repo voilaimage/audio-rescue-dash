@@ -201,7 +201,7 @@ export default function Requests() {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="truncate text-sm font-medium text-foreground">{request.description}</p>
-                          <p className="mt-0.5 text-xs text-muted-foreground">
+                          <p className="mt-0.5 text-xs text-white">
                             {format(new Date(request.created_at), "d MMM yyyy")}
                           </p>
                           <span className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${status.bg} ${status.text}`}>
