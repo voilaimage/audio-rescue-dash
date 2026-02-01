@@ -1,12 +1,18 @@
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { Camera, ClipboardList, ChevronRight, Sparkles } from "lucide-react";
+import { Camera, ClipboardList, ChevronRight, Sparkles, LogOut } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
 import logo from "@/assets/logo-white.png";
 
 export default function Home() {
-  const { profile } = useAuth();
+  const navigate = useNavigate();
+  const { profile, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <MobileLayout>
@@ -92,6 +98,15 @@ export default function Home() {
               We'll arrange a free collection at a time that suits you.
             </p>
           </div>
+
+          {/* Sign Out Button */}
+          <button
+            onClick={handleSignOut}
+            className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl border border-primary bg-transparent py-3 text-sm font-medium text-white hover:bg-primary/10 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </button>
         </div>
       </div>
     </MobileLayout>
