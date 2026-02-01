@@ -161,8 +161,8 @@ export default function RequestDetail() {
         <div className="flex-1 overflow-y-auto px-5 py-5 pb-24 space-y-5">
           {/* Photos Gallery */}
           {request.request_photos && request.request_photos.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="space-y-3 rounded-xl border border-[#555555] bg-[#1d1d1d] p-4">
+              <h3 className="text-xs font-medium uppercase tracking-wide text-white/60">
                 Photos ({request.request_photos.length})
               </h3>
               <div className="grid grid-cols-3 gap-2">
@@ -170,19 +170,23 @@ export default function RequestDetail() {
                   <button
                     key={photo.id}
                     onClick={() => setSelectedPhotoIndex(index)}
-                    className="aspect-square overflow-hidden rounded-lg border border-border"
+                    className="aspect-square overflow-hidden rounded-lg border border-[#555555] bg-[#2a2a2a]"
                     disabled={urlsLoading}
                   >
                     {urlsLoading ? (
-                      <div className="h-full w-full flex items-center justify-center bg-muted">
+                      <div className="h-full w-full flex items-center justify-center">
                         <LoadingSpinner size="sm" />
                       </div>
-                    ) : (
+                    ) : signedUrls[index] ? (
                       <img
-                        src={signedUrls[index] || ""}
+                        src={signedUrls[index]}
                         alt=""
                         className="h-full w-full object-cover transition-transform hover:scale-105"
                       />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-white/40">
+                        <Package className="h-6 w-6" />
+                      </div>
                     )}
                   </button>
                 ))}
@@ -191,40 +195,40 @@ export default function RequestDetail() {
           )}
 
           {/* Description */}
-          <div className="space-y-2 rounded-xl border border-border bg-card p-4 shadow-card">
+          <div className="space-y-2 rounded-xl border border-[#555555] bg-[#1d1d1d] p-4">
             <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-primary" />
-              <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <Package className="h-4 w-4 text-[#f59f0a]" />
+              <h3 className="text-xs font-medium uppercase tracking-wide text-white/60">
                 Description
               </h3>
             </div>
-            <p className="text-sm text-foreground leading-relaxed">{request.description}</p>
+            <p className="text-sm text-white leading-relaxed">{request.description}</p>
           </div>
 
           {/* Collection Preferences */}
-          <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-card">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="space-y-3 rounded-xl border border-[#555555] bg-[#1d1d1d] p-4">
+            <h3 className="text-xs font-medium uppercase tracking-wide text-white/60">
               Collection Preferences
             </h3>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                  <Clock className="h-4 w-4 text-primary" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f59f0a]">
+                  <Clock className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Preferred Window</p>
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-xs text-white/60">Preferred Window</p>
+                  <p className="text-sm font-medium text-white">
                     {windowLabels[request.preferred_window || "anytime"]}
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                  <Calendar className="h-4 w-4 text-primary" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f59f0a]">
+                  <Calendar className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Preferred Timeframe</p>
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-xs text-white/60">Preferred Timeframe</p>
+                  <p className="text-sm font-medium text-white">
                     {dayRangeLabels[request.preferred_day_range || "none"]}
                   </p>
                 </div>
@@ -233,24 +237,24 @@ export default function RequestDetail() {
           </div>
 
           {/* Pickup Address */}
-          <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-card">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="space-y-3 rounded-xl border border-[#555555] bg-[#1d1d1d] p-4">
+            <h3 className="text-xs font-medium uppercase tracking-wide text-white/60">
               Pickup Address
             </h3>
             <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                <MapPin className="h-4 w-4 text-primary" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f59f0a]">
+                <MapPin className="h-4 w-4 text-white" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">
+                <p className="text-sm font-medium text-white">
                   {profile?.address_line1}
                   {profile?.address_line2 && `, ${profile.address_line2}`}
                 </p>
-                <p className="text-sm text-foreground">
+                <p className="text-sm text-white">
                   {profile?.city}, {profile?.postcode}
                 </p>
                 {profile?.driver_notes && (
-                  <p className="mt-2 text-xs text-muted-foreground">
+                  <p className="mt-2 text-xs text-white/60">
                     <span className="font-medium">Driver notes:</span> {profile.driver_notes}
                   </p>
                 )}
@@ -259,19 +263,19 @@ export default function RequestDetail() {
           </div>
 
           {/* Status Timeline */}
-          <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-card">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="space-y-3 rounded-xl border border-[#555555] bg-[#1d1d1d] p-4">
+            <h3 className="text-xs font-medium uppercase tracking-wide text-white/60">
               Timeline
             </h3>
             <div className="space-y-3">
               {/* Requested */}
               <div className="flex items-center gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#f59f0a] text-white">
                   <span className="text-xs">✓</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Requested</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm font-medium text-white">Requested</p>
+                  <p className="text-xs text-white/60">
                     {format(new Date(request.created_at), "d MMM yyyy 'at' h:mm a")}
                   </p>
                 </div>
@@ -280,12 +284,12 @@ export default function RequestDetail() {
               {/* Accepted */}
               {(request.accepted_at || ['accepted', 'scheduled', 'collected', 'completed'].includes(request.status)) && (
                 <div className="flex items-center gap-3">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-primary">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#f59f0a]/30 text-[#f59f0a]">
                     <span className="text-xs">✓</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">Accepted</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm font-medium text-white">Accepted</p>
+                    <p className="text-xs text-white/60">
                       {request.accepted_at 
                         ? format(new Date(request.accepted_at), "d MMM yyyy 'at' h:mm a")
                         : "Status updated"}
@@ -297,12 +301,12 @@ export default function RequestDetail() {
               {/* Scheduled */}
               {request.scheduled_start && (
                 <div className="flex items-center gap-3">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-warning/20 text-warning">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#f59f0a]/30 text-[#f59f0a]">
                     <span className="text-xs">✓</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">Scheduled</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm font-medium text-white">Scheduled</p>
+                    <p className="text-xs text-white/60">
                       {format(new Date(request.scheduled_start), "d MMM yyyy")}
                       {request.scheduled_end && (
                         <> – {format(new Date(request.scheduled_end), "h:mm a")}</>
@@ -315,12 +319,12 @@ export default function RequestDetail() {
               {/* Collected */}
               {request.collected_at && (
                 <div className="flex items-center gap-3">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-info/20 text-info">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/30 text-emerald-400">
                     <span className="text-xs">✓</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">Collected</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm font-medium text-white">Collected</p>
+                    <p className="text-xs text-white/60">
                       {format(new Date(request.collected_at), "d MMM yyyy 'at' h:mm a")}
                     </p>
                   </div>
@@ -330,12 +334,12 @@ export default function RequestDetail() {
               {/* Completed */}
               {request.status === 'completed' && (
                 <div className="flex items-center gap-3">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success/20 text-success">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/30 text-emerald-400">
                     <span className="text-xs">✓</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">Completed</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm font-medium text-white">Completed</p>
+                    <p className="text-xs text-white/60">
                       {format(new Date(request.updated_at), "d MMM yyyy 'at' h:mm a")}
                     </p>
                   </div>
@@ -345,12 +349,12 @@ export default function RequestDetail() {
               {/* Cancelled */}
               {request.status === 'cancelled' && (
                 <div className="flex items-center gap-3">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-destructive/20 text-destructive">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500/30 text-red-400">
                     <span className="text-xs">✗</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">Cancelled</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm font-medium text-white">Cancelled</p>
+                    <p className="text-xs text-white/60">
                       {format(new Date(request.updated_at), "d MMM yyyy 'at' h:mm a")}
                     </p>
                   </div>
