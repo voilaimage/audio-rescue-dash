@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { format } from "date-fns";
 import { Package, Clock, CheckCircle, XCircle, Calendar } from "lucide-react";
 
@@ -54,6 +55,26 @@ export default function AdminDashboard() {
 
   const recentRequests = requests.slice(0, 5);
 
+  // Get thumbnail URLs for signed URL generation
+  const thumbnailUrls = useMemo(() => 
+    recentRequests.map(r => r.request_photos?.[0]?.file_url || null).filter((url): url is string => url !== null),
+    [recentRequests]
+  );
+
+  // Use signed URLs for thumbnails
+  const { signedUrls, loading: urlsLoading } = useSignedUrls(thumbnailUrls);
+
+  // Create a map from original URL to signed URL
+  const signedUrlMap = useMemo(() => {
+    const map = new Map<string, string>();
+    thumbnailUrls.forEach((url, index) => {
+      if (signedUrls[index]) {
+        map.set(url, signedUrls[index]!);
+      }
+    });
+    return map;
+  }, [thumbnailUrls, signedUrls]);
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -101,13 +122,36 @@ export default function AdminDashboard() {
                       to={`/admin/requests/${request.id}`}
                       className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-white/5"
                     >
-                      {request.request_photos?.[0] && (
-                        <img
-                          src={request.request_photos[0].file_url}
-                          alt=""
-                          className="h-12 w-12 shrink-0 rounded-lg object-cover"
-                        />
-                      )}
+                      {(() => {
+                        const firstPhotoUrl = request.request_photos?.[0]?.file_url;
+                        const signedUrl = firstPhotoUrl ? signedUrlMap.get(firstPhotoUrl) : null;
+                        
+                        if (firstPhotoUrl && urlsLoading) {
+                          return (
+                            <div className="h-12 w-12 shrink-0 rounded-lg bg-[#28292b] flex items-center justify-center">
+                              <LoadingSpinner size="sm" />
+                            </div>
+                          );
+                        }
+                        
+                        if (firstPhotoUrl && signedUrl) {
+                          return (
+                            <img
+                              src={signedUrl}
+                              alt=""
+                              className="h-12 w-12 shrink-0 rounded-lg object-cover"
+                            />
+                          );
+                        }
+                        
+                        return (
+                          <div className="h-12 w-12 shrink-0 rounded-lg bg-primary flex items-center justify-center">
+                            <span className="text-white font-semibold text-lg">
+                              {request.profiles?.business_name?.charAt(0).toUpperCase() || "B"}
+                            </span>
+                          </div>
+                        );
+                      })()}
                       <div className="flex-1 min-w-0">
                         <p className="truncate text-sm font-medium text-white">
                           {request.profiles?.business_name || "Unknown Business"}
