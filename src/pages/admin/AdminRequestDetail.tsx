@@ -35,11 +35,16 @@ const dayRangeLabels: Record<string, string> = {
   week: "Within a week",
 };
 
+// Extended type to include collected_by_name
+type RequestWithDriverName = RequestWithPhotos & {
+  collected_by_name?: string | null;
+};
+
 export default function AdminRequestDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [request, setRequest] = useState<RequestWithPhotos | null>(null);
+  const [request, setRequest] = useState<RequestWithDriverName | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [drivers, setDrivers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,6 +65,9 @@ export default function AdminRequestDetail() {
   
   // Use signed URLs for private bucket access
   const { signedUrls, loading: urlsLoading } = useSignedUrls(originalPhotoUrls);
+
+  // Determine if request is read-only (collected or completed)
+  const isReadOnly = request?.status === 'collected' || request?.status === 'completed';
 
   useEffect(() => {
     if (!id) return;
@@ -86,7 +94,7 @@ export default function AdminRequestDetail() {
         return;
       }
 
-      const requestData = requestResult.data as unknown as RequestWithPhotos;
+      const requestData = requestResult.data as unknown as RequestWithDriverName;
       // Extract profiles from the joined driver_invites result
       const driversList = (driversResult.data || [])
         .map((invite: any) => invite.profiles)
@@ -347,160 +355,204 @@ export default function AdminRequestDetail() {
 
           {/* Right Column - Business Info & Actions */}
           <div className="space-y-5">
-            {/* Status Update */}
+          {/* Status Update */}
             <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
-              <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-gray-400">Update Status</h3>
-              <div className="space-y-3">
-                <Select value={newStatus} onValueChange={setNewStatus}>
-                  <SelectTrigger className="bg-[#28292b] border-[#333] text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="new">New</SelectItem>
-                    <SelectItem value="accepted">Accepted</SelectItem>
-                    <SelectItem value="scheduled">Scheduled</SelectItem>
-                    <SelectItem value="collected">Collected</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  onClick={handleStatusUpdate}
-                  disabled={updating || newStatus === request.status}
-                  className="w-full"
-                >
-                  {updating ? <LoadingSpinner size="sm" /> : "Update Status"}
-                </Button>
-              </div>
+              <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-gray-400">
+                {isReadOnly ? "Status" : "Update Status"}
+              </h3>
+              {isReadOnly ? (
+                <div className={`rounded-lg px-3 py-2 text-center text-sm font-medium ${status.bg} ${status.text}`}>
+                  {status.label}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Select value={newStatus} onValueChange={setNewStatus}>
+                    <SelectTrigger className="bg-[#28292b] border-[#333] text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">New</SelectItem>
+                      <SelectItem value="accepted">Accepted</SelectItem>
+                      <SelectItem value="scheduled">Scheduled</SelectItem>
+                      <SelectItem value="collected">Collected</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    onClick={handleStatusUpdate}
+                    disabled={updating || newStatus === request.status}
+                    className="w-full"
+                  >
+                    {updating ? <LoadingSpinner size="sm" /> : "Update Status"}
+                  </Button>
+                </div>
+              )}
             </div>
 
-            {/* Schedule Collection */}
-            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
-              <div className="mb-4 flex items-center gap-2">
-                <Truck className="h-4 w-4 text-primary" />
-                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Schedule Collection</h3>
-              </div>
-              <div className="space-y-3">
-                <div>
-                  <Label htmlFor="schedule-date" className="text-xs text-gray-400 mb-1 block">Date</Label>
-                  <Input
-                    id="schedule-date"
-                    type="date"
-                    value={scheduledDate}
-                    onChange={(e) => setScheduledDate(e.target.value)}
-                    className="bg-[#28292b] border-[#333] text-white"
-                  />
+            {/* Schedule Collection - Hide for collected/completed */}
+            {!isReadOnly && (
+              <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
+                <div className="mb-4 flex items-center gap-2">
+                  <Truck className="h-4 w-4 text-primary" />
+                  <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Schedule Collection</h3>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-3">
                   <div>
-                    <Label htmlFor="schedule-start" className="text-xs text-gray-400 mb-1 block">Start Time</Label>
+                    <Label htmlFor="schedule-date" className="text-xs text-gray-400 mb-1 block">Date</Label>
                     <Input
-                      id="schedule-start"
-                      type="time"
-                      value={scheduledStartTime}
-                      onChange={(e) => setScheduledStartTime(e.target.value)}
+                      id="schedule-date"
+                      type="date"
+                      value={scheduledDate}
+                      onChange={(e) => setScheduledDate(e.target.value)}
                       className="bg-[#28292b] border-[#333] text-white"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="schedule-end" className="text-xs text-gray-400 mb-1 block">End Time</Label>
-                    <Input
-                      id="schedule-end"
-                      type="time"
-                      value={scheduledEndTime}
-                      onChange={(e) => setScheduledEndTime(e.target.value)}
-                      className="bg-[#28292b] border-[#333] text-white"
-                    />
-                  </div>
-                </div>
-                {request.scheduled_start && (
-                  <p className="text-xs text-gray-400">
-                    Currently scheduled: {format(new Date(request.scheduled_start), "d MMM yyyy")}
-                    {request.scheduled_end && (
-                      <> ({format(new Date(request.scheduled_start), "h:mm a")} - {format(new Date(request.scheduled_end), "h:mm a")})</>
-                    )}
-                  </p>
-                )}
-                <Button
-                  onClick={handleScheduleUpdate}
-                  disabled={schedulingUpdating || !scheduledDate}
-                  variant="secondary"
-                  className="w-full"
-                >
-                  {schedulingUpdating ? <LoadingSpinner size="sm" /> : "Update Schedule"}
-                </Button>
-              </div>
-            </div>
-
-            {/* Assign Driver */}
-            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
-              <div className="mb-4 flex items-center gap-2">
-                <Truck className="h-4 w-4 text-primary" />
-                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Assign Driver</h3>
-              </div>
-              <div className="space-y-3">
-                {suggestedDrivers.length > 0 && (
-                  <div className="rounded-lg bg-primary/10 p-3">
-                    <p className="text-xs text-primary mb-2">Suggested for {profile?.postcode}:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {suggestedDrivers.map(driver => (
-                        <button
-                          key={driver.id}
-                          onClick={() => setSelectedDriverId(driver.id)}
-                          className={`text-xs px-2 py-1 rounded-full transition-colors ${
-                            selectedDriverId === driver.id 
-                              ? "bg-primary text-white" 
-                              : "bg-white/10 text-white hover:bg-white/20"
-                          }`}
-                        >
-                          {driver.contact_name}
-                        </button>
-                      ))}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label htmlFor="schedule-start" className="text-xs text-gray-400 mb-1 block">Start Time</Label>
+                      <Input
+                        id="schedule-start"
+                        type="time"
+                        value={scheduledStartTime}
+                        onChange={(e) => setScheduledStartTime(e.target.value)}
+                        className="bg-[#28292b] border-[#333] text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="schedule-end" className="text-xs text-gray-400 mb-1 block">End Time</Label>
+                      <Input
+                        id="schedule-end"
+                        type="time"
+                        value={scheduledEndTime}
+                        onChange={(e) => setScheduledEndTime(e.target.value)}
+                        className="bg-[#28292b] border-[#333] text-white"
+                      />
                     </div>
                   </div>
-                )}
-                <Select value={selectedDriverId || "unassigned"} onValueChange={(val) => setSelectedDriverId(val === "unassigned" ? "" : val)}>
-                  <SelectTrigger className="bg-[#28292b] border-[#333] text-white">
-                    <SelectValue placeholder="Select a driver" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    {drivers.map(driver => (
-                      <SelectItem key={driver.id} value={driver.id}>
-                        {driver.contact_name}
-                        {driver.coverage_areas && driver.coverage_areas.length > 0 && (
-                          <span className="text-gray-400 ml-2">
-                            ({driver.coverage_areas.slice(0, 3).join(", ")})
-                          </span>
-                        )}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {request.assigned_driver_id && !drivers.find(d => d.id === request.assigned_driver_id) && (
-                  <div className="rounded-lg bg-destructive/10 border border-destructive p-3">
-                    <p className="text-xs text-destructive font-medium">
-                      ⚠️ Previously assigned driver has been deleted
+                  {request.scheduled_start && (
+                    <p className="text-xs text-gray-400">
+                      Currently scheduled: {format(new Date(request.scheduled_start), "d MMM yyyy")}
+                      {request.scheduled_end && (
+                        <> ({format(new Date(request.scheduled_start), "h:mm a")} - {format(new Date(request.scheduled_end), "h:mm a")})</>
+                      )}
                     </p>
-                    <p className="text-xs text-destructive/70 mt-1">
-                      Please assign a new driver to this request.
-                    </p>
-                  </div>
-                )}
-                {request.assigned_driver_id && drivers.find(d => d.id === request.assigned_driver_id) && (
-                  <p className="text-xs text-gray-400">
-                    Currently assigned: {drivers.find(d => d.id === request.assigned_driver_id)?.contact_name}
-                  </p>
-                )}
-                <Button
-                  onClick={handleDriverAssignment}
-                  disabled={driverUpdating || selectedDriverId === (request.assigned_driver_id || "")}
-                  variant="secondary"
-                  className="w-full"
-                >
-                  {driverUpdating ? <LoadingSpinner size="sm" /> : "Update Assignment"}
-                </Button>
+                  )}
+                  <Button
+                    onClick={handleScheduleUpdate}
+                    disabled={schedulingUpdating || !scheduledDate}
+                    variant="secondary"
+                    className="w-full"
+                  >
+                    {schedulingUpdating ? <LoadingSpinner size="sm" /> : "Update Schedule"}
+                  </Button>
+                </div>
               </div>
+            )}
+
+            {/* Assigned Driver - Read-only for collected, editable otherwise */}
+            <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <Truck className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                  {isReadOnly ? "Collected By" : "Assign Driver"}
+                </h3>
+              </div>
+              {isReadOnly ? (
+                <div className="space-y-2">
+                  {/* Show stored driver name for collected requests */}
+                  {request.collected_by_name ? (
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-success/20">
+                        <User className="h-4 w-4 text-success" />
+                      </div>
+                      <p className="text-sm font-medium text-white">{request.collected_by_name}</p>
+                    </div>
+                  ) : drivers.find(d => d.id === request.assigned_driver_id) ? (
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-success/20">
+                        <User className="h-4 w-4 text-success" />
+                      </div>
+                      <p className="text-sm font-medium text-white">
+                        {drivers.find(d => d.id === request.assigned_driver_id)?.contact_name}
+                      </p>
+                    </div>
+                  ) : request.assigned_driver_id ? (
+                    <p className="text-sm text-gray-400 italic">Driver no longer in system</p>
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">No driver assigned</p>
+                  )}
+                  {request.collected_at && (
+                    <p className="text-xs text-gray-400">
+                      Collected on {format(new Date(request.collected_at), "d MMM yyyy 'at' h:mm a")}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {suggestedDrivers.length > 0 && (
+                    <div className="rounded-lg bg-primary/10 p-3">
+                      <p className="text-xs text-primary mb-2">Suggested for {profile?.postcode}:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {suggestedDrivers.map(driver => (
+                          <button
+                            key={driver.id}
+                            onClick={() => setSelectedDriverId(driver.id)}
+                            className={`text-xs px-2 py-1 rounded-full transition-colors ${
+                              selectedDriverId === driver.id 
+                                ? "bg-primary text-white" 
+                                : "bg-white/10 text-white hover:bg-white/20"
+                            }`}
+                          >
+                            {driver.contact_name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <Select value={selectedDriverId || "unassigned"} onValueChange={(val) => setSelectedDriverId(val === "unassigned" ? "" : val)}>
+                    <SelectTrigger className="bg-[#28292b] border-[#333] text-white">
+                      <SelectValue placeholder="Select a driver" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {drivers.map(driver => (
+                        <SelectItem key={driver.id} value={driver.id}>
+                          {driver.contact_name}
+                          {driver.coverage_areas && driver.coverage_areas.length > 0 && (
+                            <span className="text-gray-400 ml-2">
+                              ({driver.coverage_areas.slice(0, 3).join(", ")})
+                            </span>
+                          )}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {request.assigned_driver_id && !drivers.find(d => d.id === request.assigned_driver_id) && (
+                    <div className="rounded-lg bg-destructive/10 border border-destructive p-3">
+                      <p className="text-xs text-destructive font-medium">
+                        ⚠️ Previously assigned driver has been deleted
+                      </p>
+                      <p className="text-xs text-destructive/70 mt-1">
+                        Please assign a new driver to this request.
+                      </p>
+                    </div>
+                  )}
+                  {request.assigned_driver_id && drivers.find(d => d.id === request.assigned_driver_id) && (
+                    <p className="text-xs text-gray-400">
+                      Currently assigned: {drivers.find(d => d.id === request.assigned_driver_id)?.contact_name}
+                    </p>
+                  )}
+                  <Button
+                    onClick={handleDriverAssignment}
+                    disabled={driverUpdating || selectedDriverId === (request.assigned_driver_id || "")}
+                    variant="secondary"
+                    className="w-full"
+                  >
+                    {driverUpdating ? <LoadingSpinner size="sm" /> : "Update Assignment"}
+                  </Button>
+                </div>
+              )}
             </div>
 
             <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-5">

@@ -20,7 +20,7 @@ import {
 export default function MarkCollected() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
 
   const [request, setRequest] = useState<RequestWithPhotos | null>(null);
@@ -145,13 +145,14 @@ export default function MarkCollected() {
         if (insertError) throw insertError;
       }
 
-      // Update request status
+      // Update request status with driver name for historical reference
       const { error: updateError } = await supabase
         .from("requests")
         .update({
           status: "collected",
           collected_at: new Date().toISOString(),
           collected_by: user.id,
+          collected_by_name: profile?.contact_name || null,
           collection_notes: collectionNotes || null,
           collection_proof_photo_url: uploadedUrls[0] || null,
         })
