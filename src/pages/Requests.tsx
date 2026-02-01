@@ -31,6 +31,11 @@ const statusConfig: Record<string, {
     text: "text-warning",
     label: "Scheduled"
   },
+  collected: {
+    bg: "bg-success/10",
+    text: "text-success",
+    label: "Collected"
+  },
   completed: {
     bg: "bg-success/10",
     text: "text-success",

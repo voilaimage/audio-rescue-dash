@@ -13,7 +13,7 @@ const statusConfig: Record<string, { bg: string; text: string; border: string; l
   new: { bg: "bg-primary/10", text: "text-primary", border: "border-primary", label: "New" },
   accepted: { bg: "bg-primary/10", text: "text-primary", border: "border-primary", label: "Accepted" },
   scheduled: { bg: "bg-warning/10", text: "text-warning", border: "border-warning", label: "Scheduled" },
-  collected: { bg: "bg-info/10", text: "text-info", border: "border-info", label: "Collected" },
+  collected: { bg: "bg-success/10", text: "text-success", border: "border-success", label: "Collected" },
   completed: { bg: "bg-success/10", text: "text-success", border: "border-success", label: "Completed" },
   cancelled: { bg: "bg-destructive/10", text: "text-destructive", border: "border-destructive", label: "Cancelled" },
 };
