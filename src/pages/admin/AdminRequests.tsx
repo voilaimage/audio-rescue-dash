@@ -9,13 +9,13 @@ import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { format } from "date-fns";
 import { Search, ChevronRight } from "lucide-react";
 
-const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
-  new: { bg: "bg-primary/10", text: "text-primary", label: "New" },
-  accepted: { bg: "bg-primary/10", text: "text-primary", label: "Accepted" },
-  scheduled: { bg: "bg-warning/10", text: "text-warning", label: "Scheduled" },
-  collected: { bg: "bg-info/10", text: "text-info", label: "Collected" },
-  completed: { bg: "bg-success/10", text: "text-success", label: "Completed" },
-  cancelled: { bg: "bg-destructive/10", text: "text-destructive", label: "Cancelled" },
+const statusConfig: Record<string, { bg: string; text: string; border: string; label: string }> = {
+  new: { bg: "bg-primary/10", text: "text-primary", border: "border-primary", label: "New" },
+  accepted: { bg: "bg-primary/10", text: "text-primary", border: "border-primary", label: "Accepted" },
+  scheduled: { bg: "bg-warning/10", text: "text-warning", border: "border-warning", label: "Scheduled" },
+  collected: { bg: "bg-info/10", text: "text-info", border: "border-info", label: "Collected" },
+  completed: { bg: "bg-success/10", text: "text-success", border: "border-success", label: "Completed" },
+  cancelled: { bg: "bg-destructive/10", text: "text-destructive", border: "border-destructive", label: "Cancelled" },
 };
 
 export default function AdminRequests() {
@@ -259,7 +259,7 @@ export default function AdminRequests() {
                           </p>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}>
+                          <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text} ${status.border}`}>
                             {status.label}
                           </span>
                         </td>
