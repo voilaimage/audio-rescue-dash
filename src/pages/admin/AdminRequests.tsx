@@ -391,7 +391,7 @@ export default function AdminRequests() {
                   size="sm"
                   variant="outline"
                   onClick={() => handleBulkArchive(true)}
-                  className="border-[#333] text-white hover:bg-white/10"
+                  className="bg-[#1d1d1d] border-[#333] text-white hover:bg-[#2a2a2a] hover:border-[#444]"
                 >
                   <Archive className="h-4 w-4 mr-2" />
                   Archive Selected
