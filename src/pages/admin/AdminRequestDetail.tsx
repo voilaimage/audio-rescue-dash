@@ -502,7 +502,6 @@ export default function AdminRequestDetail() {
                       <SelectItem value="accepted">Accepted</SelectItem>
                       <SelectItem value="scheduled">Scheduled</SelectItem>
                       <SelectItem value="collected">Collected</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
                       <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
