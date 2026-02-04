@@ -24,7 +24,7 @@ export function DriverLayout({ children }: DriverLayoutProps) {
     <div className="flex min-h-screen flex-col bg-[#121212]">
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between border-b border-[#333] bg-black px-4 py-3">
-        <img src={logoWhite} alt="Audio Salvage UK" className="h-8 w-auto" />
+        <img src={logoWhite} alt="Audio Salvage UK" className="h-12 w-auto" />
         <div className="flex items-center gap-2">
           <div className="rounded-lg bg-white/10 px-3 py-1.5">
             <p className="text-xs font-medium text-white">{profile?.contact_name}</p>
