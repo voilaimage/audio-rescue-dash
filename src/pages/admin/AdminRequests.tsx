@@ -434,6 +434,44 @@ export default function AdminRequests() {
     }
   };
 
+  // Bulk status update handler
+  const handleBulkStatusUpdate = async (newStatus: string) => {
+    if (selectedIds.size === 0) return;
+    
+    try {
+      const updateData: Record<string, any> = { status: newStatus };
+      
+      // Add timestamps based on status
+      if (newStatus === 'accepted') {
+        updateData.accepted_at = new Date().toISOString();
+      } else if (newStatus === 'cancelled') {
+        updateData.cancelled_at = new Date().toISOString();
+      }
+      
+      const { error } = await supabase
+        .from("requests")
+        .update(updateData)
+        .in("id", Array.from(selectedIds));
+
+      if (error) throw error;
+
+      setRequests(prev => prev.map(r => 
+        selectedIds.has(r.id)
+          ? { ...r, ...updateData }
+          : r
+      ));
+
+      toast({ 
+        title: `${selectedIds.size} requests updated`,
+        description: `Status changed to ${statusConfig[newStatus]?.label || newStatus}`
+      });
+
+      setSelectedIds(new Set());
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Bulk status update failed", description: error.message });
+    }
+  };
+
   // Export to CSV
   const handleExportCSV = () => {
     const csvHeaders = [
@@ -773,6 +811,22 @@ export default function AdminRequests() {
               </button>
             </div>
             <div className="flex items-center gap-2">
+              {/* Bulk Status Update Dropdown */}
+              {!showArchived && (
+                <Select onValueChange={handleBulkStatusUpdate}>
+                  <SelectTrigger className="w-[160px] h-8 bg-[#1d1d1d] border-[#333] text-white text-sm">
+                    <SelectValue placeholder="Change Status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1d1d1d] border-[#333]">
+                    <SelectItem value="new" className="text-primary">New</SelectItem>
+                    <SelectItem value="accepted" className="text-primary">Accepted</SelectItem>
+                    <SelectItem value="scheduled" className="text-warning">Scheduled</SelectItem>
+                    <SelectItem value="collected" className="text-success">Collected</SelectItem>
+                    <SelectItem value="cancelled" className="text-destructive">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+              
               {showArchived ? (
                 <Button
                   size="sm"
