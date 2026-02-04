@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Search, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, User, Archive, ArchiveRestore, X, Download } from "lucide-react";
+import { Search, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, User, Archive, ArchiveRestore, X, Download, MapPin, Phone, Calendar, Clock, FileText, Camera } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 type SortColumn = 'business' | 'description' | 'location' | 'driver' | 'date' | 'status';
@@ -49,6 +49,7 @@ export default function AdminRequests() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortColumn, setSortColumn] = useState<SortColumn>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchData = async () => {
@@ -293,6 +294,19 @@ export default function AdminRequests() {
         return next;
       });
     }
+  };
+
+  // Toggle row expansion
+  const toggleExpand = (id: string) => {
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   };
 
   // Bulk archive/unarchive handler
@@ -622,9 +636,15 @@ export default function AdminRequests() {
                   const signedUrl = firstPhotoUrl ? signedUrlMap.get(firstPhotoUrl) : null;
                   const isArchivable = ['collected', 'completed', 'cancelled'].includes(request.status);
                   const isSelected = selectedIds.has(request.id);
-                    return (
-                      <tr key={request.id} className={`hover:bg-white/5 ${isSelected ? "bg-primary/5" : ""}`}>
-                        <td className="px-4 py-3">
+                  const isExpanded = expandedIds.has(request.id);
+                  
+                  return (
+                    <React.Fragment key={request.id}>
+                      <tr 
+                        className={`hover:bg-white/5 cursor-pointer ${isSelected ? "bg-primary/5" : ""} ${isExpanded ? "bg-white/5" : ""}`}
+                        onClick={() => toggleExpand(request.id)}
+                      >
+                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                           {isArchivable ? (
                             <Checkbox
                               checked={isSelected}
@@ -701,12 +721,24 @@ export default function AdminRequests() {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            {/* Expand/Collapse indicator */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleExpand(request.id);
+                              }}
+                              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white transition-colors"
+                              title={isExpanded ? "Collapse" : "Expand"}
+                            >
+                              <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                            </button>
                             {/* Archive/Unarchive button - only for collected, completed, or cancelled */}
                             {isArchivable && (
                               <button
                                 onClick={(e) => {
                                   e.preventDefault();
+                                  e.stopPropagation();
                                   handleArchiveToggle(request.id, !!request.archived_at);
                                 }}
                                 className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
@@ -726,13 +758,140 @@ export default function AdminRequests() {
                             <Link
                               to={`/admin/requests/${request.id}`}
                               className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white"
+                              onClick={(e) => e.stopPropagation()}
                             >
                               <ChevronRight className="h-4 w-4" />
                             </Link>
                           </div>
                         </td>
                       </tr>
-                    );
+                      
+                      {/* Expanded Row */}
+                      {isExpanded && (
+                        <tr className="bg-black/20">
+                          <td colSpan={8} className="px-4 py-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                              {/* Description & Notes */}
+                              <div className="space-y-4">
+                                <div>
+                                  <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-2">
+                                    <FileText className="h-3 w-3" />
+                                    Description
+                                  </div>
+                                  <p className="text-sm text-white">{request.description || "No description"}</p>
+                                </div>
+                                {request.collection_notes && (
+                                  <div>
+                                    <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-2">
+                                      <FileText className="h-3 w-3" />
+                                      Collection Notes
+                                    </div>
+                                    <p className="text-sm text-white">{request.collection_notes}</p>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Contact & Address */}
+                              <div className="space-y-4">
+                                <div>
+                                  <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-2">
+                                    <MapPin className="h-3 w-3" />
+                                    Address
+                                  </div>
+                                  <p className="text-sm text-white">
+                                    {request.profiles?.address_line1}
+                                    {request.profiles?.address_line2 && <>, {request.profiles.address_line2}</>}
+                                  </p>
+                                  <p className="text-sm text-white">
+                                    {request.profiles?.city}, {request.profiles?.postcode}
+                                  </p>
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-2">
+                                    <Phone className="h-3 w-3" />
+                                    Phone
+                                  </div>
+                                  <p className="text-sm text-white">{request.profiles?.phone || "N/A"}</p>
+                                </div>
+                              </div>
+
+                              {/* Schedule & Timestamps */}
+                              <div className="space-y-4">
+                                {request.scheduled_start && (
+                                  <div>
+                                    <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-2">
+                                      <Calendar className="h-3 w-3" />
+                                      Scheduled
+                                    </div>
+                                    <p className="text-sm text-white">
+                                      {format(new Date(request.scheduled_start), "d MMM yyyy")}
+                                    </p>
+                                    <p className="text-xs text-gray-400">
+                                      {format(new Date(request.scheduled_start), "h:mm a")}
+                                      {request.scheduled_end && <> - {format(new Date(request.scheduled_end), "h:mm a")}</>}
+                                    </p>
+                                  </div>
+                                )}
+                                {request.collected_at && (
+                                  <div>
+                                    <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-2">
+                                      <Clock className="h-3 w-3" />
+                                      Collected
+                                    </div>
+                                    <p className="text-sm text-white">
+                                      {format(new Date(request.collected_at), "d MMM yyyy, h:mm a")}
+                                    </p>
+                                    {request.collected_by_name && (
+                                      <p className="text-xs text-gray-400">by {request.collected_by_name}</p>
+                                    )}
+                                  </div>
+                                )}
+                                {request.preferred_window && request.preferred_window !== 'anytime' && (
+                                  <div>
+                                    <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-2">
+                                      <Clock className="h-3 w-3" />
+                                      Preferred Window
+                                    </div>
+                                    <p className="text-sm text-white capitalize">{request.preferred_window}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Photos */}
+                            {request.request_photos && request.request_photos.length > 0 && (
+                              <div className="mt-4 pt-4 border-t border-[#333]">
+                                <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-3">
+                                  <Camera className="h-3 w-3" />
+                                  Photos ({request.request_photos.length})
+                                </div>
+                                <div className="flex gap-2 flex-wrap">
+                                  {request.request_photos.map((photo, index) => {
+                                    const photoSignedUrl = signedUrlMap.get(photo.file_url);
+                                    return (
+                                      <div key={photo.id || index} className="relative">
+                                        {photoSignedUrl ? (
+                                          <img
+                                            src={photoSignedUrl}
+                                            alt={`Photo ${index + 1}`}
+                                            className="h-16 w-16 rounded-lg object-cover"
+                                          />
+                                        ) : (
+                                          <div className="h-16 w-16 rounded-lg bg-[#28292b] flex items-center justify-center">
+                                            <Camera className="h-4 w-4 text-gray-500" />
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
                 })
               )}
             </tbody>
