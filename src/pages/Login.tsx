@@ -129,14 +129,16 @@ export default function Login() {
               </form>
             </div>
 
-            <div className="mt-6 text-center text-sm text-white space-y-3 pb-8">
-              <div>
-                <p className="text-base">Don't have an account?</p>
-                <Link to="/register" className="font-bold text-base text-[#f59f0a] underline hover:text-[#f59f0a]/80">
-                  Register your business
-                </Link>
+            {!isAdminDomain && (
+              <div className="mt-6 text-center text-sm text-white space-y-3 pb-8">
+                <div>
+                  <p className="text-base">Don't have an account?</p>
+                  <Link to="/register" className="font-bold text-base text-[#f59f0a] underline hover:text-[#f59f0a]/80">
+                    Register your business
+                  </Link>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
