@@ -8,9 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
-import { Search, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, User, Archive, ArchiveRestore, X, Download, MapPin, Phone, Calendar, Clock, FileText, Camera } from "lucide-react";
+import { format, startOfDay, endOfDay, isWithinInterval } from "date-fns";
+import { Search, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, User, Archive, ArchiveRestore, X, Download, MapPin, Phone, Calendar, Clock, FileText, Camera, CalendarIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 type SortColumn = 'business' | 'description' | 'location' | 'driver' | 'date' | 'status';
 type SortDirection = 'asc' | 'desc';
@@ -42,6 +45,8 @@ export default function AdminRequests() {
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [driverFilter, setDriverFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
+  const [dateRangeStart, setDateRangeStart] = useState<Date | undefined>(undefined);
+  const [dateRangeEnd, setDateRangeEnd] = useState<Date | undefined>(undefined);
   const [showArchived, setShowArchived] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -124,8 +129,8 @@ export default function AdminRequests() {
         if (driverFilter !== "unassigned" && request.assigned_driver_id !== driverFilter) return false;
       }
 
-      // Date filter
-      if (dateFilter !== "all") {
+      // Date filter - preset options
+      if (dateFilter !== "all" && dateFilter !== "custom") {
         const requestDate = new Date(request.created_at);
         const now = new Date();
         const daysDiff = Math.floor((now.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -133,6 +138,22 @@ export default function AdminRequests() {
         if (dateFilter === "today" && daysDiff > 0) return false;
         if (dateFilter === "week" && daysDiff > 7) return false;
         if (dateFilter === "month" && daysDiff > 30) return false;
+      }
+
+      // Date range filter - custom range
+      if (dateFilter === "custom" && (dateRangeStart || dateRangeEnd)) {
+        const requestDate = new Date(request.created_at);
+        
+        if (dateRangeStart && dateRangeEnd) {
+          if (!isWithinInterval(requestDate, { 
+            start: startOfDay(dateRangeStart), 
+            end: endOfDay(dateRangeEnd) 
+          })) return false;
+        } else if (dateRangeStart) {
+          if (requestDate < startOfDay(dateRangeStart)) return false;
+        } else if (dateRangeEnd) {
+          if (requestDate > endOfDay(dateRangeEnd)) return false;
+        }
       }
 
       // Search filter
@@ -147,7 +168,7 @@ export default function AdminRequests() {
 
       return true;
     });
-  }, [requests, statusFilter, cityFilter, driverFilter, dateFilter, searchQuery, showArchived]);
+  }, [requests, statusFilter, cityFilter, driverFilter, dateFilter, dateRangeStart, dateRangeEnd, searchQuery, showArchived]);
 
   // Sort filtered requests
   const sortedRequests = useMemo(() => {
@@ -219,7 +240,7 @@ export default function AdminRequests() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, cityFilter, driverFilter, dateFilter, searchQuery, showArchived, itemsPerPage]);
+  }, [statusFilter, cityFilter, driverFilter, dateFilter, dateRangeStart, dateRangeEnd, searchQuery, showArchived, itemsPerPage]);
 
   // Archive/unarchive handler
   const handleArchiveToggle = async (requestId: string, isCurrentlyArchived: boolean) => {
@@ -472,7 +493,13 @@ export default function AdminRequests() {
             </SelectContent>
           </Select>
 
-          <Select value={dateFilter} onValueChange={setDateFilter}>
+          <Select value={dateFilter} onValueChange={(value) => {
+            setDateFilter(value);
+            if (value !== "custom") {
+              setDateRangeStart(undefined);
+              setDateRangeEnd(undefined);
+            }
+          }}>
             <SelectTrigger className="w-[140px] bg-[#1d1d1d] border-[#333] text-white">
               <SelectValue placeholder="Date" />
             </SelectTrigger>
@@ -481,8 +508,80 @@ export default function AdminRequests() {
               <SelectItem value="today">Today</SelectItem>
               <SelectItem value="week">This Week</SelectItem>
               <SelectItem value="month">This Month</SelectItem>
+              <SelectItem value="custom">Custom Range</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* Date Range Pickers - shown when custom is selected */}
+          {dateFilter === "custom" && (
+            <div className="flex items-center gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      "w-[130px] justify-start text-left font-normal bg-[#1d1d1d] border-[#333] text-white hover:bg-[#2a2a2a] hover:border-[#444]",
+                      !dateRangeStart && "text-gray-400"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRangeStart ? format(dateRangeStart, "d MMM yy") : "From"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={dateRangeStart}
+                    onSelect={setDateRangeStart}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              
+              <span className="text-gray-400">–</span>
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      "w-[130px] justify-start text-left font-normal bg-[#1d1d1d] border-[#333] text-white hover:bg-[#2a2a2a] hover:border-[#444]",
+                      !dateRangeEnd && "text-gray-400"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRangeEnd ? format(dateRangeEnd, "d MMM yy") : "To"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={dateRangeEnd}
+                    onSelect={setDateRangeEnd}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {(dateRangeStart || dateRangeEnd) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setDateRangeStart(undefined);
+                    setDateRangeEnd(undefined);
+                  }}
+                  className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-white/10"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* Archive Toggle */}
           <Button
