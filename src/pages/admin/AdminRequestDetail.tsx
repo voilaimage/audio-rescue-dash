@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { supabase, RequestWithPhotos, Profile } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { format } from "date-fns";
@@ -35,16 +37,20 @@ const dayRangeLabels: Record<string, string> = {
   week: "Within a week",
 };
 
-// Extended type to include collected_by_name and cancelled_at
+// Extended type to include collected_by_name, cancelled_at, and cancellation fields
 type RequestWithDriverName = RequestWithPhotos & {
   collected_by_name?: string | null;
   cancelled_at?: string | null;
+  cancelled_by?: string | null;
+  cancelled_by_name?: string | null;
+  cancellation_reason?: string | null;
 };
 
 export default function AdminRequestDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, profile: currentUserProfile } = useAuth();
   const [request, setRequest] = useState<RequestWithDriverName | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [drivers, setDrivers] = useState<Profile[]>([]);
@@ -60,6 +66,9 @@ export default function AdminRequestDetail() {
   const [scheduledDate, setScheduledDate] = useState<string>("");
   const [scheduledStartTime, setScheduledStartTime] = useState<string>("");
   const [scheduledEndTime, setScheduledEndTime] = useState<string>("");
+
+  // Cancellation state
+  const [cancellationReason, setCancellationReason] = useState<string>("");
 
   // Get original URLs from request photos
   const originalPhotoUrls = request?.request_photos?.map(p => p.file_url) || [];
@@ -172,9 +181,12 @@ export default function AdminRequestDetail() {
         }
       }
 
-      // When marking as cancelled, store the cancellation timestamp
+      // When marking as cancelled, store the cancellation details
       if (newStatus === "cancelled") {
         updateData.cancelled_at = new Date().toISOString();
+        updateData.cancelled_by = user?.id || null;
+        updateData.cancelled_by_name = currentUserProfile?.contact_name || null;
+        updateData.cancellation_reason = cancellationReason || null;
       }
       
       const { error } = await supabase
@@ -428,14 +440,29 @@ export default function AdminRequestDetail() {
                 {isReadOnly ? "Status" : "Update Status"}
               </h3>
               {isReadOnly ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className={`rounded-lg px-3 py-2 text-center text-sm font-medium ${status.bg} ${status.text}`}>
                     {status.label}
                   </div>
-                  {request.status === 'cancelled' && request.cancelled_at && (
-                    <p className="text-xs text-center text-gray-400">
-                      Cancelled on {format(new Date(request.cancelled_at), "d MMM yyyy 'at' h:mm a")}
-                    </p>
+                  {request.status === 'cancelled' && (
+                    <div className="space-y-2 pt-2 border-t border-[#333]">
+                      {request.cancelled_at && (
+                        <p className="text-xs text-gray-400">
+                          <span className="font-medium text-white">Date:</span> {format(new Date(request.cancelled_at), "d MMM yyyy 'at' h:mm a")}
+                        </p>
+                      )}
+                      {request.cancelled_by_name && (
+                        <p className="text-xs text-gray-400">
+                          <span className="font-medium text-white">Cancelled by:</span> {request.cancelled_by_name}
+                        </p>
+                      )}
+                      {request.cancellation_reason && (
+                        <div>
+                          <p className="text-xs font-medium text-white mb-1">Reason:</p>
+                          <p className="text-xs text-gray-400 leading-relaxed">{request.cancellation_reason}</p>
+                        </div>
+                      )}
+                    </div>
                   )}
                   {(request.status === 'collected' || request.status === 'completed') && request.collected_at && (
                     <p className="text-xs text-center text-gray-400">
@@ -458,12 +485,37 @@ export default function AdminRequestDetail() {
                       <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
+
+                  {/* Cancellation Details - Show when cancelled is selected */}
+                  {newStatus === "cancelled" && request.status !== "cancelled" && (
+                    <div className="space-y-3 pt-3 border-t border-[#333]">
+                      <div>
+                        <Label className="text-xs text-gray-400">Cancelled by</Label>
+                        <Input
+                          value={currentUserProfile?.contact_name || ""}
+                          disabled
+                          className="mt-1 bg-[#28292b] border-[#333] text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs text-gray-400">Reason for cancellation</Label>
+                        <Textarea
+                          value={cancellationReason}
+                          onChange={(e) => setCancellationReason(e.target.value)}
+                          placeholder="Enter reason for cancellation..."
+                          className="mt-1 bg-[#28292b] border-[#333] text-white min-h-[80px]"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <Button
                     onClick={handleStatusUpdate}
                     disabled={updating || newStatus === request.status}
                     className="w-full"
+                    variant={newStatus === "cancelled" ? "destructive" : "default"}
                   >
-                    {updating ? <LoadingSpinner size="sm" /> : "Update Status"}
+                    {updating ? <LoadingSpinner size="sm" /> : newStatus === "cancelled" ? "Confirm Cancellation" : "Update Status"}
                   </Button>
                 </div>
               )}
