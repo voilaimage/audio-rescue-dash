@@ -163,6 +163,26 @@ export default function AdminRequestDetail() {
       }
     }
 
+    // Validate requirements for cancelled status
+    if (newStatus === "cancelled") {
+      if (!cancelledByName.trim()) {
+        toast({ 
+          variant: "destructive", 
+          title: "Customer name required", 
+          description: "Please enter the name of the customer who requested cancellation." 
+        });
+        return;
+      }
+      if (!cancellationReason.trim()) {
+        toast({ 
+          variant: "destructive", 
+          title: "Reason required", 
+          description: "Please provide a reason for the cancellation." 
+        });
+        return;
+      }
+    }
+
     setUpdating(true);
     try {
       const updateData: any = { status: newStatus };
