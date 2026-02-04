@@ -37,6 +37,7 @@ export type Request = {
   collection_notes: string | null;
   collection_proof_photo_url: string | null;
   collection_pin: string | null;
+  archived_at: string | null;
   created_at: string;
   updated_at: string;
 };
