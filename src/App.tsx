@@ -22,6 +22,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRequests from "./pages/admin/AdminRequests";
 import AdminRequestDetail from "./pages/admin/AdminRequestDetail";
 import AdminDrivers from "./pages/admin/AdminDrivers";
+import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
 
 // Driver Pages
 import DriverLogin from "./pages/DriverLogin";
@@ -93,6 +94,7 @@ function AppRoutes() {
       <Route path="/admin/requests" element={<ProtectedRoute allowedRoles={["admin"]}><AdminRequests /></ProtectedRoute>} />
       <Route path="/admin/requests/:id" element={<ProtectedRoute allowedRoles={["admin"]}><AdminRequestDetail /></ProtectedRoute>} />
       <Route path="/admin/drivers" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDrivers /></ProtectedRoute>} />
+      <Route path="/admin/audit-logs" element={<ProtectedRoute allowedRoles={["admin"]}><AdminAuditLogs /></ProtectedRoute>} />
       
       {/* Driver Routes */}
       <Route path="/driver" element={<ProtectedRoute allowedRoles={["admin", "driver"]}><DriverHome /></ProtectedRoute>} />
