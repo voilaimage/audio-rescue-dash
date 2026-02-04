@@ -10,7 +10,7 @@ import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { format, startOfDay, endOfDay, isWithinInterval } from "date-fns";
-import { Search, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, User, Archive, ArchiveRestore, X, Download, MapPin, Phone, Calendar, Clock, FileText, Camera, CalendarIcon } from "lucide-react";
+import { Search, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, User, Archive, ArchiveRestore, X, Download, MapPin, Phone, Calendar, Clock, FileText, Camera, CalendarIcon, LayoutList, LayoutGrid } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -56,6 +56,7 @@ export default function AdminRequests() {
   const [sortColumn, setSortColumn] = useState<SortColumn>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [compactView, setCompactView] = useState(false);
 
   // Fetch data function - extracted for reuse
   const fetchRequests = async () => {
@@ -794,6 +795,20 @@ export default function AdminRequests() {
             <Download className="h-4 w-4 mr-2" />
             Export CSV
           </Button>
+
+          {/* Compact View Toggle */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCompactView(!compactView)}
+            className={`bg-[#1d1d1d] border-[#333] text-white hover:bg-[#2a2a2a] hover:border-[#444] hover:text-white ${
+              compactView ? "border-primary bg-primary/10" : ""
+            }`}
+            title={compactView ? "Full view" : "Compact view"}
+          >
+            {compactView ? <LayoutGrid className="h-4 w-4 mr-2" /> : <LayoutList className="h-4 w-4 mr-2" />}
+            {compactView ? "Full View" : "Compact"}
+          </Button>
         </div>
 
         {/* Bulk Action Bar */}
@@ -883,33 +898,39 @@ export default function AdminRequests() {
                     <SortIndicator column="description" />
                   </div>
                 </th>
-                <th 
-                  className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400 cursor-pointer hover:text-white transition-colors"
-                  onClick={() => handleSort('location')}
-                >
-                  <div className="flex items-center gap-1">
-                    Location
-                    <SortIndicator column="location" />
-                  </div>
-                </th>
-                <th 
-                  className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400 cursor-pointer hover:text-white transition-colors"
-                  onClick={() => handleSort('driver')}
-                >
-                  <div className="flex items-center gap-1">
-                    Driver
-                    <SortIndicator column="driver" />
-                  </div>
-                </th>
-                <th 
-                  className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400 cursor-pointer hover:text-white transition-colors"
-                  onClick={() => handleSort('date')}
-                >
-                  <div className="flex items-center gap-1">
-                    Date
-                    <SortIndicator column="date" />
-                  </div>
-                </th>
+                {!compactView && (
+                  <th 
+                    className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400 cursor-pointer hover:text-white transition-colors"
+                    onClick={() => handleSort('location')}
+                  >
+                    <div className="flex items-center gap-1">
+                      Location
+                      <SortIndicator column="location" />
+                    </div>
+                  </th>
+                )}
+                {!compactView && (
+                  <th 
+                    className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400 cursor-pointer hover:text-white transition-colors"
+                    onClick={() => handleSort('driver')}
+                  >
+                    <div className="flex items-center gap-1">
+                      Driver
+                      <SortIndicator column="driver" />
+                    </div>
+                  </th>
+                )}
+                {!compactView && (
+                  <th 
+                    className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400 cursor-pointer hover:text-white transition-colors"
+                    onClick={() => handleSort('date')}
+                  >
+                    <div className="flex items-center gap-1">
+                      Date
+                      <SortIndicator column="date" />
+                    </div>
+                  </th>
+                )}
                 <th 
                   className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400 cursor-pointer hover:text-white transition-colors"
                   onClick={() => handleSort('status')}
@@ -925,7 +946,7 @@ export default function AdminRequests() {
             <tbody className="divide-y divide-[#333]">
               {sortedRequests.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
+                  <td colSpan={compactView ? 5 : 8} className="px-4 py-8 text-center text-gray-400">
                     No requests found
                   </td>
                 </tr>
@@ -989,32 +1010,38 @@ export default function AdminRequests() {
                             {request.description}
                           </p>
                         </td>
-                        <td className="px-4 py-3">
-                          <p className="text-sm text-white">{request.profiles?.city}</p>
-                          <p className="text-xs text-gray-400">{request.profiles?.postcode}</p>
-                        </td>
-                        <td className="px-4 py-3">
-                          {request.assigned_driver ? (
-                            <div className="flex items-center gap-2">
-                              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
-                                <User className="h-3 w-3 text-primary" />
+                        {!compactView && (
+                          <td className="px-4 py-3">
+                            <p className="text-sm text-white">{request.profiles?.city}</p>
+                            <p className="text-xs text-gray-400">{request.profiles?.postcode}</p>
+                          </td>
+                        )}
+                        {!compactView && (
+                          <td className="px-4 py-3">
+                            {request.assigned_driver ? (
+                              <div className="flex items-center gap-2">
+                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
+                                  <User className="h-3 w-3 text-primary" />
+                                </div>
+                                <span className="text-sm text-white">
+                                  {request.assigned_driver.contact_name}
+                                </span>
                               </div>
-                              <span className="text-sm text-white">
-                                {request.assigned_driver.contact_name}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-sm text-gray-500">Unassigned</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <p className="text-sm text-white">
-                            {format(new Date(request.created_at), "d MMM yyyy")}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            {format(new Date(request.created_at), "h:mm a")}
-                          </p>
-                        </td>
+                            ) : (
+                              <span className="text-sm text-gray-500">Unassigned</span>
+                            )}
+                          </td>
+                        )}
+                        {!compactView && (
+                          <td className="px-4 py-3">
+                            <p className="text-sm text-white">
+                              {format(new Date(request.created_at), "d MMM yyyy")}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {format(new Date(request.created_at), "h:mm a")}
+                            </p>
+                          </td>
+                        )}
                         <td className="px-4 py-3">
                           <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text} ${status.border}`}>
                             {status.label}
