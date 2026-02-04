@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { useToast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 import { format, startOfDay, endOfDay, isWithinInterval } from "date-fns";
 import { Search, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, User, Archive, ArchiveRestore, X, Download, MapPin, Phone, Calendar, Clock, FileText, Camera, CalendarIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -102,6 +103,11 @@ export default function AdminRequests() {
           if (payload.eventType === 'INSERT') {
             // For new requests, fetch fresh data to get all related data
             await fetchRequests();
+            // Show toast notification for new request
+            sonnerToast.success('New request received!', {
+              description: 'A new collection request has just been submitted.',
+              duration: 5000,
+            });
           } else if (payload.eventType === 'UPDATE') {
             // Update the specific request in state
             setRequests(prev => prev.map(r => {
