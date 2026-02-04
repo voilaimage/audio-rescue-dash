@@ -30,6 +30,7 @@ import DriverInstall from "./pages/DriverInstall";
 import DriverSetup from "./pages/DriverSetup";
 import DriverHome from "./pages/driver/DriverHome";
 import DriverJobDetail from "./pages/driver/DriverJobDetail";
+import DriverProfile from "./pages/driver/DriverProfile";
 import MarkCollected from "./pages/driver/MarkCollected";
 
 const queryClient = new QueryClient();
@@ -98,6 +99,7 @@ function AppRoutes() {
       
       {/* Driver Routes */}
       <Route path="/driver" element={<ProtectedRoute allowedRoles={["admin", "driver"]}><DriverHome /></ProtectedRoute>} />
+      <Route path="/driver/profile" element={<ProtectedRoute allowedRoles={["admin", "driver"]}><DriverProfile /></ProtectedRoute>} />
       <Route path="/driver/job/:id" element={<ProtectedRoute allowedRoles={["admin", "driver"]}><DriverJobDetail /></ProtectedRoute>} />
       <Route path="/driver/job/:id/collect" element={<ProtectedRoute allowedRoles={["admin", "driver"]}><MarkCollected /></ProtectedRoute>} />
       
