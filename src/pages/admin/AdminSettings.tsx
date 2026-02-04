@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,12 +6,16 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Eye, EyeOff, Mail, Lock, Save } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Save, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function AdminSettings() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const { toast } = useToast();
+  
+  // Name change state
+  const [contactName, setContactName] = useState("");
+  const [nameLoading, setNameLoading] = useState(false);
   
   // Email change state
   const [newEmail, setNewEmail] = useState("");
@@ -25,6 +29,51 @@ export default function AdminSettings() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+
+  // Initialize name from profile
+  useEffect(() => {
+    if (profile?.contact_name) {
+      setContactName(profile.contact_name);
+    }
+  }, [profile?.contact_name]);
+
+  const handleNameChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!contactName.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Name required",
+        description: "Please enter your name.",
+      });
+      return;
+    }
+
+    if (!user?.id) return;
+
+    setNameLoading(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ contact_name: contactName.trim() })
+        .eq("id", user.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Name updated",
+        description: "Your name has been changed successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to update name",
+        description: error.message,
+      });
+    } finally {
+      setNameLoading(false);
+    }
+  };
 
   const handleEmailChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,6 +178,39 @@ export default function AdminSettings() {
             <p><span className="text-white">Name:</span> {profile?.contact_name}</p>
             <p><span className="text-white">Email:</span> {profile?.email}</p>
           </div>
+        </div>
+
+        {/* Change Name */}
+        <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-6">
+          <h2 className="mb-4 text-lg font-semibold flex items-center gap-2">
+            <User className="h-5 w-5 text-primary" />
+            Change Name
+          </h2>
+          <form onSubmit={handleNameChange} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="contactName">Display Name</Label>
+              <Input
+                id="contactName"
+                type="text"
+                placeholder="Your name"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500"
+              />
+            </div>
+            <Button 
+              type="submit" 
+              disabled={nameLoading || !contactName.trim() || contactName === profile?.contact_name}
+              className="bg-primary hover:bg-primary/90"
+            >
+              {nameLoading ? <LoadingSpinner size="sm" /> : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Update Name
+                </>
+              )}
+            </Button>
+          </form>
         </div>
 
         {/* Change Email */}
