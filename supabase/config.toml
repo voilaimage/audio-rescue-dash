@@ -1,4 +1,1 @@
 project_id = "lyfieowqpaxzfsdnkvfa"
-
-[functions.driver-setup]
-verify_jwt = false
