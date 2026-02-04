@@ -17,27 +17,43 @@ const statusConfig: Record<string, { bg: string; text: string; border: string; l
   completed: { bg: "bg-success/10", text: "text-success", border: "border-success", label: "Completed" },
   cancelled: { bg: "bg-destructive/10", text: "text-destructive", border: "border-destructive", label: "Cancelled" },
 };
+type Driver = {
+  id: string;
+  contact_name: string;
+};
 
 export default function AdminRequests() {
   const [requests, setRequests] = useState<RequestWithPhotos[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [cityFilter, setCityFilter] = useState<string>("all");
+  const [driverFilter, setDriverFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    const fetchRequests = async () => {
-      const { data } = await supabase
+    const fetchData = async () => {
+      // Fetch requests
+      const { data: requestsData } = await supabase
         .from("requests")
         .select("*, request_photos(*), profiles!requests_user_id_fkey(*), assigned_driver:profiles!requests_assigned_driver_id_fkey(id, contact_name)")
         .order("created_at", { ascending: false });
 
-      setRequests((data as unknown as RequestWithPhotos[]) || []);
+      setRequests((requestsData as unknown as RequestWithPhotos[]) || []);
+
+      // Fetch drivers for filter
+      const { data: driversData } = await supabase
+        .from("profiles")
+        .select("id, contact_name")
+        .eq("role", "driver")
+        .order("contact_name");
+
+      setDrivers(driversData || []);
       setLoading(false);
     };
 
-    fetchRequests();
+    fetchData();
   }, []);
 
   // Get thumbnail URLs for signed URL generation
@@ -78,6 +94,12 @@ export default function AdminRequests() {
       // City filter
       if (cityFilter !== "all" && request.profiles?.city !== cityFilter) return false;
 
+      // Driver filter
+      if (driverFilter !== "all") {
+        if (driverFilter === "unassigned" && request.assigned_driver_id) return false;
+        if (driverFilter !== "unassigned" && request.assigned_driver_id !== driverFilter) return false;
+      }
+
       // Date filter
       if (dateFilter !== "all") {
         const requestDate = new Date(request.created_at);
@@ -101,7 +123,7 @@ export default function AdminRequests() {
 
       return true;
     });
-  }, [requests, statusFilter, cityFilter, dateFilter, searchQuery]);
+  }, [requests, statusFilter, cityFilter, driverFilter, dateFilter, searchQuery]);
 
   if (loading) {
     return (
@@ -158,6 +180,19 @@ export default function AdminRequests() {
               <SelectItem value="all">All Cities</SelectItem>
               {cities.map((city) => (
                 <SelectItem key={city} value={city}>{city}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={driverFilter} onValueChange={setDriverFilter}>
+            <SelectTrigger className="w-[160px] bg-[#1d1d1d] border-[#333] text-white">
+              <SelectValue placeholder="Driver" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Drivers</SelectItem>
+              <SelectItem value="unassigned">Unassigned</SelectItem>
+              {drivers.map((driver) => (
+                <SelectItem key={driver.id} value={driver.id}>{driver.contact_name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
