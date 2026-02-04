@@ -56,15 +56,20 @@ export default function AdminRequests() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
+  // Fetch data function - extracted for reuse
+  const fetchRequests = async () => {
+    const { data: requestsData } = await supabase
+      .from("requests")
+      .select("*, request_photos(*), profiles!requests_user_id_fkey(*), assigned_driver:profiles!requests_assigned_driver_id_fkey(id, contact_name)")
+      .order("created_at", { ascending: false });
+
+    setRequests((requestsData as unknown as RequestWithArchive[]) || []);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       // Fetch requests
-      const { data: requestsData } = await supabase
-        .from("requests")
-        .select("*, request_photos(*), profiles!requests_user_id_fkey(*), assigned_driver:profiles!requests_assigned_driver_id_fkey(id, contact_name)")
-        .order("created_at", { ascending: false });
-
-      setRequests((requestsData as unknown as RequestWithArchive[]) || []);
+      await fetchRequests();
 
       // Fetch drivers for filter
       const { data: driversData } = await supabase
@@ -78,6 +83,46 @@ export default function AdminRequests() {
     };
 
     fetchData();
+  }, []);
+
+  // Real-time subscription for request updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-requests-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'requests'
+        },
+        async (payload) => {
+          console.log('Realtime update received:', payload.eventType, payload);
+          
+          if (payload.eventType === 'INSERT') {
+            // For new requests, fetch fresh data to get all related data
+            await fetchRequests();
+          } else if (payload.eventType === 'UPDATE') {
+            // Update the specific request in state
+            setRequests(prev => prev.map(r => {
+              if (r.id === payload.new.id) {
+                return { ...r, ...payload.new } as RequestWithArchive;
+              }
+              return r;
+            }));
+          } else if (payload.eventType === 'DELETE') {
+            // Remove the deleted request from state
+            setRequests(prev => prev.filter(r => r.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Get thumbnail URLs for signed URL generation
