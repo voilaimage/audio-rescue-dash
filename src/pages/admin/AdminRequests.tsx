@@ -259,7 +259,11 @@ export default function AdminRequests() {
             variant="outline"
             size="sm"
             onClick={() => setShowArchived(!showArchived)}
-            className={`bg-[#1d1d1d] border-[#333] text-white hover:bg-white/10 ${showArchived ? "border-primary text-primary" : ""}`}
+            className={`bg-[#1d1d1d] border-[#333] hover:bg-[#2a2a2a] hover:border-[#444] ${
+              showArchived 
+                ? "border-primary bg-primary/10 text-primary hover:bg-primary/20 hover:border-primary" 
+                : "text-white hover:text-white"
+            }`}
           >
             <Archive className="h-4 w-4 mr-2" />
             {showArchived ? "Viewing Archived" : `Archive (${archivedCount})`}
