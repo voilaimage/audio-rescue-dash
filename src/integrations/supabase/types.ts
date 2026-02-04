@@ -207,6 +207,7 @@ export type Database = {
         Row: {
           accepted_at: string | null
           assigned_driver_id: string | null
+          cancelled_at: string | null
           collected_at: string | null
           collected_by: string | null
           collected_by_name: string | null
@@ -231,6 +232,7 @@ export type Database = {
         Insert: {
           accepted_at?: string | null
           assigned_driver_id?: string | null
+          cancelled_at?: string | null
           collected_at?: string | null
           collected_by?: string | null
           collected_by_name?: string | null
@@ -255,6 +257,7 @@ export type Database = {
         Update: {
           accepted_at?: string | null
           assigned_driver_id?: string | null
+          cancelled_at?: string | null
           collected_at?: string | null
           collected_by?: string | null
           collected_by_name?: string | null
