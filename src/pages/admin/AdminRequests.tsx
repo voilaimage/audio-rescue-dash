@@ -100,6 +100,30 @@ export default function AdminRequests() {
     return map;
   }, [thumbnailUrls, signedUrls]);
 
+  // Calculate status counts for stats cards
+  const statusCounts = useMemo(() => {
+    const counts = {
+      new: 0,
+      accepted: 0,
+      scheduled: 0,
+      collected: 0,
+      completed: 0,
+      cancelled: 0,
+      total: 0
+    };
+    requests.forEach((r) => {
+      if (!r.archived_at) {
+        counts.total++;
+        if (r.status in counts) {
+          counts[r.status as keyof typeof counts]++;
+        }
+      }
+    });
+    // Combine collected + completed for display
+    counts.collected = counts.collected + counts.completed;
+    return counts;
+  }, [requests]);
+
   // Get unique cities for filter
   const cities = useMemo(() => {
     const citySet = new Set<string>();
@@ -441,6 +465,78 @@ export default function AdminRequests() {
             {filteredRequests.length} of {requests.length} requests
           </p>
         </div>
+
+        {/* Stats Cards */}
+        {!showArchived && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div 
+              className={`rounded-xl border p-4 cursor-pointer transition-colors ${
+                statusFilter === 'all' 
+                  ? 'border-primary bg-primary/10' 
+                  : 'border-[#333] bg-[#1d1d1d] hover:border-[#444]'
+              }`}
+              onClick={() => setStatusFilter('all')}
+            >
+              <p className="text-2xl font-bold text-white">{statusCounts.total}</p>
+              <p className="text-xs text-gray-400">Total Active</p>
+            </div>
+            <div 
+              className={`rounded-xl border p-4 cursor-pointer transition-colors ${
+                statusFilter === 'new' 
+                  ? 'border-primary bg-primary/10' 
+                  : 'border-[#333] bg-[#1d1d1d] hover:border-[#444]'
+              }`}
+              onClick={() => setStatusFilter('new')}
+            >
+              <p className="text-2xl font-bold text-primary">{statusCounts.new}</p>
+              <p className="text-xs text-gray-400">New</p>
+            </div>
+            <div 
+              className={`rounded-xl border p-4 cursor-pointer transition-colors ${
+                statusFilter === 'accepted' 
+                  ? 'border-primary bg-primary/10' 
+                  : 'border-[#333] bg-[#1d1d1d] hover:border-[#444]'
+              }`}
+              onClick={() => setStatusFilter('accepted')}
+            >
+              <p className="text-2xl font-bold text-primary">{statusCounts.accepted}</p>
+              <p className="text-xs text-gray-400">Accepted</p>
+            </div>
+            <div 
+              className={`rounded-xl border p-4 cursor-pointer transition-colors ${
+                statusFilter === 'scheduled' 
+                  ? 'border-warning bg-warning/10' 
+                  : 'border-[#333] bg-[#1d1d1d] hover:border-[#444]'
+              }`}
+              onClick={() => setStatusFilter('scheduled')}
+            >
+              <p className="text-2xl font-bold text-warning">{statusCounts.scheduled}</p>
+              <p className="text-xs text-gray-400">Scheduled</p>
+            </div>
+            <div 
+              className={`rounded-xl border p-4 cursor-pointer transition-colors ${
+                statusFilter === 'collected' 
+                  ? 'border-success bg-success/10' 
+                  : 'border-[#333] bg-[#1d1d1d] hover:border-[#444]'
+              }`}
+              onClick={() => setStatusFilter('collected')}
+            >
+              <p className="text-2xl font-bold text-success">{statusCounts.collected}</p>
+              <p className="text-xs text-gray-400">Collected</p>
+            </div>
+            <div 
+              className={`rounded-xl border p-4 cursor-pointer transition-colors ${
+                statusFilter === 'cancelled' 
+                  ? 'border-destructive bg-destructive/10' 
+                  : 'border-[#333] bg-[#1d1d1d] hover:border-[#444]'
+              }`}
+              onClick={() => setStatusFilter('cancelled')}
+            >
+              <p className="text-2xl font-bold text-destructive">{statusCounts.cancelled}</p>
+              <p className="text-xs text-gray-400">Cancelled</p>
+            </div>
+          </div>
+        )}
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3">
