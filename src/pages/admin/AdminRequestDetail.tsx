@@ -35,9 +35,10 @@ const dayRangeLabels: Record<string, string> = {
   week: "Within a week",
 };
 
-// Extended type to include collected_by_name
+// Extended type to include collected_by_name and cancelled_at
 type RequestWithDriverName = RequestWithPhotos & {
   collected_by_name?: string | null;
+  cancelled_at?: string | null;
 };
 
 export default function AdminRequestDetail() {
@@ -169,6 +170,11 @@ export default function AdminRequestDetail() {
           updateData.collected_at = new Date().toISOString();
           updateData.collected_by = request.assigned_driver_id;
         }
+      }
+
+      // When marking as cancelled, store the cancellation timestamp
+      if (newStatus === "cancelled") {
+        updateData.cancelled_at = new Date().toISOString();
       }
       
       const { error } = await supabase
@@ -422,8 +428,20 @@ export default function AdminRequestDetail() {
                 {isReadOnly ? "Status" : "Update Status"}
               </h3>
               {isReadOnly ? (
-                <div className={`rounded-lg px-3 py-2 text-center text-sm font-medium ${status.bg} ${status.text}`}>
-                  {status.label}
+                <div className="space-y-2">
+                  <div className={`rounded-lg px-3 py-2 text-center text-sm font-medium ${status.bg} ${status.text}`}>
+                    {status.label}
+                  </div>
+                  {request.status === 'cancelled' && request.cancelled_at && (
+                    <p className="text-xs text-center text-gray-400">
+                      Cancelled on {format(new Date(request.cancelled_at), "d MMM yyyy 'at' h:mm a")}
+                    </p>
+                  )}
+                  {(request.status === 'collected' || request.status === 'completed') && request.collected_at && (
+                    <p className="text-xs text-center text-gray-400">
+                      Collected on {format(new Date(request.collected_at), "d MMM yyyy 'at' h:mm a")}
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-3">
