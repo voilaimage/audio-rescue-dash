@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, LogOut, Truck, Users } from "lucide-react";
+import { LayoutDashboard, ClipboardList, LogOut, Truck, Users, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import logoWhite from "@/assets/logo-white.png";
@@ -14,6 +14,7 @@ const sidebarItems = [
   { path: "/admin", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/admin/requests", icon: ClipboardList, label: "All Requests" },
   { path: "/admin/drivers", icon: Users, label: "Drivers" },
+  { path: "/admin/audit-logs", icon: Shield, label: "Audit Logs" },
   { path: "/driver", icon: Truck, label: "Driver Mode" },
 ];
 
