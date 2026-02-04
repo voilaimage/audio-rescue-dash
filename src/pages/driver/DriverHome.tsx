@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { DriverLayout } from "@/components/layout/DriverLayout";
-import { supabase, RequestWithPhotos } from "@/lib/supabase";
+import { supabase, RequestWithPhotos, DriverViewProfile } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, isToday, isFuture, startOfDay } from "date-fns";
@@ -35,17 +35,35 @@ export default function DriverHome() {
 
   useEffect(() => {
     const fetchRequests = async () => {
+      // Fetch requests without profile join (drivers no longer have direct profile access)
       const { data, error } = await supabase
         .from("requests")
-        .select("*, request_photos(*), profiles!requests_user_id_fkey(*)")
+        .select("*, request_photos(*)")
         .in("status", ["accepted", "scheduled", "collected"])
         .order("scheduled_start", { ascending: true, nullsFirst: false });
 
       if (error) {
         console.error("Error fetching requests:", error);
+        setLoading(false);
+        return;
       }
 
-      setRequests((data as unknown as RequestWithPhotos[]) || []);
+      const requestsData = (data as unknown as RequestWithPhotos[]) || [];
+
+      // Fetch limited profile data for each request using secure RPC function
+      const requestsWithProfiles: RequestWithPhotos[] = await Promise.all(
+        requestsData.map(async (request) => {
+          const { data: profileData, error: profileError } = await supabase
+            .rpc("get_customer_profile_for_driver", { _profile_id: request.user_id });
+
+          if (!profileError && profileData && profileData.length > 0) {
+            return { ...request, profiles: profileData[0] as DriverViewProfile };
+          }
+          return request;
+        })
+      );
+
+      setRequests(requestsWithProfiles);
       setLoading(false);
     };
 

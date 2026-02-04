@@ -272,6 +272,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_customer_profile_for_driver: {
+        Args: { _profile_id: string }
+        Returns: {
+          address_line1: string
+          address_line2: string
+          business_name: string
+          city: string
+          contact_name: string
+          driver_notes: string
+          id: string
+          phone: string
+          postcode: string
+        }[]
+      }
       get_driver_invite_by_token: {
         Args: { _token: string }
         Returns: {
