@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { format } from "date-fns";
-import { Search, ChevronRight } from "lucide-react";
+import { Search, ChevronRight, User } from "lucide-react";
 
 const statusConfig: Record<string, { bg: string; text: string; border: string; label: string }> = {
   new: { bg: "bg-primary/10", text: "text-primary", border: "border-primary", label: "New" },
@@ -30,7 +30,7 @@ export default function AdminRequests() {
     const fetchRequests = async () => {
       const { data } = await supabase
         .from("requests")
-        .select("*, request_photos(*), profiles!requests_user_id_fkey(*)")
+        .select("*, request_photos(*), profiles!requests_user_id_fkey(*), assigned_driver:profiles!requests_assigned_driver_id_fkey(id, contact_name)")
         .order("created_at", { ascending: false });
 
       setRequests((data as unknown as RequestWithPhotos[]) || []);
@@ -190,6 +190,9 @@ export default function AdminRequests() {
                   Location
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
+                  Driver
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
                   Date
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
@@ -201,7 +204,7 @@ export default function AdminRequests() {
             <tbody className="divide-y divide-[#333]">
               {filteredRequests.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
+                  <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
                     No requests found
                   </td>
                 </tr>
@@ -249,6 +252,20 @@ export default function AdminRequests() {
                         <td className="px-4 py-3">
                           <p className="text-sm text-white">{request.profiles?.city}</p>
                           <p className="text-xs text-gray-400">{request.profiles?.postcode}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          {request.assigned_driver ? (
+                            <div className="flex items-center gap-2">
+                              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
+                                <User className="h-3 w-3 text-primary" />
+                              </div>
+                              <span className="text-sm text-white">
+                                {request.assigned_driver.contact_name}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-500">Unassigned</span>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <p className="text-sm text-white">
