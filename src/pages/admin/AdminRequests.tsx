@@ -184,9 +184,11 @@ export default function AdminRequests() {
     <AdminLayout>
       <div className="space-y-5">
         {/* Header */}
-        <div>
-          <h1 className="font-display text-2xl font-bold text-white">All Requests</h1>
-          <p className="text-sm text-gray-400">
+        <div className={`-mx-6 -mt-6 px-6 py-4 ${showArchived ? "bg-primary" : ""}`}>
+          <h1 className="font-display text-2xl font-bold text-white">
+            {showArchived ? "Archived Requests" : "All Requests"}
+          </h1>
+          <p className={`text-sm ${showArchived ? "text-white/80" : "text-gray-400"}`}>
             {filteredRequests.length} of {requests.length} requests
           </p>
         </div>
