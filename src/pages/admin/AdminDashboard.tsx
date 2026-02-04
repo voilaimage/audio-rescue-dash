@@ -33,17 +33,24 @@ export default function AdminDashboard() {
     fetchRequests();
   }, []);
 
+  // Filter out archived requests for dashboard display
+  const activeRequests = useMemo(() => 
+    requests.filter((r) => !r.archived_at), 
+    [requests]
+  );
+
   // Calculate counts and recent requests (moved before hooks that depend on them)
   // Note: "collected" count includes both "collected" and "completed" statuses as they represent the same state
+  // Archived requests are excluded from all counts
   const counts = useMemo(() => ({
-    new: requests.filter((r) => r.status === "new").length,
-    accepted: requests.filter((r) => r.status === "accepted").length,
-    scheduled: requests.filter((r) => r.status === "scheduled").length,
-    collected: requests.filter((r) => r.status === "collected" || r.status === "completed").length,
-    cancelled: requests.filter((r) => r.status === "cancelled").length,
-  }), [requests]);
+    new: activeRequests.filter((r) => r.status === "new").length,
+    accepted: activeRequests.filter((r) => r.status === "accepted").length,
+    scheduled: activeRequests.filter((r) => r.status === "scheduled").length,
+    collected: activeRequests.filter((r) => r.status === "collected" || r.status === "completed").length,
+    cancelled: activeRequests.filter((r) => r.status === "cancelled").length,
+  }), [activeRequests]);
 
-  const recentRequests = useMemo(() => requests.slice(0, 5), [requests]);
+  const recentRequests = useMemo(() => activeRequests.slice(0, 5), [activeRequests]);
 
   // Get thumbnail URLs for signed URL generation
   const thumbnailUrls = useMemo(() => 
