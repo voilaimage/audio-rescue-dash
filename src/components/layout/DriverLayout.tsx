@@ -27,7 +27,7 @@ export function DriverLayout({ children }: DriverLayoutProps) {
         <img src={logoWhite} alt="Audio Salvage UK" className="h-12 w-auto" />
         <div className="flex items-center gap-2">
           <div className="rounded-lg bg-white/10 px-3 py-1.5">
-            <p className="text-xs font-medium text-white">{profile?.contact_name}</p>
+            <p className="text-sm font-medium text-primary">{profile?.contact_name}</p>
           </div>
         </div>
       </header>
