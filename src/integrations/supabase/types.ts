@@ -207,7 +207,10 @@ export type Database = {
         Row: {
           accepted_at: string | null
           assigned_driver_id: string | null
+          cancellation_reason: string | null
           cancelled_at: string | null
+          cancelled_by: string | null
+          cancelled_by_name: string | null
           collected_at: string | null
           collected_by: string | null
           collected_by_name: string | null
@@ -232,7 +235,10 @@ export type Database = {
         Insert: {
           accepted_at?: string | null
           assigned_driver_id?: string | null
+          cancellation_reason?: string | null
           cancelled_at?: string | null
+          cancelled_by?: string | null
+          cancelled_by_name?: string | null
           collected_at?: string | null
           collected_by?: string | null
           collected_by_name?: string | null
@@ -257,7 +263,10 @@ export type Database = {
         Update: {
           accepted_at?: string | null
           assigned_driver_id?: string | null
+          cancellation_reason?: string | null
           cancelled_at?: string | null
+          cancelled_by?: string | null
+          cancelled_by_name?: string | null
           collected_at?: string | null
           collected_by?: string | null
           collected_by_name?: string | null
@@ -283,6 +292,13 @@ export type Database = {
           {
             foreignKeyName: "requests_assigned_driver_id_fkey"
             columns: ["assigned_driver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "requests_cancelled_by_fkey"
+            columns: ["cancelled_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
