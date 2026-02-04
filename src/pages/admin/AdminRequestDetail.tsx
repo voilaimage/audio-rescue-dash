@@ -68,6 +68,7 @@ export default function AdminRequestDetail() {
   const [scheduledEndTime, setScheduledEndTime] = useState<string>("");
 
   // Cancellation state
+  const [cancelledByName, setCancelledByName] = useState<string>("");
   const [cancellationReason, setCancellationReason] = useState<string>("");
 
   // Get original URLs from request photos
@@ -185,7 +186,7 @@ export default function AdminRequestDetail() {
       if (newStatus === "cancelled") {
         updateData.cancelled_at = new Date().toISOString();
         updateData.cancelled_by = user?.id || null;
-        updateData.cancelled_by_name = currentUserProfile?.contact_name || null;
+        updateData.cancelled_by_name = cancelledByName || null;
         updateData.cancellation_reason = cancellationReason || null;
       }
       
@@ -453,7 +454,7 @@ export default function AdminRequestDetail() {
                       )}
                       {request.cancelled_by_name && (
                         <p className="text-xs text-gray-400">
-                          <span className="font-medium text-white">Cancelled by:</span> {request.cancelled_by_name}
+                          <span className="font-medium text-white">Requested by:</span> {request.cancelled_by_name}
                         </p>
                       )}
                       {request.cancellation_reason && (
@@ -490,10 +491,11 @@ export default function AdminRequestDetail() {
                   {newStatus === "cancelled" && request.status !== "cancelled" && (
                     <div className="space-y-3 pt-3 border-t border-[#333]">
                       <div>
-                        <Label className="text-xs text-gray-400">Cancelled by</Label>
+                        <Label className="text-xs text-gray-400">Requested by (customer name)</Label>
                         <Input
-                          value={currentUserProfile?.contact_name || ""}
-                          disabled
+                          value={cancelledByName}
+                          onChange={(e) => setCancelledByName(e.target.value)}
+                          placeholder="Enter customer name..."
                           className="mt-1 bg-[#28292b] border-[#333] text-white"
                         />
                       </div>
