@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Search, ChevronRight, User, Archive, ArchiveRestore, X } from "lucide-react";
+import { Search, ChevronRight, ChevronLeft, User, Archive, ArchiveRestore, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const statusConfig: Record<string, { bg: string; text: string; border: string; label: string }> = {
@@ -42,6 +42,8 @@ export default function AdminRequests() {
   const [showArchived, setShowArchived] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -141,6 +143,18 @@ export default function AdminRequests() {
     });
   }, [requests, statusFilter, cityFilter, driverFilter, dateFilter, searchQuery, showArchived]);
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+  const paginatedRequests = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredRequests.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredRequests, currentPage, itemsPerPage]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, cityFilter, driverFilter, dateFilter, searchQuery, showArchived, itemsPerPage]);
+
   // Archive/unarchive handler
   const handleArchiveToggle = async (requestId: string, isCurrentlyArchived: boolean) => {
     try {
@@ -172,17 +186,17 @@ export default function AdminRequests() {
     [requests]
   );
 
-  // Get archivable request IDs from filtered list (collected, completed, cancelled)
-  const archivableFilteredIds = useMemo(() => 
-    filteredRequests
+  // Get archivable request IDs from current page (collected, completed, cancelled)
+  const archivablePageIds = useMemo(() => 
+    paginatedRequests
       .filter(r => ['collected', 'completed', 'cancelled'].includes(r.status))
       .map(r => r.id),
-    [filteredRequests]
+    [paginatedRequests]
   );
 
-  // Check if all archivable items are selected
-  const allArchivableSelected = archivableFilteredIds.length > 0 && 
-    archivableFilteredIds.every(id => selectedIds.has(id));
+  // Check if all archivable items on current page are selected
+  const allArchivableSelected = archivablePageIds.length > 0 && 
+    archivablePageIds.every(id => selectedIds.has(id));
 
   // Toggle single selection
   const toggleSelect = (id: string) => {
@@ -197,12 +211,22 @@ export default function AdminRequests() {
     });
   };
 
-  // Toggle all archivable selections
+  // Toggle all archivable selections on current page
   const toggleSelectAll = () => {
     if (allArchivableSelected) {
-      setSelectedIds(new Set());
+      // Deselect all on current page
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        archivablePageIds.forEach(id => next.delete(id));
+        return next;
+      });
     } else {
-      setSelectedIds(new Set(archivableFilteredIds));
+      // Select all archivable on current page
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        archivablePageIds.forEach(id => next.add(id));
+        return next;
+      });
     }
   };
 
@@ -384,9 +408,9 @@ export default function AdminRequests() {
               <tr className="border-b border-[#333] bg-black/30">
                 <th className="px-4 py-3 text-left">
                   <Checkbox
-                    checked={allArchivableSelected && archivableFilteredIds.length > 0}
+                    checked={allArchivableSelected && archivablePageIds.length > 0}
                     onCheckedChange={toggleSelectAll}
-                    disabled={archivableFilteredIds.length === 0}
+                    disabled={archivablePageIds.length === 0}
                     className="border-gray-500 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
                 </th>
@@ -419,7 +443,7 @@ export default function AdminRequests() {
                   </td>
                 </tr>
               ) : (
-                filteredRequests.map((request) => {
+                paginatedRequests.map((request) => {
                   const status = statusConfig[request.status] || statusConfig.new;
                   const firstPhotoUrl = request.request_photos?.[0]?.file_url;
                   const signedUrl = firstPhotoUrl ? signedUrlMap.get(firstPhotoUrl) : null;
@@ -541,6 +565,80 @@ export default function AdminRequests() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls */}
+        {filteredRequests.length > 0 && (
+          <div className="flex items-center justify-between rounded-xl border border-[#333] bg-[#1d1d1d] px-4 py-3">
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-400">
+                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredRequests.length)} of {filteredRequests.length} requests
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-400">Per page:</span>
+                <Select value={itemsPerPage.toString()} onValueChange={(v) => setItemsPerPage(Number(v))}>
+                  <SelectTrigger className="w-[70px] h-8 bg-[#1d1d1d] border-[#333] text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="25">25</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="h-8 px-3 bg-[#1d1d1d] border-[#333] text-white hover:bg-[#2a2a2a] disabled:opacity-50"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum: number;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`h-8 w-8 rounded text-sm font-medium transition-colors ${
+                        currentPage === pageNum
+                          ? "bg-primary text-white"
+                          : "text-gray-400 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="h-8 px-3 bg-[#1d1d1d] border-[#333] text-white hover:bg-[#2a2a2a] disabled:opacity-50"
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </AdminLayout>
   );
