@@ -9,6 +9,8 @@ import { LoadingScreen } from "@/components/ui/loading-spinner";
 // Pages
 import Splash from "./pages/Splash";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
 import NewRequest from "./pages/NewRequest";
@@ -79,6 +81,8 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Splash />} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/driver-login" element={<PublicRoute><DriverLogin /></PublicRoute>} />
       <Route path="/driver-install" element={<DriverInstall />} />
       <Route path="/driver-setup/:token" element={<DriverSetup />} />

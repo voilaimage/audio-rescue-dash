@@ -127,6 +127,15 @@ export default function Login() {
                   {loading ? <LoadingSpinner size="sm" /> : "Sign In"}
                 </Button>
               </form>
+
+              <div className="mt-4 text-center">
+                <Link 
+                  to="/forgot-password" 
+                  className="text-sm text-gray-400 hover:text-[#f59f0a] transition-colors"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
             </div>
 
             {!isAdminDomain && (
