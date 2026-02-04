@@ -256,10 +256,10 @@ export default function AdminRequests() {
 
           {/* Archive Toggle */}
           <Button
-            variant={showArchived ? "default" : "outline"}
+            variant="outline"
             size="sm"
             onClick={() => setShowArchived(!showArchived)}
-            className={showArchived ? "" : "border-[#333] text-white hover:bg-white/10"}
+            className={`bg-[#1d1d1d] border-[#333] text-white hover:bg-white/10 ${showArchived ? "border-primary text-primary" : ""}`}
           >
             <Archive className="h-4 w-4 mr-2" />
             {showArchived ? "Viewing Archived" : `Archive (${archivedCount})`}
