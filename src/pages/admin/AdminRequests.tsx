@@ -5,9 +5,11 @@ import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Search, ChevronRight, User } from "lucide-react";
+import { Search, ChevronRight, User, Archive, ArchiveRestore } from "lucide-react";
 
 const statusConfig: Record<string, { bg: string; text: string; border: string; label: string }> = {
   new: { bg: "bg-primary/10", text: "text-primary", border: "border-primary", label: "New" },
@@ -17,19 +19,26 @@ const statusConfig: Record<string, { bg: string; text: string; border: string; l
   completed: { bg: "bg-success/10", text: "text-success", border: "border-success", label: "Completed" },
   cancelled: { bg: "bg-destructive/10", text: "text-destructive", border: "border-destructive", label: "Cancelled" },
 };
+
 type Driver = {
   id: string;
   contact_name: string;
 };
 
+type RequestWithArchive = RequestWithPhotos & {
+  archived_at?: string | null;
+};
+
 export default function AdminRequests() {
-  const [requests, setRequests] = useState<RequestWithPhotos[]>([]);
+  const { toast } = useToast();
+  const [requests, setRequests] = useState<RequestWithArchive[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [driverFilter, setDriverFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
+  const [showArchived, setShowArchived] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -40,7 +49,7 @@ export default function AdminRequests() {
         .select("*, request_photos(*), profiles!requests_user_id_fkey(*), assigned_driver:profiles!requests_assigned_driver_id_fkey(id, contact_name)")
         .order("created_at", { ascending: false });
 
-      setRequests((requestsData as unknown as RequestWithPhotos[]) || []);
+      setRequests((requestsData as unknown as RequestWithArchive[]) || []);
 
       // Fetch drivers for filter
       const { data: driversData } = await supabase
@@ -88,6 +97,11 @@ export default function AdminRequests() {
   // Filter requests
   const filteredRequests = useMemo(() => {
     return requests.filter((request) => {
+      // Archive filter - by default hide archived, show only archived when toggled
+      const isArchived = !!request.archived_at;
+      if (showArchived && !isArchived) return false;
+      if (!showArchived && isArchived) return false;
+
       // Status filter
       if (statusFilter !== "all" && request.status !== statusFilter) return false;
 
@@ -123,7 +137,38 @@ export default function AdminRequests() {
 
       return true;
     });
-  }, [requests, statusFilter, cityFilter, driverFilter, dateFilter, searchQuery]);
+  }, [requests, statusFilter, cityFilter, driverFilter, dateFilter, searchQuery, showArchived]);
+
+  // Archive/unarchive handler
+  const handleArchiveToggle = async (requestId: string, isCurrentlyArchived: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("requests")
+        .update({ archived_at: isCurrentlyArchived ? null : new Date().toISOString() })
+        .eq("id", requestId);
+
+      if (error) throw error;
+
+      setRequests(prev => prev.map(r => 
+        r.id === requestId 
+          ? { ...r, archived_at: isCurrentlyArchived ? null : new Date().toISOString() }
+          : r
+      ));
+
+      toast({ 
+        title: isCurrentlyArchived ? "Request unarchived" : "Request archived",
+        description: isCurrentlyArchived ? "Request has been restored" : "Request has been moved to archive"
+      });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Action failed", description: error.message });
+    }
+  };
+
+  // Count archived requests
+  const archivedCount = useMemo(() => 
+    requests.filter(r => !!r.archived_at).length, 
+    [requests]
+  );
 
   if (loading) {
     return (
@@ -208,6 +253,17 @@ export default function AdminRequests() {
               <SelectItem value="month">This Month</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* Archive Toggle */}
+          <Button
+            variant={showArchived ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowArchived(!showArchived)}
+            className={showArchived ? "" : "border-[#333] text-white hover:bg-white/10"}
+          >
+            <Archive className="h-4 w-4 mr-2" />
+            {showArchived ? "Viewing Archived" : `Archive (${archivedCount})`}
+          </Button>
         </div>
 
         {/* Table */}
@@ -316,12 +372,35 @@ export default function AdminRequests() {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <Link
-                            to={`/admin/requests/${request.id}`}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white"
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </Link>
+                          <div className="flex items-center gap-2">
+                            {/* Archive/Unarchive button - only for collected, completed, or cancelled */}
+                            {(request.status === 'collected' || request.status === 'completed' || request.status === 'cancelled') && (
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleArchiveToggle(request.id, !!request.archived_at);
+                                }}
+                                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
+                                  request.archived_at 
+                                    ? "bg-success/20 text-success hover:bg-success/30" 
+                                    : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white"
+                                }`}
+                                title={request.archived_at ? "Unarchive" : "Archive"}
+                              >
+                                {request.archived_at ? (
+                                  <ArchiveRestore className="h-4 w-4" />
+                                ) : (
+                                  <Archive className="h-4 w-4" />
+                                )}
+                              </button>
+                            )}
+                            <Link
+                              to={`/admin/requests/${request.id}`}
+                              className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white"
+                            >
+                              <ChevronRight className="h-4 w-4" />
+                            </Link>
+                          </div>
                         </td>
                       </tr>
                     );

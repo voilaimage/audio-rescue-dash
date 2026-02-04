@@ -206,6 +206,7 @@ export type Database = {
       requests: {
         Row: {
           accepted_at: string | null
+          archived_at: string | null
           assigned_driver_id: string | null
           cancellation_reason: string | null
           cancelled_at: string | null
@@ -234,6 +235,7 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          archived_at?: string | null
           assigned_driver_id?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
@@ -262,6 +264,7 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          archived_at?: string | null
           assigned_driver_id?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
