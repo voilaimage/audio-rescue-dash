@@ -66,8 +66,8 @@ export default function AdminRequestDetail() {
   // Use signed URLs for private bucket access
   const { signedUrls, loading: urlsLoading } = useSignedUrls(originalPhotoUrls);
 
-  // Determine if request is read-only (collected or completed)
-  const isReadOnly = request?.status === 'collected' || request?.status === 'completed';
+  // Determine if request is read-only (collected, completed, or cancelled)
+  const isReadOnly = request?.status === 'collected' || request?.status === 'completed' || request?.status === 'cancelled';
 
   useEffect(() => {
     if (!id) return;
