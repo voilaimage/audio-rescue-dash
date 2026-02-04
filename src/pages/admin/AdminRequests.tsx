@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Search, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, User, Archive, ArchiveRestore, X } from "lucide-react";
+import { Search, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, User, Archive, ArchiveRestore, X, Download } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 type SortColumn = 'business' | 'description' | 'location' | 'driver' | 'date' | 'status';
@@ -324,6 +324,66 @@ export default function AdminRequests() {
     }
   };
 
+  // Export to CSV
+  const handleExportCSV = () => {
+    const csvHeaders = [
+      'ID',
+      'Business Name',
+      'Contact Name',
+      'Description',
+      'City',
+      'Postcode',
+      'Address',
+      'Phone',
+      'Driver',
+      'Status',
+      'Created At',
+      'Scheduled Start',
+      'Scheduled End',
+      'Collected At',
+      'Collected By'
+    ];
+
+    const csvRows = sortedRequests.map(request => [
+      request.id,
+      request.profiles?.business_name || '',
+      request.profiles?.contact_name || '',
+      `"${(request.description || '').replace(/"/g, '""')}"`,
+      request.profiles?.city || '',
+      request.profiles?.postcode || '',
+      `"${((request.profiles?.address_line1 || '') + (request.profiles?.address_line2 ? ', ' + request.profiles.address_line2 : '')).replace(/"/g, '""')}"`,
+      request.profiles?.phone || '',
+      request.assigned_driver?.contact_name || 'Unassigned',
+      request.status,
+      request.created_at ? format(new Date(request.created_at), 'yyyy-MM-dd HH:mm') : '',
+      request.scheduled_start ? format(new Date(request.scheduled_start), 'yyyy-MM-dd HH:mm') : '',
+      request.scheduled_end ? format(new Date(request.scheduled_end), 'yyyy-MM-dd HH:mm') : '',
+      request.collected_at ? format(new Date(request.collected_at), 'yyyy-MM-dd HH:mm') : '',
+      request.collected_by_name || ''
+    ]);
+
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvRows.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `requests-${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Export complete",
+      description: `Exported ${sortedRequests.length} requests to CSV`
+    });
+  };
+
   if (loading) {
     return (
       <AdminLayout>
@@ -423,6 +483,18 @@ export default function AdminRequests() {
           >
             <Archive className="h-4 w-4 mr-2" />
             {showArchived ? "Viewing Archived" : `Archive (${archivedCount})`}
+          </Button>
+
+          {/* Export CSV */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCSV}
+            disabled={sortedRequests.length === 0}
+            className="bg-[#1d1d1d] border-[#333] text-white hover:bg-[#2a2a2a] hover:border-[#444] hover:text-white"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
           </Button>
         </div>
 
