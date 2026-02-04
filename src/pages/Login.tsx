@@ -17,6 +17,9 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Detect if accessed from admin subdomain
+  const isAdminDomain = window.location.hostname.startsWith('admin.');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +73,7 @@ export default function Login() {
           {/* Logo */}
           <div className="mb-10 flex flex-col items-center -mt-24">
             <img src={logo} alt="Audio Salvage UK" className="h-24 w-auto" />
-            <p className="mt-2 text-lg text-white">Partner Portal</p>
+            <p className="mt-2 text-lg text-white">{isAdminDomain ? 'Admin Portal' : 'Partner Portal'}</p>
           </div>
 
           {/* Login Form */}
