@@ -229,6 +229,7 @@ export type Database = {
             | null
           scheduled_end: string | null
           scheduled_start: string | null
+          sort_order: number | null
           status: Database["public"]["Enums"]["request_status"]
           updated_at: string
           user_id: string
@@ -258,6 +259,7 @@ export type Database = {
             | null
           scheduled_end?: string | null
           scheduled_start?: string | null
+          sort_order?: number | null
           status?: Database["public"]["Enums"]["request_status"]
           updated_at?: string
           user_id: string
@@ -287,6 +289,7 @@ export type Database = {
             | null
           scheduled_end?: string | null
           scheduled_start?: string | null
+          sort_order?: number | null
           status?: Database["public"]["Enums"]["request_status"]
           updated_at?: string
           user_id?: string
