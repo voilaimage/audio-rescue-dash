@@ -53,11 +53,19 @@ export function DriverLayout({ children }: DriverLayoutProps) {
             <span className="text-xs font-medium">Jobs</span>
           </Link>
 
-          {/* Profile/Account placeholder */}
-          <div className="flex flex-col items-center gap-1 rounded-lg px-6 py-2 text-white/60">
+          {/* Profile */}
+          <Link
+            to="/driver/profile"
+            className={cn(
+              "flex flex-col items-center gap-1 rounded-lg px-6 py-2 transition-colors",
+              location.pathname === "/driver/profile"
+                ? "text-primary"
+                : "text-white/60 hover:text-white"
+            )}
+          >
             <User className="h-6 w-6" />
-            <span className="text-xs font-medium">{profile?.contact_name?.split(' ')[0] || 'Driver'}</span>
-          </div>
+            <span className="text-xs font-medium">Profile</span>
+          </Link>
 
           {/* Sign Out */}
           <button
