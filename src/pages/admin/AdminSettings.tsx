@@ -1,0 +1,239 @@
+import { useState } from "react";
+import { AdminLayout } from "@/components/layout/AdminLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Eye, EyeOff, Mail, Lock, Save } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+
+export default function AdminSettings() {
+  const { profile } = useAuth();
+  const { toast } = useToast();
+  
+  // Email change state
+  const [newEmail, setNewEmail] = useState("");
+  const [emailLoading, setEmailLoading] = useState(false);
+  
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
+  const handleEmailChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newEmail) {
+      toast({
+        variant: "destructive",
+        title: "Email required",
+        description: "Please enter a new email address.",
+      });
+      return;
+    }
+
+    setEmailLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ email: newEmail });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Confirmation email sent",
+        description: "Check your new email address to confirm the change.",
+      });
+      setNewEmail("");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to update email",
+        description: error.message,
+      });
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newPassword || !confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Password required",
+        description: "Please enter and confirm your new password.",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Passwords don't match",
+        description: "New password and confirmation must match.",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Password too short",
+        description: "Password must be at least 6 characters.",
+      });
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Password updated",
+        description: "Your password has been changed successfully.",
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to update password",
+        description: error.message,
+      });
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  return (
+    <AdminLayout>
+      <div className="mb-6">
+        <h1 className="font-display text-2xl font-bold">Account Settings</h1>
+        <p className="text-gray-400">Manage your admin account credentials</p>
+      </div>
+
+      <div className="grid gap-6 max-w-2xl">
+        {/* Current Account Info */}
+        <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-6">
+          <h2 className="mb-4 text-lg font-semibold">Current Account</h2>
+          <div className="space-y-2 text-gray-400">
+            <p><span className="text-white">Name:</span> {profile?.contact_name}</p>
+            <p><span className="text-white">Email:</span> {profile?.email}</p>
+          </div>
+        </div>
+
+        {/* Change Email */}
+        <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-6">
+          <h2 className="mb-4 text-lg font-semibold flex items-center gap-2">
+            <Mail className="h-5 w-5 text-primary" />
+            Change Email
+          </h2>
+          <form onSubmit={handleEmailChange} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="newEmail">New Email Address</Label>
+              <Input
+                id="newEmail"
+                type="email"
+                placeholder="newemail@example.com"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500"
+              />
+            </div>
+            <p className="text-sm text-gray-400">
+              A confirmation email will be sent to your new address.
+            </p>
+            <Button 
+              type="submit" 
+              disabled={emailLoading || !newEmail}
+              className="bg-primary hover:bg-primary/90"
+            >
+              {emailLoading ? <LoadingSpinner size="sm" /> : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Update Email
+                </>
+              )}
+            </Button>
+          </form>
+        </div>
+
+        {/* Change Password */}
+        <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-6">
+          <h2 className="mb-4 text-lg font-semibold flex items-center gap-2">
+            <Lock className="h-5 w-5 text-primary" />
+            Change Password
+          </h2>
+          <form onSubmit={handlePasswordChange} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New Password</Label>
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="pr-10 bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                >
+                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="pr-10 bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-400">
+              Password must be at least 6 characters.
+            </p>
+            <Button 
+              type="submit" 
+              disabled={passwordLoading || !newPassword || !confirmPassword}
+              className="bg-primary hover:bg-primary/90"
+            >
+              {passwordLoading ? <LoadingSpinner size="sm" /> : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Update Password
+                </>
+              )}
+            </Button>
+          </form>
+        </div>
+      </div>
+    </AdminLayout>
+  );
+}
