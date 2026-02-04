@@ -9,8 +9,11 @@ import { Button } from "@/components/ui/button";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Search, ChevronRight, ChevronLeft, User, Archive, ArchiveRestore, X } from "lucide-react";
+import { Search, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, User, Archive, ArchiveRestore, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+
+type SortColumn = 'business' | 'description' | 'location' | 'driver' | 'date' | 'status';
+type SortDirection = 'asc' | 'desc';
 
 const statusConfig: Record<string, { bg: string; text: string; border: string; label: string }> = {
   new: { bg: "bg-primary/10", text: "text-primary", border: "border-primary", label: "New" },
@@ -44,6 +47,8 @@ export default function AdminRequests() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [sortColumn, setSortColumn] = useState<SortColumn>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -143,12 +148,72 @@ export default function AdminRequests() {
     });
   }, [requests, statusFilter, cityFilter, driverFilter, dateFilter, searchQuery, showArchived]);
 
+  // Sort filtered requests
+  const sortedRequests = useMemo(() => {
+    return [...filteredRequests].sort((a, b) => {
+      let aVal: string | number = '';
+      let bVal: string | number = '';
+
+      switch (sortColumn) {
+        case 'business':
+          aVal = a.profiles?.business_name?.toLowerCase() || '';
+          bVal = b.profiles?.business_name?.toLowerCase() || '';
+          break;
+        case 'description':
+          aVal = a.description.toLowerCase();
+          bVal = b.description.toLowerCase();
+          break;
+        case 'location':
+          aVal = a.profiles?.city?.toLowerCase() || '';
+          bVal = b.profiles?.city?.toLowerCase() || '';
+          break;
+        case 'driver':
+          aVal = a.assigned_driver?.contact_name?.toLowerCase() || '';
+          bVal = b.assigned_driver?.contact_name?.toLowerCase() || '';
+          break;
+        case 'date':
+          aVal = new Date(a.created_at).getTime();
+          bVal = new Date(b.created_at).getTime();
+          break;
+        case 'status':
+          aVal = a.status;
+          bVal = b.status;
+          break;
+      }
+
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [filteredRequests, sortColumn, sortDirection]);
+
   // Pagination calculations
-  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedRequests.length / itemsPerPage);
   const paginatedRequests = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredRequests.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredRequests, currentPage, itemsPerPage]);
+    return sortedRequests.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedRequests, currentPage, itemsPerPage]);
+
+  // Handle column sort
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+    setCurrentPage(1);
+  };
+
+  // Sort indicator component
+  const SortIndicator = ({ column }: { column: SortColumn }) => {
+    if (sortColumn !== column) {
+      return <ChevronUp className="h-3 w-3 opacity-30" />;
+    }
+    return sortDirection === 'asc' 
+      ? <ChevronUp className="h-3 w-3 text-primary" />
+      : <ChevronDown className="h-3 w-3 text-primary" />;
+  };
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -414,29 +479,65 @@ export default function AdminRequests() {
                     className="border-gray-500 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
-                  Business
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400 cursor-pointer hover:text-white transition-colors"
+                  onClick={() => handleSort('business')}
+                >
+                  <div className="flex items-center gap-1">
+                    Business
+                    <SortIndicator column="business" />
+                  </div>
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
-                  Description
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400 cursor-pointer hover:text-white transition-colors"
+                  onClick={() => handleSort('description')}
+                >
+                  <div className="flex items-center gap-1">
+                    Description
+                    <SortIndicator column="description" />
+                  </div>
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
-                  Location
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400 cursor-pointer hover:text-white transition-colors"
+                  onClick={() => handleSort('location')}
+                >
+                  <div className="flex items-center gap-1">
+                    Location
+                    <SortIndicator column="location" />
+                  </div>
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
-                  Driver
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400 cursor-pointer hover:text-white transition-colors"
+                  onClick={() => handleSort('driver')}
+                >
+                  <div className="flex items-center gap-1">
+                    Driver
+                    <SortIndicator column="driver" />
+                  </div>
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
-                  Date
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400 cursor-pointer hover:text-white transition-colors"
+                  onClick={() => handleSort('date')}
+                >
+                  <div className="flex items-center gap-1">
+                    Date
+                    <SortIndicator column="date" />
+                  </div>
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
-                  Status
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400 cursor-pointer hover:text-white transition-colors"
+                  onClick={() => handleSort('status')}
+                >
+                  <div className="flex items-center gap-1">
+                    Status
+                    <SortIndicator column="status" />
+                  </div>
                 </th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#333]">
-              {filteredRequests.length === 0 ? (
+              {sortedRequests.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
                     No requests found
