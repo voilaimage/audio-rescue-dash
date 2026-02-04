@@ -55,9 +55,23 @@ export type CollectionProofPhoto = {
   created_at: string;
 };
 
+// Limited profile data returned by get_customer_profile_for_driver RPC
+// This excludes sensitive PII like email
+export type DriverViewProfile = {
+  id: string;
+  business_name: string;
+  contact_name: string;
+  phone: string;
+  address_line1: string;
+  address_line2: string | null;
+  city: string;
+  postcode: string;
+  driver_notes: string | null;
+};
+
 export type RequestWithPhotos = Request & {
   request_photos: RequestPhoto[];
   collection_proof_photos?: CollectionProofPhoto[];
-  profiles?: Profile;
+  profiles?: Profile | DriverViewProfile;
   assigned_driver?: Profile;
 };

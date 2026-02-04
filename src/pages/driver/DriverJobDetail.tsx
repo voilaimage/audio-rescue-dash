@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DriverLayout } from "@/components/layout/DriverLayout";
-import { supabase, RequestWithPhotos, Profile } from "@/lib/supabase";
+import { supabase, RequestWithPhotos, DriverViewProfile } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
@@ -18,7 +18,7 @@ export default function DriverJobDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [request, setRequest] = useState<RequestWithPhotos | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<DriverViewProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
 
@@ -32,21 +32,35 @@ export default function DriverJobDetail() {
     if (!id) return;
 
     const fetchRequest = async () => {
-      const { data, error } = await supabase
+      // First fetch the request with photos (without profile join)
+      const { data: requestData, error: requestError } = await supabase
         .from("requests")
-        .select("*, request_photos(*), profiles!requests_user_id_fkey(*)")
+        .select("*, request_photos(*)")
         .eq("id", id)
         .single();
 
-      if (error) {
-        console.error("Error fetching request:", error);
+      if (requestError) {
+        console.error("Error fetching request:", requestError);
         navigate("/driver", { replace: true });
         return;
       }
 
-      const requestData = data as unknown as RequestWithPhotos;
-      setRequest(requestData);
-      setProfile(requestData.profiles as Profile);
+      const request = requestData as unknown as RequestWithPhotos;
+      setRequest(request);
+
+      // Use the secure RPC function to get limited customer profile data
+      // This excludes email to protect customer PII
+      const { data: profileData, error: profileError } = await supabase
+        .rpc("get_customer_profile_for_driver", { _profile_id: request.user_id });
+
+      if (profileError) {
+        console.error("Error fetching customer profile:", profileError);
+        // Continue without profile - address info won't be available
+      } else if (profileData && profileData.length > 0) {
+        // RPC returns an array, take the first result
+        setProfile(profileData[0] as DriverViewProfile);
+      }
+
       setLoading(false);
     };
 
