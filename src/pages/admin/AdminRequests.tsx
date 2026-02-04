@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Search, ChevronRight, User, Archive, ArchiveRestore } from "lucide-react";
+import { Search, ChevronRight, User, Archive, ArchiveRestore, X } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const statusConfig: Record<string, { bg: string; text: string; border: string; label: string }> = {
   new: { bg: "bg-primary/10", text: "text-primary", border: "border-primary", label: "New" },
@@ -40,6 +41,7 @@ export default function AdminRequests() {
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [showArchived, setShowArchived] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchData = async () => {
@@ -170,6 +172,69 @@ export default function AdminRequests() {
     [requests]
   );
 
+  // Get archivable request IDs from filtered list (collected, completed, cancelled)
+  const archivableFilteredIds = useMemo(() => 
+    filteredRequests
+      .filter(r => ['collected', 'completed', 'cancelled'].includes(r.status))
+      .map(r => r.id),
+    [filteredRequests]
+  );
+
+  // Check if all archivable items are selected
+  const allArchivableSelected = archivableFilteredIds.length > 0 && 
+    archivableFilteredIds.every(id => selectedIds.has(id));
+
+  // Toggle single selection
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  // Toggle all archivable selections
+  const toggleSelectAll = () => {
+    if (allArchivableSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(archivableFilteredIds));
+    }
+  };
+
+  // Bulk archive/unarchive handler
+  const handleBulkArchive = async (archive: boolean) => {
+    if (selectedIds.size === 0) return;
+    
+    try {
+      const { error } = await supabase
+        .from("requests")
+        .update({ archived_at: archive ? new Date().toISOString() : null })
+        .in("id", Array.from(selectedIds));
+
+      if (error) throw error;
+
+      setRequests(prev => prev.map(r => 
+        selectedIds.has(r.id)
+          ? { ...r, archived_at: archive ? new Date().toISOString() : null }
+          : r
+      ));
+
+      toast({ 
+        title: archive ? `${selectedIds.size} requests archived` : `${selectedIds.size} requests unarchived`,
+        description: archive ? "Requests have been moved to archive" : "Requests have been restored"
+      });
+
+      setSelectedIds(new Set());
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Bulk action failed", description: error.message });
+    }
+  };
+
   if (loading) {
     return (
       <AdminLayout>
@@ -272,11 +337,59 @@ export default function AdminRequests() {
           </Button>
         </div>
 
+        {/* Bulk Action Bar */}
+        {selectedIds.size > 0 && (
+          <div className="flex items-center justify-between rounded-xl border border-primary bg-primary/10 px-4 py-3">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-white">
+                {selectedIds.size} request{selectedIds.size > 1 ? 's' : ''} selected
+              </span>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              {showArchived ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleBulkArchive(false)}
+                  className="border-success bg-success/10 text-success hover:bg-success hover:text-white"
+                >
+                  <ArchiveRestore className="h-4 w-4 mr-2" />
+                  Unarchive Selected
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleBulkArchive(true)}
+                  className="border-[#333] text-white hover:bg-white/10"
+                >
+                  <Archive className="h-4 w-4 mr-2" />
+                  Archive Selected
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Table */}
         <div className="rounded-xl border border-[#333] bg-[#1d1d1d] overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#333] bg-black/30">
+                <th className="px-4 py-3 text-left">
+                  <Checkbox
+                    checked={allArchivableSelected && archivableFilteredIds.length > 0}
+                    onCheckedChange={toggleSelectAll}
+                    disabled={archivableFilteredIds.length === 0}
+                    className="border-gray-500 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  />
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
                   Business
                 </th>
@@ -301,7 +414,7 @@ export default function AdminRequests() {
             <tbody className="divide-y divide-[#333]">
               {filteredRequests.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
+                  <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
                     No requests found
                   </td>
                 </tr>
@@ -310,8 +423,21 @@ export default function AdminRequests() {
                   const status = statusConfig[request.status] || statusConfig.new;
                   const firstPhotoUrl = request.request_photos?.[0]?.file_url;
                   const signedUrl = firstPhotoUrl ? signedUrlMap.get(firstPhotoUrl) : null;
+                  const isArchivable = ['collected', 'completed', 'cancelled'].includes(request.status);
+                  const isSelected = selectedIds.has(request.id);
                     return (
-                      <tr key={request.id} className="hover:bg-white/5">
+                      <tr key={request.id} className={`hover:bg-white/5 ${isSelected ? "bg-primary/5" : ""}`}>
+                        <td className="px-4 py-3">
+                          {isArchivable ? (
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleSelect(request.id)}
+                              className="border-gray-500 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                            />
+                          ) : (
+                            <div className="h-4 w-4" />
+                          )}
+                        </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             {firstPhotoUrl && urlsLoading ? (
@@ -380,7 +506,7 @@ export default function AdminRequests() {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             {/* Archive/Unarchive button - only for collected, completed, or cancelled */}
-                            {(request.status === 'collected' || request.status === 'completed' || request.status === 'cancelled') && (
+                            {isArchivable && (
                               <button
                                 onClick={(e) => {
                                   e.preventDefault();
