@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
@@ -10,13 +10,29 @@ import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { format, startOfDay, endOfDay, isWithinInterval } from "date-fns";
-import { Search, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, User, Archive, ArchiveRestore, X, Download, MapPin, Phone, Calendar, Clock, FileText, Camera, CalendarIcon, LayoutList, LayoutGrid } from "lucide-react";
+import { Search, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, User, Archive, ArchiveRestore, X, Download, MapPin, Phone, Calendar, Clock, FileText, Camera, CalendarIcon, LayoutList, LayoutGrid, GripVertical } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { SortableRequestRow } from "@/components/admin/SortableRequestRow";
 
-type SortColumn = 'business' | 'description' | 'location' | 'driver' | 'date' | 'status';
+type SortColumn = 'business' | 'description' | 'location' | 'driver' | 'date' | 'status' | 'manual';
 type SortDirection = 'asc' | 'desc';
 
 const statusConfig: Record<string, { bg: string; text: string; border: string; label: string }> = {
@@ -35,6 +51,7 @@ type Driver = {
 
 type RequestWithArchive = RequestWithPhotos & {
   archived_at?: string | null;
+  sort_order?: number;
 };
 
 export default function AdminRequests() {
@@ -53,16 +70,40 @@ export default function AdminRequests() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [sortColumn, setSortColumn] = useState<SortColumn>('date');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [sortColumn, setSortColumn] = useState<SortColumn>('manual');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [compactView, setCompactView] = useState(false);
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Check if drag is enabled (no filters active, manual sort mode)
+  const isDragEnabled = useMemo(() => {
+    return sortColumn === 'manual' &&
+           statusFilter === 'all' &&
+           cityFilter === 'all' &&
+           driverFilter === 'all' &&
+           dateFilter === 'all' &&
+           !searchQuery &&
+           !showArchived;
+  }, [sortColumn, statusFilter, cityFilter, driverFilter, dateFilter, searchQuery, showArchived]);
 
   // Fetch data function - extracted for reuse
   const fetchRequests = async () => {
     const { data: requestsData } = await supabase
       .from("requests")
       .select("*, request_photos(*), profiles!requests_user_id_fkey(*), assigned_driver:profiles!requests_assigned_driver_id_fkey(id, contact_name)")
+      .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
 
     setRequests((requestsData as unknown as RequestWithArchive[]) || []);
@@ -253,6 +294,15 @@ export default function AdminRequests() {
       let bVal: string | number = '';
 
       switch (sortColumn) {
+        case 'manual':
+          // Sort by sort_order, then by created_at for items with same/no order
+          aVal = a.sort_order ?? 0;
+          bVal = b.sort_order ?? 0;
+          if (aVal !== bVal) {
+            return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+          }
+          // Fallback to created_at for items with same sort_order
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         case 'business':
           aVal = a.profiles?.business_name?.toLowerCase() || '';
           bVal = b.profiles?.business_name?.toLowerCase() || '';
@@ -294,7 +344,10 @@ export default function AdminRequests() {
 
   // Handle column sort
   const handleSort = (column: SortColumn) => {
-    if (sortColumn === column) {
+    if (column === 'manual') {
+      setSortColumn('manual');
+      setSortDirection('asc');
+    } else if (sortColumn === column) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
       setSortColumn(column);
@@ -302,6 +355,60 @@ export default function AdminRequests() {
     }
     setCurrentPage(1);
   };
+
+  // Handle drag end for reordering
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = paginatedRequests.findIndex(r => r.id === active.id);
+    const newIndex = paginatedRequests.findIndex(r => r.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Calculate the global index offset for the current page
+    const pageOffset = (currentPage - 1) * itemsPerPage;
+
+    // Reorder locally first for instant feedback
+    const reorderedPageItems = arrayMove(paginatedRequests, oldIndex, newIndex);
+    
+    // Update local state with new order
+    const updatedRequests = [...requests];
+    reorderedPageItems.forEach((item, index) => {
+      const requestIndex = updatedRequests.findIndex(r => r.id === item.id);
+      if (requestIndex !== -1) {
+        updatedRequests[requestIndex] = {
+          ...updatedRequests[requestIndex],
+          sort_order: pageOffset + index,
+        };
+      }
+    });
+    setRequests(updatedRequests);
+
+    // Persist to database
+    try {
+      const updates = reorderedPageItems.map((item, index) => ({
+        id: item.id,
+        sort_order: pageOffset + index,
+      }));
+
+      // Batch update all affected items
+      for (const update of updates) {
+        await supabase
+          .from("requests")
+          .update({ sort_order: update.sort_order })
+          .eq("id", update.id);
+      }
+
+      sonnerToast.success("Order saved");
+    } catch (error) {
+      console.error("Failed to save order:", error);
+      sonnerToast.error("Failed to save order");
+      // Revert on error
+      await fetchRequests();
+    }
+  }, [paginatedRequests, requests, currentPage, itemsPerPage]);
 
   // Sort indicator component
   const SortIndicator = ({ column }: { column: SortColumn }) => {
@@ -809,7 +916,29 @@ export default function AdminRequests() {
             {compactView ? <LayoutGrid className="h-4 w-4 mr-2" /> : <LayoutList className="h-4 w-4 mr-2" />}
             {compactView ? "Full View" : "Compact"}
           </Button>
+
+          {/* Manual Order Toggle */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleSort('manual')}
+            className={`bg-[#1d1d1d] border-[#333] text-white hover:bg-[#2a2a2a] hover:border-[#444] hover:text-white ${
+              sortColumn === 'manual' ? "border-primary bg-primary/10" : ""
+            }`}
+            title={isDragEnabled ? "Drag to reorder rows" : "Clear filters to enable drag reordering"}
+          >
+            <GripVertical className="h-4 w-4 mr-2" />
+            {sortColumn === 'manual' ? (isDragEnabled ? "Drag to Reorder" : "Manual Order") : "Manual Order"}
+          </Button>
         </div>
+
+        {/* Drag Mode Info Banner */}
+        {sortColumn === 'manual' && !isDragEnabled && (
+          <div className="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/10 px-4 py-2 text-sm text-warning">
+            <GripVertical className="h-4 w-4" />
+            <span>Clear all filters and search to enable drag-and-drop reordering</span>
+          </div>
+        )}
 
         {/* Bulk Action Bar */}
         {selectedIds.size > 0 && (
@@ -943,285 +1072,50 @@ export default function AdminRequests() {
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#333]">
-              {sortedRequests.length === 0 ? (
-                <tr>
-                  <td colSpan={compactView ? 5 : 8} className="px-4 py-8 text-center text-gray-400">
-                    No requests found
-                  </td>
-                </tr>
-              ) : (
-                paginatedRequests.map((request) => {
-                  const status = statusConfig[request.status] || statusConfig.new;
-                  const firstPhotoUrl = request.request_photos?.[0]?.file_url;
-                  const signedUrl = firstPhotoUrl ? signedUrlMap.get(firstPhotoUrl) : null;
-                  const isArchivable = ['collected', 'completed', 'cancelled'].includes(request.status);
-                  const isSelected = selectedIds.has(request.id);
-                  const isExpanded = expandedIds.has(request.id);
-                  
-                  return (
-                    <React.Fragment key={request.id}>
-                      <tr 
-                        className={`hover:bg-white/5 cursor-pointer ${isSelected ? "bg-primary/5" : ""} ${isExpanded ? "bg-white/5" : ""}`}
-                        onClick={() => toggleExpand(request.id)}
-                      >
-                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                          {isArchivable ? (
-                            <Checkbox
-                              checked={isSelected}
-                              onCheckedChange={() => toggleSelect(request.id)}
-                              className="border-gray-500 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                            />
-                          ) : (
-                            <div className="h-4 w-4" />
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            {firstPhotoUrl && urlsLoading ? (
-                              <div className="h-10 w-10 shrink-0 rounded-lg bg-[#28292b] flex items-center justify-center">
-                                <LoadingSpinner size="sm" />
-                              </div>
-                            ) : firstPhotoUrl && signedUrl ? (
-                              <img
-                                src={signedUrl}
-                                alt=""
-                                className="h-10 w-10 shrink-0 rounded-lg object-cover"
-                              />
-                            ) : (
-                              <div className="h-10 w-10 shrink-0 rounded-lg bg-primary flex items-center justify-center">
-                                <span className="text-white font-semibold text-sm">
-                                  {request.profiles?.business_name?.charAt(0).toUpperCase() || "B"}
-                                </span>
-                              </div>
-                            )}
-                            <div>
-                              <p className="text-sm font-medium text-white">
-                                {request.profiles?.business_name}
-                              </p>
-                              <p className="text-xs text-gray-400">
-                                {request.profiles?.contact_name}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <p className="max-w-[200px] truncate text-sm text-white">
-                            {request.description}
-                          </p>
-                        </td>
-                        {!compactView && (
-                          <td className="px-4 py-3">
-                            <p className="text-sm text-white">{request.profiles?.city}</p>
-                            <p className="text-xs text-gray-400">{request.profiles?.postcode}</p>
-                          </td>
-                        )}
-                        {!compactView && (
-                          <td className="px-4 py-3">
-                            {request.assigned_driver ? (
-                              <div className="flex items-center gap-2">
-                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
-                                  <User className="h-3 w-3 text-primary" />
-                                </div>
-                                <span className="text-sm text-white">
-                                  {request.assigned_driver.contact_name}
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-sm text-gray-500">Unassigned</span>
-                            )}
-                          </td>
-                        )}
-                        {!compactView && (
-                          <td className="px-4 py-3">
-                            <p className="text-sm text-white">
-                              {format(new Date(request.created_at), "d MMM yyyy")}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {format(new Date(request.created_at), "h:mm a")}
-                            </p>
-                          </td>
-                        )}
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text} ${status.border}`}>
-                            {status.label}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                            {/* Expand/Collapse indicator */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleExpand(request.id);
-                              }}
-                              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white transition-colors"
-                              title={isExpanded ? "Collapse" : "Expand"}
-                            >
-                              <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                            </button>
-                            {/* Archive/Unarchive button - only for collected, completed, or cancelled */}
-                            {isArchivable && (
-                              <button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  handleArchiveToggle(request.id, !!request.archived_at);
-                                }}
-                                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
-                                  request.archived_at 
-                                    ? "bg-success/20 text-success hover:bg-success/30" 
-                                    : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white"
-                                }`}
-                                title={request.archived_at ? "Unarchive" : "Archive"}
-                              >
-                                {request.archived_at ? (
-                                  <ArchiveRestore className="h-4 w-4" />
-                                ) : (
-                                  <Archive className="h-4 w-4" />
-                                )}
-                              </button>
-                            )}
-                            <Link
-                              to={`/admin/requests/${request.id}`}
-                              className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <ChevronRight className="h-4 w-4" />
-                            </Link>
-                          </div>
-                        </td>
-                      </tr>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={paginatedRequests.map(r => r.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <tbody className="divide-y divide-[#333]">
+                  {sortedRequests.length === 0 ? (
+                    <tr>
+                      <td colSpan={compactView ? 5 : 8} className="px-4 py-8 text-center text-gray-400">
+                        No requests found
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedRequests.map((request) => {
+                      const isArchivable = ['collected', 'completed', 'cancelled'].includes(request.status);
+                      const isSelected = selectedIds.has(request.id);
+                      const isExpanded = expandedIds.has(request.id);
                       
-                      {/* Expanded Row */}
-                      {isExpanded && (
-                        <tr className="bg-black/20">
-                          <td colSpan={8} className="px-4 py-4">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                              {/* Description & Notes */}
-                              <div className="space-y-4">
-                                <div>
-                                  <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-2">
-                                    <FileText className="h-3 w-3" />
-                                    Description
-                                  </div>
-                                  <p className="text-sm text-white">{request.description || "No description"}</p>
-                                </div>
-                                {request.collection_notes && (
-                                  <div>
-                                    <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-2">
-                                      <FileText className="h-3 w-3" />
-                                      Collection Notes
-                                    </div>
-                                    <p className="text-sm text-white">{request.collection_notes}</p>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Contact & Address */}
-                              <div className="space-y-4">
-                                <div>
-                                  <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-2">
-                                    <MapPin className="h-3 w-3" />
-                                    Address
-                                  </div>
-                                  <p className="text-sm text-white">
-                                    {request.profiles?.address_line1}
-                                    {request.profiles?.address_line2 && <>, {request.profiles.address_line2}</>}
-                                  </p>
-                                  <p className="text-sm text-white">
-                                    {request.profiles?.city}, {request.profiles?.postcode}
-                                  </p>
-                                </div>
-                                <div>
-                                  <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-2">
-                                    <Phone className="h-3 w-3" />
-                                    Phone
-                                  </div>
-                                  <p className="text-sm text-white">{request.profiles?.phone || "N/A"}</p>
-                                </div>
-                              </div>
-
-                              {/* Schedule & Timestamps */}
-                              <div className="space-y-4">
-                                {request.scheduled_start && (
-                                  <div>
-                                    <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-2">
-                                      <Calendar className="h-3 w-3" />
-                                      Scheduled
-                                    </div>
-                                    <p className="text-sm text-white">
-                                      {format(new Date(request.scheduled_start), "d MMM yyyy")}
-                                    </p>
-                                    <p className="text-xs text-gray-400">
-                                      {format(new Date(request.scheduled_start), "h:mm a")}
-                                      {request.scheduled_end && <> - {format(new Date(request.scheduled_end), "h:mm a")}</>}
-                                    </p>
-                                  </div>
-                                )}
-                                {request.collected_at && (
-                                  <div>
-                                    <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-2">
-                                      <Clock className="h-3 w-3" />
-                                      Collected
-                                    </div>
-                                    <p className="text-sm text-white">
-                                      {format(new Date(request.collected_at), "d MMM yyyy, h:mm a")}
-                                    </p>
-                                    {request.collected_by_name && (
-                                      <p className="text-xs text-gray-400">by {request.collected_by_name}</p>
-                                    )}
-                                  </div>
-                                )}
-                                {request.preferred_window && request.preferred_window !== 'anytime' && (
-                                  <div>
-                                    <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-2">
-                                      <Clock className="h-3 w-3" />
-                                      Preferred Window
-                                    </div>
-                                    <p className="text-sm text-white capitalize">{request.preferred_window}</p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Photos */}
-                            {request.request_photos && request.request_photos.length > 0 && (
-                              <div className="mt-4 pt-4 border-t border-[#333]">
-                                <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide mb-3">
-                                  <Camera className="h-3 w-3" />
-                                  Photos ({request.request_photos.length})
-                                </div>
-                                <div className="flex gap-2 flex-wrap">
-                                  {request.request_photos.map((photo, index) => {
-                                    const photoSignedUrl = signedUrlMap.get(photo.file_url);
-                                    return (
-                                      <div key={photo.id || index} className="relative">
-                                        {photoSignedUrl ? (
-                                          <img
-                                            src={photoSignedUrl}
-                                            alt={`Photo ${index + 1}`}
-                                            className="h-16 w-16 rounded-lg object-cover"
-                                          />
-                                        ) : (
-                                          <div className="h-16 w-16 rounded-lg bg-[#28292b] flex items-center justify-center">
-                                            <Camera className="h-4 w-4 text-gray-500" />
-                                          </div>
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })
-              )}
-            </tbody>
+                      return (
+                        <SortableRequestRow
+                          key={request.id}
+                          request={request}
+                          statusConfig={statusConfig}
+                          signedUrlMap={signedUrlMap}
+                          urlsLoading={urlsLoading}
+                          isArchivable={isArchivable}
+                          isSelected={isSelected}
+                          isExpanded={isExpanded}
+                          compactView={compactView}
+                          isDragEnabled={isDragEnabled}
+                          onToggleSelect={toggleSelect}
+                          onToggleExpand={toggleExpand}
+                          onArchiveToggle={handleArchiveToggle}
+                        />
+                      );
+                    })
+                  )}
+                </tbody>
+              </SortableContext>
+            </DndContext>
           </table>
         </div>
 
