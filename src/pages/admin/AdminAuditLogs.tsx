@@ -2,8 +2,8 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { supabase } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { format } from "date-fns";
-import { Shield, User, Calendar, Filter, Search, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { format, startOfDay, startOfWeek, subDays } from "date-fns";
+import { Shield, User, Calendar, Filter, Search, Eye, ChevronLeft, ChevronRight, Activity, TrendingUp, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,21 +32,116 @@ type Driver = {
   contact_name: string;
 };
 
+type SummaryStats = {
+  totalEvents: number;
+  eventsToday: number;
+  eventsThisWeek: number;
+  mostActiveDriver: { name: string; count: number } | null;
+  actionBreakdown: { action: string; count: number }[];
+};
+
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 export default function AdminAuditLogs() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
+  const [summaryLoading, setSummaryLoading] = useState(true);
   const [selectedDriver, setSelectedDriver] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
   
+  // Summary stats
+  const [summary, setSummary] = useState<SummaryStats>({
+    totalEvents: 0,
+    eventsToday: 0,
+    eventsThisWeek: 0,
+    mostActiveDriver: null,
+    actionBreakdown: [],
+  });
+  
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [totalCount, setTotalCount] = useState(0);
+
+  // Fetch summary statistics
+  const fetchSummary = useCallback(async () => {
+    setSummaryLoading(true);
+    
+    const today = startOfDay(new Date()).toISOString();
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString();
+
+    // Fetch all audit logs for summary (we'll process in JS for flexibility)
+    const { data: allLogs, error } = await supabase
+      .from("audit_logs")
+      .select("id, created_at, user_id, action");
+
+    if (error) {
+      console.error("Error fetching summary:", error);
+      setSummaryLoading(false);
+      return;
+    }
+
+    const logsData = allLogs || [];
+    
+    // Calculate stats
+    const totalEvents = logsData.length;
+    const eventsToday = logsData.filter(log => log.created_at >= today).length;
+    const eventsThisWeek = logsData.filter(log => log.created_at >= weekStart).length;
+
+    // Count by driver
+    const driverCounts: Record<string, number> = {};
+    logsData.forEach(log => {
+      driverCounts[log.user_id] = (driverCounts[log.user_id] || 0) + 1;
+    });
+
+    // Find most active driver
+    let mostActiveDriverId: string | null = null;
+    let maxCount = 0;
+    for (const [userId, count] of Object.entries(driverCounts)) {
+      if (count > maxCount) {
+        maxCount = count;
+        mostActiveDriverId = userId;
+      }
+    }
+
+    // Get driver name for most active
+    let mostActiveDriver: { name: string; count: number } | null = null;
+    if (mostActiveDriverId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("contact_name")
+        .eq("id", mostActiveDriverId)
+        .maybeSingle();
+      
+      mostActiveDriver = {
+        name: profile?.contact_name || "Unknown",
+        count: maxCount,
+      };
+    }
+
+    // Count by action type
+    const actionCounts: Record<string, number> = {};
+    logsData.forEach(log => {
+      actionCounts[log.action] = (actionCounts[log.action] || 0) + 1;
+    });
+
+    const actionBreakdown = Object.entries(actionCounts)
+      .map(([action, count]) => ({ action, count }))
+      .sort((a, b) => b.count - a.count);
+
+    setSummary({
+      totalEvents,
+      eventsToday,
+      eventsThisWeek,
+      mostActiveDriver,
+      actionBreakdown,
+    });
+    
+    setSummaryLoading(false);
+  }, []);
 
   useEffect(() => {
     const fetchDrivers = async () => {
@@ -60,7 +155,8 @@ export default function AdminAuditLogs() {
     };
 
     fetchDrivers();
-  }, []);
+    fetchSummary();
+  }, [fetchSummary]);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -219,6 +315,12 @@ export default function AdminAuditLogs() {
     }
   };
 
+  const formatActionName = (action: string): string => {
+    return action
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+
   const formatDetails = (details: unknown): string | null => {
     if (!details || typeof details !== "object") return null;
     
@@ -266,6 +368,95 @@ export default function AdminAuditLogs() {
             </p>
           </div>
         </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {/* Total Events */}
+          <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <Activity className="h-5 w-5 text-primary" />
+            </div>
+            {summaryLoading ? (
+              <div className="h-8 w-16 animate-pulse rounded bg-[#28292b]" />
+            ) : (
+              <p className="text-2xl font-bold text-white">{summary.totalEvents}</p>
+            )}
+            <p className="text-sm text-gray-400">Total Events</p>
+          </div>
+
+          {/* Events Today */}
+          <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-success/10">
+              <TrendingUp className="h-5 w-5 text-success" />
+            </div>
+            {summaryLoading ? (
+              <div className="h-8 w-16 animate-pulse rounded bg-[#28292b]" />
+            ) : (
+              <p className="text-2xl font-bold text-white">{summary.eventsToday}</p>
+            )}
+            <p className="text-sm text-gray-400">Today</p>
+          </div>
+
+          {/* Events This Week */}
+          <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-info/10">
+              <Calendar className="h-5 w-5 text-info" />
+            </div>
+            {summaryLoading ? (
+              <div className="h-8 w-16 animate-pulse rounded bg-[#28292b]" />
+            ) : (
+              <p className="text-2xl font-bold text-white">{summary.eventsThisWeek}</p>
+            )}
+            <p className="text-sm text-gray-400">This Week</p>
+          </div>
+
+          {/* Most Active Driver */}
+          <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
+              <Users className="h-5 w-5 text-warning" />
+            </div>
+            {summaryLoading ? (
+              <div className="h-8 w-24 animate-pulse rounded bg-[#28292b]" />
+            ) : summary.mostActiveDriver ? (
+              <>
+                <p className="text-lg font-bold text-white truncate" title={summary.mostActiveDriver.name}>
+                  {summary.mostActiveDriver.name}
+                </p>
+                <p className="text-sm text-gray-400">
+                  Most Active ({summary.mostActiveDriver.count} events)
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg font-bold text-white">-</p>
+                <p className="text-sm text-gray-400">Most Active Driver</p>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Access Patterns */}
+        {summary.actionBreakdown.length > 0 && !summaryLoading && (
+          <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Eye className="h-4 w-4 text-gray-400" />
+              <span className="text-sm font-medium text-white">Access Patterns</span>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {summary.actionBreakdown.map(({ action, count }) => (
+                <div
+                  key={action}
+                  className="flex items-center gap-2 rounded-lg bg-[#28292b] px-3 py-2"
+                >
+                  <span className="text-sm text-white">{formatActionName(action)}</span>
+                  <Badge variant="outline" className="border-primary/50 text-primary text-xs">
+                    {count}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Filters */}
         <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
