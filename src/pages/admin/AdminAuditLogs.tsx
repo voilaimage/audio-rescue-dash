@@ -171,8 +171,8 @@ export default function AdminAuditLogs() {
       // Format the value (shorten UUIDs)
       let formattedValue = String(value);
       if (typeof value === "string" && value.length === 36 && value.includes("-")) {
-        // It's a UUID, shorten it
-        formattedValue = `#${value.substring(0, 8).toUpperCase()}`;
+        // It's a UUID, shorten it to last 8 chars
+        formattedValue = `...${value.substring(value.length - 8)}`;
       }
       
       parts.push(`${formattedKey}: ${formattedValue}`);
