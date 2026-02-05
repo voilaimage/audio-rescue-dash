@@ -243,7 +243,7 @@ export default function AdminAuditLogs() {
             <Button
               variant="outline"
               onClick={handleClearFilters}
-              className="border-[#333] text-gray-400 hover:text-white"
+              className="bg-[#28292b] border-[#333] text-gray-400 hover:bg-[#333] hover:text-white"
             >
               Clear Filters
             </Button>
