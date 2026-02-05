@@ -197,40 +197,40 @@ export default function AdminAuditLogs() {
             <Shield className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-foreground">
+            <h1 className="font-display text-2xl font-bold text-white">
               Audit Logs
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-400">
               Track driver access to customer data
             </p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
           <div className="flex items-center gap-2 mb-4">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">Filters</span>
+            <Filter className="h-4 w-4 text-gray-400" />
+            <span className="text-sm font-medium text-white">Filters</span>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-muted border-border pl-9 text-foreground placeholder:text-muted-foreground"
+                className="bg-[#28292b] border-[#555555] pl-9 text-white placeholder:text-gray-500"
               />
             </div>
 
             {/* Driver Filter */}
             <Select value={selectedDriver} onValueChange={setSelectedDriver}>
-              <SelectTrigger className="bg-muted border-border text-foreground">
-                <User className="mr-2 h-4 w-4 text-muted-foreground" />
+              <SelectTrigger className="bg-[#28292b] border-[#555555] text-white">
+                <User className="mr-2 h-4 w-4 text-gray-400" />
                 <SelectValue placeholder="All Drivers" />
               </SelectTrigger>
-              <SelectContent className="bg-muted border-border">
+              <SelectContent className="bg-[#28292b] border-[#555555]">
                 <SelectItem value="all">All Drivers</SelectItem>
                 {drivers.map((driver) => (
                   <SelectItem key={driver.id} value={driver.id}>
@@ -242,25 +242,25 @@ export default function AdminAuditLogs() {
 
             {/* Date From */}
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
                 type="date"
                 placeholder="From"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="bg-muted border-border pl-9 text-foreground"
+                className="bg-[#28292b] border-[#555555] pl-9 text-white"
               />
             </div>
 
             {/* Date To */}
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
                 type="date"
                 placeholder="To"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="bg-muted border-border pl-9 text-foreground"
+                className="bg-[#28292b] border-[#555555] pl-9 text-white"
               />
             </div>
 
@@ -268,7 +268,7 @@ export default function AdminAuditLogs() {
             <Button
               variant="outline"
               onClick={handleClearFilters}
-              className="bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground"
+              className="bg-[#28292b] border-[#555555] text-gray-400 hover:bg-white/5 hover:text-white"
             >
               Clear Filters
             </Button>
@@ -276,16 +276,16 @@ export default function AdminAuditLogs() {
         </div>
 
         {/* Logs Table */}
-        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+        <div className="rounded-xl border border-[#333] bg-[#1d1d1d] overflow-hidden">
           {loading ? (
             <div className="flex h-64 items-center justify-center">
               <LoadingSpinner />
             </div>
           ) : filteredLogs.length === 0 ? (
             <div className="px-5 py-12 text-center">
-              <Shield className="mx-auto h-12 w-12 text-muted-foreground/50" />
-              <p className="mt-4 text-muted-foreground">No audit logs found</p>
-              <p className="text-sm text-muted-foreground/70">
+              <Shield className="mx-auto h-12 w-12 text-gray-500" />
+              <p className="mt-4 text-gray-400">No audit logs found</p>
+              <p className="text-sm text-gray-500">
                 Logs will appear here when drivers access customer data
               </p>
             </div>
@@ -293,31 +293,31 @@ export default function AdminAuditLogs() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border bg-background/30">
-                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  <tr className="border-b border-[#333] bg-black/30">
+                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                       Timestamp
                     </th>
-                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                       Driver
                     </th>
-                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                       Action
                     </th>
-                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                       Customer
                     </th>
-                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                       Details
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-[#333]">
                   {filteredLogs.map((log) => (
                     <tr
                       key={log.id}
-                      className="transition-colors hover:bg-foreground/5"
+                      className="transition-colors hover:bg-white/5"
                     >
-                      <td className="whitespace-nowrap px-5 py-4 text-sm text-foreground">
+                      <td className="whitespace-nowrap px-5 py-4 text-sm text-white">
                         {format(
                           new Date(log.created_at),
                           "dd MMM yyyy, HH:mm:ss"
@@ -328,7 +328,7 @@ export default function AdminAuditLogs() {
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
                             <User className="h-4 w-4 text-primary" />
                           </div>
-                          <span className="text-sm font-medium text-foreground">
+                          <span className="text-sm font-medium text-white">
                             {log.driver_name}
                           </span>
                         </div>
@@ -336,10 +336,10 @@ export default function AdminAuditLogs() {
                       <td className="whitespace-nowrap px-5 py-4">
                         {getActionBadge(log.action)}
                       </td>
-                      <td className="whitespace-nowrap px-5 py-4 text-sm text-foreground/80">
+                      <td className="whitespace-nowrap px-5 py-4 text-sm text-white/80">
                         {log.customer_name || "-"}
                       </td>
-                      <td className="px-5 py-4 text-sm text-muted-foreground">
+                      <td className="px-5 py-4 text-sm text-gray-400">
                         {formatDetails(log.details) || "-"}
                       </td>
                     </tr>
@@ -352,7 +352,7 @@ export default function AdminAuditLogs() {
 
         {/* Stats */}
         {!loading && filteredLogs.length > 0 && (
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-gray-400">
             Showing {filteredLogs.length} log entries
           </div>
         )}
