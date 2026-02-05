@@ -1,9 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { supabase } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { format } from "date-fns";
-import { Shield, User, Calendar, Filter, Search, Eye } from "lucide-react";
+import { Shield, User, Calendar, Filter, Search, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +32,8 @@ type Driver = {
   contact_name: string;
 };
 
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+
 export default function AdminAuditLogs() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
@@ -40,10 +42,14 @@ export default function AdminAuditLogs() {
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
-    const fetchData = async () => {
-      // Fetch drivers for filter dropdown
+    const fetchDrivers = async () => {
       const { data: driverData } = await supabase
         .from("profiles")
         .select("id, contact_name")
@@ -51,79 +57,114 @@ export default function AdminAuditLogs() {
         .order("contact_name");
 
       setDrivers(driverData || []);
-
-      // Fetch audit logs
-      await fetchLogs();
     };
 
-    fetchData();
+    fetchDrivers();
   }, []);
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     setLoading(true);
 
-    let query = supabase
+    // Calculate range for pagination
+    const from = (currentPage - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    // Build count query for total
+    let countQuery = supabase
+      .from("audit_logs")
+      .select("*", { count: "exact", head: true });
+
+    // Build data query
+    let dataQuery = supabase
       .from("audit_logs")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(100);
+      .range(from, to);
 
+    // Apply filters to both queries
     if (selectedDriver !== "all") {
-      query = query.eq("user_id", selectedDriver);
+      countQuery = countQuery.eq("user_id", selectedDriver);
+      dataQuery = dataQuery.eq("user_id", selectedDriver);
     }
 
     if (dateFrom) {
-      query = query.gte("created_at", `${dateFrom}T00:00:00`);
+      countQuery = countQuery.gte("created_at", `${dateFrom}T00:00:00`);
+      dataQuery = dataQuery.gte("created_at", `${dateFrom}T00:00:00`);
     }
 
     if (dateTo) {
-      query = query.lte("created_at", `${dateTo}T23:59:59`);
+      countQuery = countQuery.lte("created_at", `${dateTo}T23:59:59`);
+      dataQuery = dataQuery.lte("created_at", `${dateTo}T23:59:59`);
     }
 
-    const { data: logData, error } = await query;
+    // Execute both queries in parallel
+    const [countResult, dataResult] = await Promise.all([
+      countQuery,
+      dataQuery,
+    ]);
 
-    if (error) {
-      console.error("Error fetching audit logs:", error);
+    if (dataResult.error) {
+      console.error("Error fetching audit logs:", dataResult.error);
       setLoading(false);
       return;
     }
 
-    // Enrich logs with driver and customer names
-    const enrichedLogs = await Promise.all(
-      (logData || []).map(async (log) => {
-        // Get driver name
-        const { data: driverProfile } = await supabase
-          .from("profiles")
-          .select("contact_name")
-          .eq("id", log.user_id)
-          .maybeSingle();
+    setTotalCount(countResult.count || 0);
 
-        // Get customer name if resource_id exists
-        let customerName: string | undefined;
-        if (log.resource_id && log.resource_type === "profile") {
-          const { data: customerProfile } = await supabase
-            .from("profiles")
-            .select("business_name")
-            .eq("id", log.resource_id)
-            .maybeSingle();
-          customerName = customerProfile?.business_name;
-        }
+    const logData = dataResult.data || [];
 
-        return {
-          ...log,
-          driver_name: driverProfile?.contact_name || "Unknown",
-          customer_name: customerName,
-        };
-      })
-    );
+    // Collect unique user_ids and resource_ids for batch lookup
+    const userIds = [...new Set(logData.map((log) => log.user_id))];
+    const resourceIds = [...new Set(
+      logData
+        .filter((log) => log.resource_id && log.resource_type === "profile")
+        .map((log) => log.resource_id as string)
+    )];
+
+    // Batch fetch all profiles we need
+    const allProfileIds = [...new Set([...userIds, ...resourceIds])];
+    
+    let profileMap: Map<string, { contact_name: string; business_name: string }> = new Map();
+    
+    if (allProfileIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, contact_name, business_name")
+        .in("id", allProfileIds);
+
+      if (profiles) {
+        profiles.forEach((p) => {
+          profileMap.set(p.id, { contact_name: p.contact_name, business_name: p.business_name });
+        });
+      }
+    }
+
+    // Enrich logs with driver and customer names from the map
+    const enrichedLogs = logData.map((log) => {
+      const driverProfile = profileMap.get(log.user_id);
+      const customerProfile = log.resource_id && log.resource_type === "profile" 
+        ? profileMap.get(log.resource_id) 
+        : null;
+
+      return {
+        ...log,
+        driver_name: driverProfile?.contact_name || "Unknown",
+        customer_name: customerProfile?.business_name,
+      };
+    });
 
     setLogs(enrichedLogs);
     setLoading(false);
-  };
+  }, [currentPage, pageSize, selectedDriver, dateFrom, dateTo]);
 
-  // Apply filters when they change
+  // Fetch logs when filters or pagination changes
   useEffect(() => {
     fetchLogs();
+  }, [fetchLogs]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
   }, [selectedDriver, dateFrom, dateTo]);
 
   // Filter logs by search query (client-side)
@@ -138,6 +179,28 @@ export default function AdminAuditLogs() {
     );
   }, [logs, searchQuery]);
 
+  // Pagination calculations
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const showingFrom = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const showingTo = Math.min(currentPage * pageSize, totalCount);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePageSizeChange = (value: string) => {
+    setPageSize(Number(value));
+    setCurrentPage(1);
+  };
+
   const getActionBadge = (action: string) => {
     switch (action) {
       case "view_customer_profile":
@@ -149,7 +212,7 @@ export default function AdminAuditLogs() {
         );
       default:
         return (
-          <Badge variant="outline" className="border-muted-foreground/50">
+          <Badge variant="outline" className="border-gray-500/50 text-gray-400">
             {action}
           </Badge>
         );
@@ -163,15 +226,12 @@ export default function AdminAuditLogs() {
     const parts: string[] = [];
     
     for (const [key, value] of Object.entries(obj)) {
-      // Format the key name
       const formattedKey = key
         .replace(/_/g, " ")
         .replace(/\b\w/g, (c) => c.toUpperCase());
       
-      // Format the value (shorten UUIDs)
       let formattedValue = String(value);
       if (typeof value === "string" && value.length === 36 && value.includes("-")) {
-        // It's a UUID, shorten it to last 8 chars
         formattedValue = `...${value.substring(value.length - 8)}`;
       }
       
@@ -186,6 +246,7 @@ export default function AdminAuditLogs() {
     setDateFrom("");
     setDateTo("");
     setSearchQuery("");
+    setCurrentPage(1);
   };
 
   return (
@@ -348,14 +409,59 @@ export default function AdminAuditLogs() {
               </table>
             </div>
           )}
-        </div>
 
-        {/* Stats */}
-        {!loading && filteredLogs.length > 0 && (
-          <div className="text-sm text-gray-400">
-            Showing {filteredLogs.length} log entries
-          </div>
-        )}
+          {/* Pagination Controls */}
+          {!loading && totalCount > 0 && (
+            <div className="flex items-center justify-between border-t border-[#333] px-5 py-4">
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-400">
+                  Showing {showingFrom} to {showingTo} of {totalCount} entries
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-400">Per page:</span>
+                  <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                    <SelectTrigger className="w-20 bg-[#28292b] border-[#555555] text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#28292b] border-[#555555]">
+                      {PAGE_SIZE_OPTIONS.map((size) => (
+                        <SelectItem key={size} value={String(size)}>
+                          {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className="bg-[#28292b] border-[#555555] text-white hover:bg-white/5 disabled:opacity-50"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                <span className="px-3 text-sm text-gray-400">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNextPage}
+                  disabled={currentPage >= totalPages}
+                  className="bg-[#28292b] border-[#555555] text-white hover:bg-white/5 disabled:opacity-50"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </AdminLayout>
   );
