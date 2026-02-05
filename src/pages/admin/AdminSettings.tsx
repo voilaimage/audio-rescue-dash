@@ -165,7 +165,7 @@ export default function AdminSettings() {
 
   return (
     <AdminLayout>
-      <div className="mb-6">
+      <div className="mb-6 pt-12">
         <h1 className="font-display text-2xl font-bold">Account Settings</h1>
         <p className="text-gray-400">Manage your admin account credentials</p>
       </div>

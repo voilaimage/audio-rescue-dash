@@ -652,7 +652,7 @@ export default function AdminRequests() {
 
   return (
     <AdminLayout>
-      <div className="space-y-5">
+      <div className="space-y-5 pt-12">
         {/* Header */}
         <div className={`-mx-6 -mt-6 px-6 py-4 ${showArchived ? "bg-primary" : ""}`}>
           <h1 className="font-display text-2xl font-bold text-white">
