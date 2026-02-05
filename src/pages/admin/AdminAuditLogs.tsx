@@ -156,6 +156,31 @@ export default function AdminAuditLogs() {
     }
   };
 
+  const formatDetails = (details: unknown): string | null => {
+    if (!details || typeof details !== "object") return null;
+    
+    const obj = details as Record<string, unknown>;
+    const parts: string[] = [];
+    
+    for (const [key, value] of Object.entries(obj)) {
+      // Format the key name
+      const formattedKey = key
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+      
+      // Format the value (shorten UUIDs)
+      let formattedValue = String(value);
+      if (typeof value === "string" && value.length === 36 && value.includes("-")) {
+        // It's a UUID, shorten it
+        formattedValue = `#${value.substring(0, 8).toUpperCase()}`;
+      }
+      
+      parts.push(`${formattedKey}: ${formattedValue}`);
+    }
+    
+    return parts.length > 0 ? parts.join(", ") : null;
+  };
+
   const handleClearFilters = () => {
     setSelectedDriver("all");
     setDateFrom("");
@@ -315,13 +340,7 @@ export default function AdminAuditLogs() {
                         {log.customer_name || "-"}
                       </td>
                       <td className="px-5 py-4 text-sm text-gray-400">
-                        {log.details ? (
-                          <code className="rounded bg-black/30 px-2 py-1 text-xs">
-                            {JSON.stringify(log.details)}
-                          </code>
-                        ) : (
-                          "-"
-                        )}
+                        {formatDetails(log.details) || "-"}
                       </td>
                     </tr>
                   ))}
