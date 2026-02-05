@@ -52,8 +52,8 @@ export function AdminLayout({
     });
   };
   return <div className="flex min-h-screen bg-[#121212]">
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-40 h-screen w-60 bg-black">
+      {/* Sidebar - hidden on mobile */}
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-60 bg-black md:block">
         <div className="absolute right-0 top-0 h-full w-0.5 bg-primary" />
         <div className="flex h-full flex-col">
           {/* Logo */}
@@ -91,7 +91,42 @@ export function AdminLayout({
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="ml-60 flex-1 p-6 text-white">{children}</main>
+      {/* Mobile Header */}
+      <header className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center justify-between border-b border-[#333] bg-black px-4 md:hidden">
+        <img src={logoWhite} alt="Audio Salvage UK" className="h-8 w-auto" />
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-400">{profile?.contact_name}</span>
+          <Button variant="ghost" size="icon" className="text-white hover:text-destructive" onClick={handleSignOut}>
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
+      </header>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t-2 border-primary bg-black md:hidden">
+        <div className="flex justify-around py-2">
+          {sidebarItems.slice(0, 5).map(({
+            path,
+            icon: Icon,
+            label
+          }) => {
+            const isActive = location.pathname === path;
+            return <Link 
+              key={path} 
+              to={path} 
+              className={cn(
+                "flex flex-col items-center gap-1 px-2 py-1 text-xs transition-colors",
+                isActive ? "text-primary" : "text-white hover:text-primary"
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="truncate max-w-[60px]">{label.split(" ")[0]}</span>
+            </Link>;
+          })}
+        </div>
+      </nav>
+
+      {/* Main Content - responsive margin */}
+      <main className="min-h-screen w-full bg-[#121212] p-4 pt-16 pb-20 text-white md:ml-60 md:p-6 md:pt-6 md:pb-6">{children}</main>
     </div>;
 }
