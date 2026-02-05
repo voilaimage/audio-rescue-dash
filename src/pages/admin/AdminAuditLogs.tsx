@@ -2,8 +2,11 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { supabase } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { format, startOfDay, startOfWeek, subDays } from "date-fns";
-import { Shield, User, Calendar, Filter, Search, Eye, ChevronLeft, ChevronRight, Activity, TrendingUp, Users } from "lucide-react";
+import { format, startOfDay, startOfWeek, subDays, subMonths, endOfDay } from "date-fns";
+import { Shield, User, Calendar as CalendarIcon, Filter, Search, Eye, ChevronLeft, ChevronRight, Activity, TrendingUp, Users } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -61,6 +64,10 @@ export default function AdminAuditLogs() {
     actionBreakdown: [],
   });
   
+  // Summary date range filter
+  const [summaryDateFrom, setSummaryDateFrom] = useState<Date | undefined>(undefined);
+  const [summaryDateTo, setSummaryDateTo] = useState<Date | undefined>(undefined);
+  
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -73,10 +80,19 @@ export default function AdminAuditLogs() {
     const today = startOfDay(new Date()).toISOString();
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString();
 
-    // Fetch all audit logs for summary (we'll process in JS for flexibility)
-    const { data: allLogs, error } = await supabase
+    // Build query with optional date range filter
+    let query = supabase
       .from("audit_logs")
       .select("id, created_at, user_id, action");
+
+    if (summaryDateFrom) {
+      query = query.gte("created_at", startOfDay(summaryDateFrom).toISOString());
+    }
+    if (summaryDateTo) {
+      query = query.lte("created_at", endOfDay(summaryDateTo).toISOString());
+    }
+
+    const { data: allLogs, error } = await query;
 
     if (error) {
       console.error("Error fetching summary:", error);
@@ -86,7 +102,7 @@ export default function AdminAuditLogs() {
 
     const logsData = allLogs || [];
     
-    // Calculate stats
+    // Calculate stats based on filtered data
     const totalEvents = logsData.length;
     const eventsToday = logsData.filter(log => log.created_at >= today).length;
     const eventsThisWeek = logsData.filter(log => log.created_at >= weekStart).length;
@@ -155,8 +171,12 @@ export default function AdminAuditLogs() {
     };
 
     fetchDrivers();
+  }, []);
+
+  // Refetch summary when date range changes
+  useEffect(() => {
     fetchSummary();
-  }, [fetchSummary]);
+  }, [fetchSummary, summaryDateFrom, summaryDateTo]);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -369,69 +389,188 @@ export default function AdminAuditLogs() {
           </div>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {/* Total Events */}
-          <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-              <Activity className="h-5 w-5 text-primary" />
+        {/* Summary Section with Date Range Filter */}
+        <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Activity className="h-4 w-4 text-gray-400" />
+              <span className="text-sm font-medium text-white">Summary Statistics</span>
+              {(summaryDateFrom || summaryDateTo) && (
+                <Badge variant="outline" className="border-primary/50 text-primary text-xs">
+                  Filtered
+                </Badge>
+              )}
             </div>
-            {summaryLoading ? (
-              <div className="h-8 w-16 animate-pulse rounded bg-[#28292b]" />
-            ) : (
-              <p className="text-2xl font-bold text-white">{summary.totalEvents}</p>
-            )}
-            <p className="text-sm text-gray-400">Total Events</p>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Date From Picker */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[140px] justify-start text-left font-normal bg-[#28292b] border-[#555555] text-white hover:bg-white/5",
+                      !summaryDateFrom && "text-gray-500"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {summaryDateFrom ? format(summaryDateFrom, "dd MMM yyyy") : "From"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-[#28292b] border-[#555555]" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={summaryDateFrom}
+                    onSelect={setSummaryDateFrom}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* Date To Picker */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[140px] justify-start text-left font-normal bg-[#28292b] border-[#555555] text-white hover:bg-white/5",
+                      !summaryDateTo && "text-gray-500"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {summaryDateTo ? format(summaryDateTo, "dd MMM yyyy") : "To"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-[#28292b] border-[#555555]" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={summaryDateTo}
+                    onSelect={setSummaryDateTo}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* Quick Presets */}
+              <Select
+                value=""
+                onValueChange={(value) => {
+                  const now = new Date();
+                  switch (value) {
+                    case "today":
+                      setSummaryDateFrom(startOfDay(now));
+                      setSummaryDateTo(now);
+                      break;
+                    case "week":
+                      setSummaryDateFrom(startOfWeek(now, { weekStartsOn: 1 }));
+                      setSummaryDateTo(now);
+                      break;
+                    case "month":
+                      setSummaryDateFrom(subMonths(now, 1));
+                      setSummaryDateTo(now);
+                      break;
+                    case "all":
+                      setSummaryDateFrom(undefined);
+                      setSummaryDateTo(undefined);
+                      break;
+                  }
+                }}
+              >
+                <SelectTrigger className="w-[100px] bg-[#28292b] border-[#555555] text-white">
+                  <SelectValue placeholder="Preset" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#28292b] border-[#555555]">
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="week">This Week</SelectItem>
+                  <SelectItem value="month">Last Month</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Clear Button */}
+              {(summaryDateFrom || summaryDateTo) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSummaryDateFrom(undefined);
+                    setSummaryDateTo(undefined);
+                  }}
+                  className="text-gray-400 hover:text-white hover:bg-white/5"
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
           </div>
 
-          {/* Events Today */}
-          <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-success/10">
-              <TrendingUp className="h-5 w-5 text-success" />
+          {/* Summary Cards Grid */}
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {/* Total Events */}
+            <div className="rounded-lg bg-[#28292b] p-4">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <Activity className="h-5 w-5 text-primary" />
+              </div>
+              {summaryLoading ? (
+                <div className="h-8 w-16 animate-pulse rounded bg-[#333]" />
+              ) : (
+                <p className="text-2xl font-bold text-white">{summary.totalEvents}</p>
+              )}
+              <p className="text-sm text-gray-400">
+                {summaryDateFrom || summaryDateTo ? "In Period" : "Total Events"}
+              </p>
             </div>
-            {summaryLoading ? (
-              <div className="h-8 w-16 animate-pulse rounded bg-[#28292b]" />
-            ) : (
-              <p className="text-2xl font-bold text-white">{summary.eventsToday}</p>
-            )}
-            <p className="text-sm text-gray-400">Today</p>
-          </div>
 
-          {/* Events This Week */}
-          <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-info/10">
-              <Calendar className="h-5 w-5 text-info" />
+            {/* Events Today */}
+            <div className="rounded-lg bg-[#28292b] p-4">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-success/10">
+                <TrendingUp className="h-5 w-5 text-success" />
+              </div>
+              {summaryLoading ? (
+                <div className="h-8 w-16 animate-pulse rounded bg-[#333]" />
+              ) : (
+                <p className="text-2xl font-bold text-white">{summary.eventsToday}</p>
+              )}
+              <p className="text-sm text-gray-400">Today</p>
             </div>
-            {summaryLoading ? (
-              <div className="h-8 w-16 animate-pulse rounded bg-[#28292b]" />
-            ) : (
-              <p className="text-2xl font-bold text-white">{summary.eventsThisWeek}</p>
-            )}
-            <p className="text-sm text-gray-400">This Week</p>
-          </div>
 
-          {/* Most Active Driver */}
-          <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
-              <Users className="h-5 w-5 text-warning" />
+            {/* Events This Week */}
+            <div className="rounded-lg bg-[#28292b] p-4">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-info/10">
+                <CalendarIcon className="h-5 w-5 text-info" />
+              </div>
+              {summaryLoading ? (
+                <div className="h-8 w-16 animate-pulse rounded bg-[#333]" />
+              ) : (
+                <p className="text-2xl font-bold text-white">{summary.eventsThisWeek}</p>
+              )}
+              <p className="text-sm text-gray-400">This Week</p>
             </div>
-            {summaryLoading ? (
-              <div className="h-8 w-24 animate-pulse rounded bg-[#28292b]" />
-            ) : summary.mostActiveDriver ? (
-              <>
-                <p className="text-lg font-bold text-white truncate" title={summary.mostActiveDriver.name}>
-                  {summary.mostActiveDriver.name}
-                </p>
-                <p className="text-sm text-gray-400">
-                  Most Active ({summary.mostActiveDriver.count} events)
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-lg font-bold text-white">-</p>
-                <p className="text-sm text-gray-400">Most Active Driver</p>
-              </>
-            )}
+
+            {/* Most Active Driver */}
+            <div className="rounded-lg bg-[#28292b] p-4">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
+                <Users className="h-5 w-5 text-warning" />
+              </div>
+              {summaryLoading ? (
+                <div className="h-8 w-24 animate-pulse rounded bg-[#333]" />
+              ) : summary.mostActiveDriver ? (
+                <>
+                  <p className="text-lg font-bold text-white truncate" title={summary.mostActiveDriver.name}>
+                    {summary.mostActiveDriver.name}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Most Active ({summary.mostActiveDriver.count} events)
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-lg font-bold text-white">-</p>
+                  <p className="text-sm text-gray-400">Most Active Driver</p>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -494,7 +633,7 @@ export default function AdminAuditLogs() {
 
             {/* Date From */}
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <CalendarIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
                 type="date"
                 placeholder="From"
@@ -506,7 +645,7 @@ export default function AdminAuditLogs() {
 
             {/* Date To */}
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <CalendarIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
                 type="date"
                 placeholder="To"
