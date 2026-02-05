@@ -207,7 +207,7 @@ export default function AdminAuditLogs() {
         </div>
 
         {/* Filters */}
-        <div className="rounded-xl border border-border bg-card p-4">
+        <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Filters</span>
@@ -276,7 +276,7 @@ export default function AdminAuditLogs() {
         </div>
 
         {/* Logs Table */}
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
           {loading ? (
             <div className="flex h-64 items-center justify-center">
               <LoadingSpinner />
