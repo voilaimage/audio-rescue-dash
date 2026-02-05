@@ -41,7 +41,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="border-b border-[#333] px-5 py-5">
-            <img src={logoWhite} alt="Audio Salvage UK" className="h-10 w-auto" />
+            <img src={logoWhite} alt="Audio Salvage UK" className="h-20 w-auto" />
             <p className="mt-1 text-xs text-gray-400">Admin Dashboard</p>
           </div>
 
