@@ -85,7 +85,7 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6 pt-20">
+      <div className="space-y-6 pt-14">
         {/* Header */}
         <div>
           <h1 className="font-display text-2xl font-bold text-white">Dashboard</h1>
