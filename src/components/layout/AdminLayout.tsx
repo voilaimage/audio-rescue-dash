@@ -57,7 +57,7 @@ export function AdminLayout({
         <div className="absolute right-0 top-0 h-full w-0.5 bg-primary" />
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="border-b border-[#333] px-5 py-5">
+          <div className="border-b border-[#333] px-5 py-5 flex flex-col items-center">
             <img src={logoWhite} alt="Audio Salvage UK" className="h-20 w-auto" />
             <p className="mt-1 text-xs text-gray-400 text-center">Admin Dashboard</p>
           </div>
