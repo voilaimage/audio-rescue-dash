@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { hapticFeedback } from "@/lib/haptics";
 import { ArrowLeft, Camera, X, Upload, CheckCircle } from "lucide-react";
 import {
   DropdownMenu,
@@ -78,6 +79,8 @@ export default function MarkCollected() {
     const newPhotos = Array.from(files).slice(0, 5 - proofPhotos.length);
     if (newPhotos.length === 0) return;
 
+    hapticFeedback("light");
+    
     // Create preview URLs
     const newPreviewUrls = newPhotos.map((file) => URL.createObjectURL(file));
 
@@ -86,6 +89,7 @@ export default function MarkCollected() {
   };
 
   const removePhoto = (index: number) => {
+    hapticFeedback("light");
     URL.revokeObjectURL(photoPreviewUrls[index]);
     setProofPhotos((prev) => prev.filter((_, i) => i !== index));
     setPhotoPreviewUrls((prev) => prev.filter((_, i) => i !== index));
@@ -96,6 +100,7 @@ export default function MarkCollected() {
 
     // Validation
     if (proofPhotos.length === 0) {
+      hapticFeedback("error");
       toast({
         variant: "destructive",
         title: "Proof photo required",
@@ -106,6 +111,7 @@ export default function MarkCollected() {
 
     // PIN validation if required
     if (request.collection_pin && pin !== request.collection_pin) {
+      hapticFeedback("warning");
       setPinError("Incorrect PIN. Please try again.");
       return;
     }
@@ -160,6 +166,7 @@ export default function MarkCollected() {
 
       if (updateError) throw updateError;
 
+      hapticFeedback("success");
       setSuccess(true);
 
       // Redirect after 2 seconds
@@ -168,6 +175,7 @@ export default function MarkCollected() {
       }, 2000);
     } catch (error: any) {
       console.error("Error marking collected:", error);
+      hapticFeedback("error");
       toast({
         variant: "destructive",
         title: "Error",
@@ -210,7 +218,10 @@ export default function MarkCollected() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate(`/driver/job/${id}`)}
+            onClick={() => {
+              hapticFeedback("light");
+              navigate(`/driver/job/${id}`);
+            }}
             className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -253,17 +264,26 @@ export default function MarkCollected() {
               {proofPhotos.length < 5 && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="aspect-square flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#333] bg-[#28292b] hover:border-primary hover:bg-[#333] transition-colors">
+                    <button 
+                      onClick={() => hapticFeedback("light")}
+                      className="aspect-square flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#333] bg-[#28292b] hover:border-primary hover:bg-[#333] transition-colors"
+                    >
                       <Camera className="h-8 w-8 text-gray-400 mb-2" />
                       <span className="text-xs text-gray-400">Add Photo</span>
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => cameraInputRef.current?.click()}>
+                    <DropdownMenuItem onClick={() => {
+                      hapticFeedback("light");
+                      cameraInputRef.current?.click();
+                    }}>
                       <Camera className="h-4 w-4 mr-2" />
                       Take Photo
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => galleryInputRef.current?.click()}>
+                    <DropdownMenuItem onClick={() => {
+                      hapticFeedback("light");
+                      galleryInputRef.current?.click();
+                    }}>
                       <Upload className="h-4 w-4 mr-2" />
                       Photo Gallery
                     </DropdownMenuItem>
@@ -338,6 +358,7 @@ export default function MarkCollected() {
             onClick={handleSubmit}
             disabled={submitting || proofPhotos.length === 0}
             className="w-full h-12 text-base font-semibold"
+            haptic="light"
           >
             {submitting ? <LoadingSpinner size="sm" /> : "Submit"}
           </Button>
