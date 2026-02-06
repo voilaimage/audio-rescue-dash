@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, LogOut, Truck, Users, Shield, Settings, Menu } from "lucide-react";
+import { LayoutDashboard, ClipboardList, LogOut, Truck, Users, Shield, Settings, Menu, Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -25,6 +25,10 @@ const sidebarItems = [{
   path: "/admin/drivers",
   icon: Users,
   label: "Drivers"
+}, {
+  path: "/admin/notifications",
+  icon: Bell,
+  label: "Notifications"
 }, {
   path: "/admin/audit-logs",
   icon: Shield,
