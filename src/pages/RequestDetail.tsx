@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,7 +6,9 @@ import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { cacheRequestDetail, getCachedRequestDetail, getRequestDetailCacheTimestamp } from "@/lib/offline-storage";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { format, formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
 import { ArrowLeft, MapPin, Clock, Calendar, Package, WifiOff, RefreshCw } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
 import logo from "@/assets/logo-white.png";
@@ -127,7 +129,7 @@ export default function RequestDetail() {
     };
   }, [id, navigate]);
 
-  const handleManualRefresh = async () => {
+  const syncRequestDetail = useCallback(async () => {
     if (!id || isSyncing) return;
     
     setIsSyncing(true);
@@ -152,7 +154,18 @@ export default function RequestDetail() {
     } finally {
       setIsSyncing(false);
     }
-  };
+  }, [id, isSyncing]);
+
+  const handleManualRefresh = () => syncRequestDetail();
+
+  // Auto-sync when coming back online
+  useOnlineStatus({
+    onReconnect: () => {
+      console.log("Network restored, syncing request detail...");
+      toast.info("Back online - syncing data...");
+      syncRequestDetail();
+    },
+  });
 
   if (loading) {
     return (
