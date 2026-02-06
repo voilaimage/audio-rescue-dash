@@ -2,6 +2,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Camera, ClipboardList, ChevronRight, Sparkles, LogOut } from "lucide-react";
+import { hapticFeedback } from "@/lib/haptics";
 import appBg from "@/assets/app-bg.png";
 import logo from "@/assets/logo-white.png";
 
@@ -10,8 +11,13 @@ export default function Home() {
   const { profile, signOut } = useAuth();
 
   const handleSignOut = async () => {
+    hapticFeedback("light");
     await signOut();
     navigate("/login", { replace: true });
+  };
+
+  const handleNavClick = () => {
+    hapticFeedback("light");
   };
 
   return (
@@ -48,7 +54,7 @@ export default function Home() {
         <div className="flex-1 overflow-y-auto px-5 pb-24">
           {/* Main Action Buttons */}
           <div className="space-y-3">
-            <Link to="/new-request" className="block">
+            <Link to="/new-request" onClick={handleNavClick} className="block">
               <div className="group rounded-xl border border-[#555555] bg-[#1d1d1d] p-5 shadow-card transition-all hover:border-primary/40 hover:bg-[#1d1d1d]/90">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -67,7 +73,7 @@ export default function Home() {
               </div>
             </Link>
 
-            <Link to="/requests" className="block">
+            <Link to="/requests" onClick={handleNavClick} className="block">
               <div className="group rounded-xl border border-[#555555] bg-[#1d1d1d] p-5 shadow-card transition-all hover:border-primary/40 hover:bg-[#1d1d1d]/90">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">

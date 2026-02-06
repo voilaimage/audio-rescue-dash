@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
+import { hapticFeedback } from "@/lib/haptics";
 import { format } from "date-fns";
 import { ChevronRight, Package, ArrowLeft, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
@@ -208,6 +209,7 @@ export default function Requests() {
   };
 
   const openCancelDialog = (e: React.MouseEvent, request: RequestWithPhotos) => {
+    hapticFeedback("light");
     e.preventDefault();
     e.stopPropagation();
     setSelectedRequest(request);
@@ -232,7 +234,10 @@ export default function Requests() {
         <div className="flex-shrink-0 px-5 pt-6">
           <div className="flex items-center gap-4 mb-6">
             <button 
-              onClick={() => navigate("/home")} 
+              onClick={() => {
+                hapticFeedback("light");
+                navigate("/home");
+              }} 
               className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -266,7 +271,7 @@ export default function Requests() {
                 
                 return (
                   <div key={request.id} className="group relative">
-                    <Link to={`/requests/${request.id}`} className="block">
+                    <Link to={`/requests/${request.id}`} onClick={() => hapticFeedback("light")} className="block">
                       <div className="rounded-xl border border-[#555555] bg-[#1d1d1d] p-4 shadow-card transition-all hover:border-primary/40">
                         <div className="flex gap-3">
                           {firstPhotoUrl && (

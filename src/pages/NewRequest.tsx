@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { hapticFeedback } from "@/lib/haptics";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ArrowLeft, Camera, X, Check, MapPin, ImageIcon, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import {
@@ -125,7 +126,10 @@ export default function NewRequest() {
         <div className="flex-shrink-0 px-5 pt-6">
           {/* Back button and Logo row */}
           <div className="flex items-center gap-4 mb-6">
-            <button onClick={() => step === 1 ? navigate(-1) : setStep(1)} className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
+            <button onClick={() => {
+              hapticFeedback("light");
+              step === 1 ? navigate(-1) : setStep(1);
+            }} className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div className="flex-1 flex justify-center">
@@ -162,12 +166,19 @@ export default function NewRequest() {
                 {previews.map((preview, i) => (
                   <div key={i} className="relative aspect-square overflow-hidden rounded-lg border border-border">
                     <button 
-                      onClick={() => { setPreviewIndex(i); setPreviewOpen(true); }}
+                      onClick={() => {
+                        hapticFeedback("light");
+                        setPreviewIndex(i);
+                        setPreviewOpen(true);
+                      }}
                       className="h-full w-full"
                     >
                       <img src={preview} alt="" className="h-full w-full object-cover" />
                     </button>
-                    <button onClick={() => removePhoto(i)} className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-foreground/80 text-background">
+                    <button onClick={() => {
+                      hapticFeedback("light");
+                      removePhoto(i);
+                    }} className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-foreground/80 text-background">
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -175,21 +186,27 @@ export default function NewRequest() {
                 {photos.length < 10 && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-white bg-[#1d1d1d] hover:border-primary hover:bg-primary/5">
+                      <button onClick={() => hapticFeedback("light")} className="flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-white bg-[#1d1d1d] hover:border-primary hover:bg-primary/5">
                         <Camera className="h-6 w-6 text-white" />
                         <span className="text-xs text-white">Add</span>
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="bg-[#1d1d1d] border-[#555555]">
                       <DropdownMenuItem 
-                        onClick={() => cameraInputRef.current?.click()}
+                        onClick={() => {
+                          hapticFeedback("light");
+                          cameraInputRef.current?.click();
+                        }}
                         className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
                       >
                         <Camera className="mr-2 h-4 w-4" />
                         Take Photo
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => galleryInputRef.current?.click()}
+                        onClick={() => {
+                          hapticFeedback("light");
+                          galleryInputRef.current?.click();
+                        }}
                         className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
                       >
                         <ImageIcon className="mr-2 h-4 w-4" />
@@ -201,7 +218,10 @@ export default function NewRequest() {
               </div>
             </div>
 
-            <Button onClick={() => photos.length > 0 && setStep(2)} disabled={photos.length === 0} className="w-full touch-target font-semibold">
+            <Button onClick={() => {
+              hapticFeedback("light");
+              photos.length > 0 && setStep(2);
+            }} disabled={photos.length === 0} className="w-full touch-target font-semibold" haptic="light">
               Continue
             </Button>
 
@@ -211,7 +231,10 @@ export default function NewRequest() {
                 <div className="relative flex items-center justify-center min-h-[60vh]">
                   {/* Close button */}
                   <button 
-                    onClick={() => setPreviewOpen(false)}
+                    onClick={() => {
+                      hapticFeedback("light");
+                      setPreviewOpen(false);
+                    }}
                     className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
                   >
                     <X className="h-5 w-5" />
@@ -220,7 +243,10 @@ export default function NewRequest() {
                   {/* Previous button */}
                   {previews.length > 1 && (
                     <button 
-                      onClick={() => setPreviewIndex((previewIndex - 1 + previews.length) % previews.length)}
+                      onClick={() => {
+                        hapticFeedback("light");
+                        setPreviewIndex((previewIndex - 1 + previews.length) % previews.length);
+                      }}
                       className="absolute left-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
                     >
                       <ChevronLeft className="h-6 w-6" />
@@ -239,7 +265,10 @@ export default function NewRequest() {
                   {/* Next button */}
                   {previews.length > 1 && (
                     <button 
-                      onClick={() => setPreviewIndex((previewIndex + 1) % previews.length)}
+                      onClick={() => {
+                        hapticFeedback("light");
+                        setPreviewIndex((previewIndex + 1) % previews.length);
+                      }}
                       className="absolute right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
                     >
                       <ChevronRight className="h-6 w-6" />
@@ -249,6 +278,7 @@ export default function NewRequest() {
                   {/* Delete button */}
                   <button 
                     onClick={() => {
+                      hapticFeedback("light");
                       removePhoto(previewIndex);
                       if (previews.length <= 1) {
                         setPreviewOpen(false);
@@ -320,7 +350,10 @@ export default function NewRequest() {
               </div>
             </div>
 
-            <Button onClick={handleSubmit} disabled={!description || loading} className="w-full touch-target font-semibold">
+            <Button onClick={() => {
+              hapticFeedback("light");
+              handleSubmit();
+            }} disabled={!description || loading} className="w-full touch-target font-semibold" haptic="light">
               {loading ? <LoadingSpinner size="sm" /> : <><Check className="mr-2 h-4 w-4" /> Submit Request</>}
             </Button>
           </div>}
