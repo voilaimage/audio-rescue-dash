@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,6 +6,7 @@ import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { hapticFeedback } from "@/lib/haptics";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { cacheRequests, getCachedRequests, getRequestsCacheTimestamp } from "@/lib/offline-storage";
 import { formatDistanceToNow } from "date-fns";
 import { format } from "date-fns";
@@ -212,10 +213,10 @@ export default function Requests() {
     };
   }, [user]);
 
-  const handleManualRefresh = async () => {
+  const syncRequests = useCallback(async (showHaptics = true) => {
     if (!user || isSyncing) return;
     
-    hapticFeedback("light");
+    if (showHaptics) hapticFeedback("light");
     setIsSyncing(true);
     
     try {
@@ -233,15 +234,26 @@ export default function Requests() {
       
       await cacheRequests(freshData);
       setLastSynced(Date.now());
-      hapticFeedback("success");
+      if (showHaptics) hapticFeedback("success");
     } catch (error) {
       console.error("Failed to refresh requests:", error);
-      hapticFeedback("error");
+      if (showHaptics) hapticFeedback("error");
       setIsOffline(true);
     } finally {
       setIsSyncing(false);
     }
-  };
+  }, [user, isSyncing]);
+
+  const handleManualRefresh = () => syncRequests(true);
+
+  // Auto-sync when coming back online
+  useOnlineStatus({
+    onReconnect: () => {
+      console.log("Network restored, syncing requests...");
+      toast.info("Back online - syncing data...");
+      syncRequests(false);
+    },
+  });
 
   const handleCancelRequest = async () => {
     if (!selectedRequest) return;
