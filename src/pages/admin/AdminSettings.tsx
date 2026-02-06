@@ -184,7 +184,7 @@ export default function AdminSettings() {
               <Label htmlFor="contactName">Display Name</Label>
               <Input id="contactName" type="text" placeholder="Your name" value={contactName} onChange={e => setContactName(e.target.value)} className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" />
             </div>
-            <Button type="submit" disabled={nameLoading || !contactName.trim() || contactName === profile?.contact_name} className="bg-primary hover:bg-primary/90">
+            <Button type="submit" disabled={nameLoading || !contactName.trim() || contactName === profile?.contact_name} className="bg-primary hover:bg-primary/90" haptic="light">
               {nameLoading ? <LoadingSpinner size="sm" /> : <>
                   <Save className="mr-2 h-4 w-4" />
                   Update Name
@@ -207,7 +207,7 @@ export default function AdminSettings() {
             <p className="text-sm text-gray-400">
               A confirmation email will be sent to your new address.
             </p>
-            <Button type="submit" disabled={emailLoading || !newEmail} className="bg-primary hover:bg-primary/90">
+            <Button type="submit" disabled={emailLoading || !newEmail} className="bg-primary hover:bg-primary/90" haptic="light">
               {emailLoading ? <LoadingSpinner size="sm" /> : <>
                   <Save className="mr-2 h-4 w-4" />
                   Update Email
@@ -246,7 +246,7 @@ export default function AdminSettings() {
             <p className="text-sm text-gray-400">
               Password must be at least 6 characters.
             </p>
-            <Button type="submit" disabled={passwordLoading || !newPassword || !confirmPassword} className="bg-primary hover:bg-primary/90">
+            <Button type="submit" disabled={passwordLoading || !newPassword || !confirmPassword} className="bg-primary hover:bg-primary/90" haptic="light">
               {passwordLoading ? <LoadingSpinner size="sm" /> : <>
                   <Save className="mr-2 h-4 w-4" />
                   Update Password
