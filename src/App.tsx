@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LoadingScreen } from "@/components/ui/loading-spinner";
+import { isNativeApp } from "@/lib/capacitor";
 
 // Pages
 import Splash from "./pages/Splash";
@@ -19,7 +20,7 @@ import RequestDetail from "./pages/RequestDetail";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
-// Admin Pages
+// Admin Pages (web-only)
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRequests from "./pages/admin/AdminRequests";
 import AdminRequestDetail from "./pages/admin/AdminRequestDetail";
@@ -27,7 +28,7 @@ import AdminDrivers from "./pages/admin/AdminDrivers";
 import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
 import AdminSettings from "./pages/admin/AdminSettings";
 
-// Driver Pages
+// Driver Pages (web-only)
 import DriverLogin from "./pages/DriverLogin";
 import DriverInstall from "./pages/DriverInstall";
 import DriverSetup from "./pages/DriverSetup";
@@ -40,8 +41,9 @@ const queryClient = new QueryClient();
 
 function AppRoutes() {
   const { user, profile, loading } = useAuth();
+  const isNative = isNativeApp();
 
-  // Protected Route wrapper - defined inside AppRoutes where AuthProvider is available
+  // Protected Route wrapper
   const ProtectedRoute = ({ 
     children, 
     allowedRoles = ["customer"] 
@@ -52,24 +54,41 @@ function AppRoutes() {
     if (loading) return <LoadingScreen />;
     if (!user) return <Navigate to="/login" replace />;
     
-    // Redirect based on role
-    if (profile?.role === "admin" && !allowedRoles.includes("admin")) {
-      return <Navigate to="/admin" replace />;
+    // In native app, only allow customer role
+    if (isNative && profile?.role !== "customer") {
+      // Sign out admin/driver users in native app and redirect to login
+      return <Navigate to="/login" replace />;
     }
-    if (profile?.role === "driver" && !allowedRoles.includes("driver")) {
-      return <Navigate to="/driver" replace />;
+    
+    // Redirect based on role (web only)
+    if (!isNative) {
+      if (profile?.role === "admin" && !allowedRoles.includes("admin")) {
+        return <Navigate to="/admin" replace />;
+      }
+      if (profile?.role === "driver" && !allowedRoles.includes("driver")) {
+        return <Navigate to="/driver" replace />;
+      }
     }
+    
     if (profile?.role === "customer" && !allowedRoles.includes("customer")) {
-      // Customer trying to access admin/driver routes
       return <Navigate to="/home" replace />;
     }
 
     return <>{children}</>;
   };
 
-  // Public Route wrapper - defined inside AppRoutes where AuthProvider is available
+  // Public Route wrapper
   const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     if (loading) return <LoadingScreen />;
+    
+    // In native app, only redirect customers to home
+    if (isNative) {
+      if (user && profile?.role === "customer") return <Navigate to="/home" replace />;
+      // Don't auto-redirect admin/driver in native app
+      return <>{children}</>;
+    }
+    
+    // Web behavior
     if (user && profile?.role === "admin") return <Navigate to="/admin" replace />;
     if (user && profile?.role === "driver") return <Navigate to="/driver" replace />;
     if (user && profile) return <Navigate to="/home" replace />;
@@ -83,31 +102,38 @@ function AppRoutes() {
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/driver-login" element={<PublicRoute><DriverLogin /></PublicRoute>} />
-      <Route path="/driver-install" element={<DriverInstall />} />
-      <Route path="/driver-setup/:token" element={<DriverSetup />} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
       
-      {/* Customer Routes */}
+      {/* Customer Routes - Available in both web and native */}
       <Route path="/home" element={<ProtectedRoute allowedRoles={["customer"]}><Home /></ProtectedRoute>} />
       <Route path="/new-request" element={<ProtectedRoute allowedRoles={["customer"]}><NewRequest /></ProtectedRoute>} />
       <Route path="/requests" element={<ProtectedRoute allowedRoles={["customer"]}><Requests /></ProtectedRoute>} />
       <Route path="/requests/:id" element={<ProtectedRoute allowedRoles={["customer"]}><RequestDetail /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute allowedRoles={["customer"]}><Profile /></ProtectedRoute>} />
       
-      {/* Admin Routes */}
-      <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
-      <Route path="/admin/requests" element={<ProtectedRoute allowedRoles={["admin"]}><AdminRequests /></ProtectedRoute>} />
-      <Route path="/admin/requests/:id" element={<ProtectedRoute allowedRoles={["admin"]}><AdminRequestDetail /></ProtectedRoute>} />
-      <Route path="/admin/drivers" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDrivers /></ProtectedRoute>} />
-      <Route path="/admin/audit-logs" element={<ProtectedRoute allowedRoles={["admin"]}><AdminAuditLogs /></ProtectedRoute>} />
-      <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={["admin"]}><AdminSettings /></ProtectedRoute>} />
-      
-      {/* Driver Routes */}
-      <Route path="/driver" element={<ProtectedRoute allowedRoles={["admin", "driver"]}><DriverHome /></ProtectedRoute>} />
-      <Route path="/driver/profile" element={<ProtectedRoute allowedRoles={["admin", "driver"]}><DriverProfile /></ProtectedRoute>} />
-      <Route path="/driver/job/:id" element={<ProtectedRoute allowedRoles={["admin", "driver"]}><DriverJobDetail /></ProtectedRoute>} />
-      <Route path="/driver/job/:id/collect" element={<ProtectedRoute allowedRoles={["admin", "driver"]}><MarkCollected /></ProtectedRoute>} />
+      {/* Admin & Driver Routes - Web only */}
+      {!isNative && (
+        <>
+          {/* Driver public routes */}
+          <Route path="/driver-login" element={<PublicRoute><DriverLogin /></PublicRoute>} />
+          <Route path="/driver-install" element={<DriverInstall />} />
+          <Route path="/driver-setup/:token" element={<DriverSetup />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/requests" element={<ProtectedRoute allowedRoles={["admin"]}><AdminRequests /></ProtectedRoute>} />
+          <Route path="/admin/requests/:id" element={<ProtectedRoute allowedRoles={["admin"]}><AdminRequestDetail /></ProtectedRoute>} />
+          <Route path="/admin/drivers" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDrivers /></ProtectedRoute>} />
+          <Route path="/admin/audit-logs" element={<ProtectedRoute allowedRoles={["admin"]}><AdminAuditLogs /></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={["admin"]}><AdminSettings /></ProtectedRoute>} />
+          
+          {/* Driver Routes */}
+          <Route path="/driver" element={<ProtectedRoute allowedRoles={["admin", "driver"]}><DriverHome /></ProtectedRoute>} />
+          <Route path="/driver/profile" element={<ProtectedRoute allowedRoles={["admin", "driver"]}><DriverProfile /></ProtectedRoute>} />
+          <Route path="/driver/job/:id" element={<ProtectedRoute allowedRoles={["admin", "driver"]}><DriverJobDetail /></ProtectedRoute>} />
+          <Route path="/driver/job/:id/collect" element={<ProtectedRoute allowedRoles={["admin", "driver"]}><MarkCollected /></ProtectedRoute>} />
+        </>
+      )}
       
       <Route path="*" element={<NotFound />} />
     </Routes>
