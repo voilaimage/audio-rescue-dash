@@ -5,6 +5,8 @@ import { LayoutDashboard, ClipboardList, LogOut, Truck, Users, Shield, Settings,
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useEdgeSwipe } from "@/hooks/useEdgeSwipe";
+import { useIsMobile } from "@/hooks/use-mobile";
 import logoWhite from "@/assets/logo-white.png";
 
 interface AdminLayoutProps {
@@ -41,10 +43,23 @@ export function AdminLayout({
   const location = useLocation();
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const isMobile = useIsMobile();
   const {
     signOut,
     profile
   } = useAuth();
+  
+  // Edge swipe to open drawer on mobile
+  useEdgeSwipe({
+    onSwipeRight: () => {
+      if (isMobile && !drawerOpen) {
+        setDrawerOpen(true);
+      }
+    },
+    edgeWidth: 25,
+    minSwipeDistance: 50,
+  });
+  
   useEffect(() => {
     document.title = "Audio Salvage Admin";
   }, []);
