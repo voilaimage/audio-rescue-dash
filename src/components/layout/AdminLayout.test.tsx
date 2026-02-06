@@ -19,6 +19,16 @@ vi.mock("@/assets/logo-white.png", () => ({
   default: "logo-white.png",
 }));
 
+// Mock the edge swipe hook
+vi.mock("@/hooks/useEdgeSwipe", () => ({
+  useEdgeSwipe: () => {},
+}));
+
+// Mock the mobile hook
+vi.mock("@/hooks/use-mobile", () => ({
+  useIsMobile: () => true,
+}));
+
 const renderWithRouter = (initialRoute = "/admin") => {
   return render(
     <MemoryRouter initialEntries={[initialRoute]}>
