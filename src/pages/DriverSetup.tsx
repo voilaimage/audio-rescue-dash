@@ -56,6 +56,25 @@ export default function DriverSetup() {
     fetchInvite();
   }, [token]);
 
+  const validatePassword = (pwd: string): { valid: boolean; message: string } => {
+    if (pwd.length < 8) {
+      return { valid: false, message: "Password must be at least 8 characters" };
+    }
+    if (!/[a-z]/.test(pwd)) {
+      return { valid: false, message: "Password must contain at least one lowercase letter" };
+    }
+    if (!/[A-Z]/.test(pwd)) {
+      return { valid: false, message: "Password must contain at least one uppercase letter" };
+    }
+    if (!/[0-9]/.test(pwd)) {
+      return { valid: false, message: "Password must contain at least one digit" };
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd)) {
+      return { valid: false, message: "Password must contain at least one symbol (!@#$%^&*...)" };
+    }
+    return { valid: true, message: "" };
+  };
+
   const handleCreatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -68,11 +87,12 @@ export default function DriverSetup() {
       return;
     }
 
-    if (password.length < 6) {
+    const passwordCheck = validatePassword(password);
+    if (!passwordCheck.valid) {
       toast({
         variant: "destructive",
-        title: "Password too short",
-        description: "Password must be at least 6 characters.",
+        title: "Password requirements not met",
+        description: passwordCheck.message,
       });
       return;
     }
@@ -177,9 +197,9 @@ export default function DriverSetup() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="bg-[#1d1d1d] border-[#333] text-white"
-                  placeholder="At least 6 characters"
+                  placeholder="Min 8 chars, upper/lower/digit/symbol"
                   required
-                  minLength={6}
+                  minLength={8}
                 />
               </div>
 
