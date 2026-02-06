@@ -1,10 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, LogOut, Truck, Users, Shield, Settings } from "lucide-react";
+import { LayoutDashboard, ClipboardList, LogOut, Truck, Users, Shield, Settings, Menu } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import logoWhite from "@/assets/logo-white.png";
+
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
@@ -38,6 +40,7 @@ export function AdminLayout({
 }: AdminLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const {
     signOut,
     profile
@@ -50,6 +53,10 @@ export function AdminLayout({
     navigate("/login", {
       replace: true
     });
+  };
+  
+  const handleNavClick = () => {
+    setDrawerOpen(false);
   };
   return <div className="flex min-h-screen bg-[#121212]">
       {/* Sidebar - hidden on mobile */}
@@ -93,12 +100,72 @@ export function AdminLayout({
 
       {/* Mobile Header */}
       <header className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center justify-between border-b border-[#333] bg-black px-4 md:hidden">
-        <img src={logoWhite} alt="Audio Salvage UK" className="h-8 w-auto" />
+        <div className="flex items-center gap-3">
+          <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-white hover:text-primary">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-72 border-r-2 border-primary bg-black p-0">
+              <SheetHeader className="border-b border-[#333] px-5 py-5">
+                <div className="flex flex-col items-center">
+                  <img src={logoWhite} alt="Audio Salvage UK" className="h-16 w-auto" />
+                  <SheetTitle className="mt-2 text-sm text-gray-400">Admin Dashboard</SheetTitle>
+                </div>
+              </SheetHeader>
+              
+              <nav className="flex-1 space-y-1 p-3">
+                {sidebarItems.map(({
+                  path,
+                  icon: Icon,
+                  label
+                }) => {
+                  const isActive = location.pathname === path;
+                  return (
+                    <Link
+                      key={path}
+                      to={path}
+                      onClick={handleNavClick}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all",
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "text-white hover:bg-white/10 hover:text-primary"
+                      )}
+                    >
+                      <Icon className="h-5 w-5" />
+                      {label}
+                    </Link>
+                  );
+                })}
+              </nav>
+              
+              {/* User Section in Drawer */}
+              <div className="absolute bottom-0 left-0 right-0 border-t border-[#333] p-3">
+                <div className="mb-3 rounded-lg bg-white/10 p-3">
+                  <p className="text-sm font-medium text-white">{profile?.contact_name}</p>
+                  <p className="text-xs text-gray-400">{profile?.email}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start gap-2 text-white hover:bg-white/10 hover:text-destructive"
+                  onClick={() => {
+                    handleNavClick();
+                    handleSignOut();
+                  }}
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+          <img src={logoWhite} alt="Audio Salvage UK" className="h-8 w-auto" />
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-400">{profile?.contact_name}</span>
-          <Button variant="ghost" size="icon" className="text-white hover:text-destructive" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4" />
-          </Button>
         </div>
       </header>
 
