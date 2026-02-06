@@ -112,6 +112,29 @@ export default function AdminNotifications() {
     fetchLogs();
   }, [dateRange.from?.toISOString(), dateRange.to?.toISOString()]);
 
+  // Subscribe to realtime updates for notification_queue
+  useEffect(() => {
+    const channel = supabase
+      .channel('notification-queue-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notification_queue',
+        },
+        () => {
+          // Refetch logs when any change occurs
+          fetchLogs();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [dateRange.from?.toISOString(), dateRange.to?.toISOString()]);
+
   const handleRefresh = () => {
     setRefreshing(true);
     fetchLogs();
