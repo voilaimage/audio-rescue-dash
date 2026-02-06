@@ -5,8 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
+import { cacheRequestDetail, getCachedRequestDetail } from "@/lib/offline-storage";
 import { format } from "date-fns";
-import { ArrowLeft, MapPin, Clock, Calendar, Package } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Calendar, Package, WifiOff } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
 import logo from "@/assets/logo-white.png";
 
@@ -39,6 +40,7 @@ export default function RequestDetail() {
   const { profile } = useAuth();
   const [request, setRequest] = useState<RequestWithPhotos | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isOffline, setIsOffline] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
 
   // Get original URLs from request photos
@@ -50,24 +52,48 @@ export default function RequestDetail() {
   useEffect(() => {
     if (!id) return;
 
-    const fetchRequest = async () => {
-      const { data, error } = await supabase
-        .from("requests")
-        .select("*, request_photos(*)")
-        .eq("id", id)
-        .single();
-
-      if (error) {
-        console.error("Error fetching request:", error);
-        navigate("/requests", { replace: true });
-        return;
+    const loadData = async () => {
+      // Try to load cached data first for instant display
+      const cachedData = await getCachedRequestDetail(id);
+      if (cachedData) {
+        setRequest(cachedData);
+        setLoading(false);
       }
 
-      setRequest(data as RequestWithPhotos);
-      setLoading(false);
+      // Then fetch fresh data from the server
+      try {
+        const { data, error } = await supabase
+          .from("requests")
+          .select("*, request_photos(*)")
+          .eq("id", id)
+          .single();
+
+        if (error) throw error;
+
+        setRequest(data as RequestWithPhotos);
+        setIsOffline(false);
+        
+        // Cache the fresh data for offline use
+        await cacheRequestDetail(id, data);
+      } catch (error) {
+        console.error("Failed to fetch request:", error);
+        // If we have cached data, show offline indicator
+        if (request || cachedData) {
+          setIsOffline(true);
+          if (!request && cachedData) {
+            setRequest(cachedData);
+          }
+        } else {
+          // No cached data and fetch failed - navigate back
+          navigate("/requests", { replace: true });
+          return;
+        }
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchRequest();
+    loadData();
 
     // Subscribe to realtime updates for this specific request
     const channel = supabase
@@ -80,8 +106,13 @@ export default function RequestDetail() {
           table: 'requests',
           filter: `id=eq.${id}`,
         },
-        (payload) => {
-          setRequest(prev => prev ? { ...prev, ...payload.new } : prev);
+        async (payload) => {
+          const updatedRequest = request ? { ...request, ...payload.new } : null;
+          setRequest(updatedRequest as RequestWithPhotos);
+          // Update cache with realtime changes
+          if (updatedRequest) {
+            await cacheRequestDetail(id, updatedRequest);
+          }
         }
       )
       .subscribe();
@@ -155,6 +186,14 @@ export default function RequestDetail() {
               {status.label}
             </span>
           </div>
+          
+          {/* Offline Indicator */}
+          {isOffline && (
+            <div className="mt-3 flex items-center gap-2 rounded-lg bg-warning/10 px-3 py-2 text-sm text-warning">
+              <WifiOff className="h-4 w-4" />
+              <span>Viewing cached data - you're offline</span>
+            </div>
+          )}
         </div>
 
         {/* Scrollable Content */}
