@@ -187,6 +187,7 @@ export default function Requests() {
           .eq('id', selectedRequest.id);
           
         if (error) throw error;
+        hapticFeedback("success");
         toast.success('Request deleted successfully');
       } else {
         // Cancel the request if it's already been processed
@@ -196,10 +197,12 @@ export default function Requests() {
           .eq('id', selectedRequest.id);
           
         if (error) throw error;
+        hapticFeedback("success");
         toast.success('Request cancelled successfully');
       }
     } catch (error) {
       console.error('Error cancelling request:', error);
+      hapticFeedback("error");
       toast.error('Failed to cancel request');
     } finally {
       setCancelling(false);

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { hapticFeedback } from "@/lib/haptics";
 import { Eye, EyeOff, Mail, Lock, Save, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 export default function AdminSettings() {
@@ -43,6 +44,7 @@ export default function AdminSettings() {
   const handleNameChange = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!contactName.trim()) {
+      hapticFeedback("error");
       toast({
         variant: "destructive",
         title: "Name required",
@@ -59,11 +61,13 @@ export default function AdminSettings() {
         contact_name: contactName.trim()
       }).eq("id", user.id);
       if (error) throw error;
+      hapticFeedback("success");
       toast({
         title: "Name updated",
         description: "Your name has been changed successfully."
       });
     } catch (error: any) {
+      hapticFeedback("error");
       toast({
         variant: "destructive",
         title: "Failed to update name",
@@ -76,6 +80,7 @@ export default function AdminSettings() {
   const handleEmailChange = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmail) {
+      hapticFeedback("error");
       toast({
         variant: "destructive",
         title: "Email required",
@@ -91,12 +96,14 @@ export default function AdminSettings() {
         email: newEmail
       });
       if (error) throw error;
+      hapticFeedback("success");
       toast({
         title: "Confirmation email sent",
         description: "Check your new email address to confirm the change."
       });
       setNewEmail("");
     } catch (error: any) {
+      hapticFeedback("error");
       toast({
         variant: "destructive",
         title: "Failed to update email",
@@ -109,6 +116,7 @@ export default function AdminSettings() {
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword || !confirmPassword) {
+      hapticFeedback("error");
       toast({
         variant: "destructive",
         title: "Password required",
@@ -117,6 +125,7 @@ export default function AdminSettings() {
       return;
     }
     if (newPassword !== confirmPassword) {
+      hapticFeedback("warning");
       toast({
         variant: "destructive",
         title: "Passwords don't match",
@@ -125,6 +134,7 @@ export default function AdminSettings() {
       return;
     }
     if (newPassword.length < 6) {
+      hapticFeedback("warning");
       toast({
         variant: "destructive",
         title: "Password too short",
@@ -140,6 +150,7 @@ export default function AdminSettings() {
         password: newPassword
       });
       if (error) throw error;
+      hapticFeedback("success");
       toast({
         title: "Password updated",
         description: "Your password has been changed successfully."
@@ -148,6 +159,7 @@ export default function AdminSettings() {
       setNewPassword("");
       setConfirmPassword("");
     } catch (error: any) {
+      hapticFeedback("error");
       toast({
         variant: "destructive",
         title: "Failed to update password",
