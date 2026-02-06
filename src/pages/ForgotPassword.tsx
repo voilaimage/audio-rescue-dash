@@ -52,12 +52,12 @@ export default function ForgotPassword() {
       return;
     }
 
-    // Get CAPTCHA token
-    if (!window.turnstile) {
+    // Check if Turnstile is loaded and get token
+    if (!window.turnstile || typeof window.turnstile.getResponse !== 'function') {
       toast({
         variant: "destructive",
-        title: "CAPTCHA Error",
-        description: "Please refresh the page and try again",
+        title: "CAPTCHA Not Ready",
+        description: "Please wait for CAPTCHA to load and try again",
       });
       return;
     }
@@ -113,7 +113,7 @@ export default function ForgotPassword() {
         description: error.message,
       });
       // Reset CAPTCHA on error
-      if (window.turnstile) {
+      if (window.turnstile && typeof window.turnstile.reset === 'function') {
         window.turnstile.reset();
       }
     } finally {
