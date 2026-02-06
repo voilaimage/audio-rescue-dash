@@ -49,12 +49,14 @@ export default function NewRequest() {
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (photos.length + files.length > 10) {
+      hapticFeedback("warning");
       toast({
         variant: "destructive",
         title: "Maximum 10 photos allowed"
       });
       return;
     }
+    hapticFeedback("light");
     const newPhotos = [...photos, ...files].slice(0, 10);
     setPhotos(newPhotos);
     const newPreviews = newPhotos.map(file => URL.createObjectURL(file));
@@ -98,6 +100,7 @@ export default function NewRequest() {
           file_url: fileUrl
         });
       }
+      hapticFeedback("success");
       toast({
         title: "Request submitted!",
         description: "We'll be in touch soon."
@@ -106,6 +109,7 @@ export default function NewRequest() {
         replace: true
       });
     } catch (error: any) {
+      hapticFeedback("error");
       toast({
         variant: "destructive",
         title: "Failed to submit",
