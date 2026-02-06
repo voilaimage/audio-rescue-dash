@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -10,11 +10,35 @@ import { ArrowLeft, Mail, Send } from "lucide-react";
 import logo from "@/assets/logo-white.png";
 import authBg from "@/assets/auth-bg.png";
 
+declare global {
+  interface Window {
+    turnstile: {
+      render: (id: string, options: { sitekey: string; theme: string }) => void;
+      getResponse: () => string | undefined;
+      reset: () => void;
+    };
+  }
+}
+
+const TURNSTILE_SITE_KEY = "0x4AAAAAACYhxsndid19yosKrIZSK6cSg60";
+
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Render Turnstile widget
+    if (turnstileRef.current && window.turnstile) {
+      window.turnstile.render("#turnstile-forgot", {
+        sitekey: TURNSTILE_SITE_KEY,
+        theme: "dark",
+      });
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,9 +52,47 @@ export default function ForgotPassword() {
       return;
     }
 
+    // Get CAPTCHA token
+    if (!window.turnstile) {
+      toast({
+        variant: "destructive",
+        title: "CAPTCHA Error",
+        description: "Please refresh the page and try again",
+      });
+      return;
+    }
+
+    const token = window.turnstile.getResponse();
+    if (!token) {
+      toast({
+        variant: "destructive",
+        title: "CAPTCHA Required",
+        description: "Please complete the CAPTCHA verification",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
+      // Verify CAPTCHA with backend
+      const verifyResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-turnstile`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ token }),
+        }
+      );
+
+      if (!verifyResponse.ok) {
+        const errorData = await verifyResponse.json();
+        throw new Error(errorData.error || "CAPTCHA verification failed");
+      }
+
       const redirectUrl = `${window.location.origin}/reset-password`;
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -50,6 +112,10 @@ export default function ForgotPassword() {
         title: "Failed to send reset email",
         description: error.message,
       });
+      // Reset CAPTCHA on error
+      if (window.turnstile) {
+        window.turnstile.reset();
+      }
     } finally {
       setLoading(false);
     }
@@ -85,36 +151,40 @@ export default function ForgotPassword() {
                     Enter your email and we'll send you a reset link
                   </p>
 
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-white">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="your@email.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="pl-10 bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500"
-                          required
-                        />
-                      </div>
-                    </div>
+                   <form onSubmit={handleSubmit} className="space-y-4">
+                     <div className="space-y-2">
+                       <Label htmlFor="email" className="text-white">Email</Label>
+                       <div className="relative">
+                         <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                         <Input
+                           id="email"
+                           type="email"
+                           placeholder="your@email.com"
+                           value={email}
+                           onChange={(e) => setEmail(e.target.value)}
+                           className="pl-10 bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500"
+                           required
+                         />
+                       </div>
+                     </div>
 
-                    <Button 
-                      type="submit" 
-                      className="w-full touch-target font-semibold bg-[#f59f0a] hover:bg-[#f59f0a]/90 text-white" 
-                      disabled={loading}
-                    >
-                      {loading ? <LoadingSpinner size="sm" /> : (
-                        <>
-                          <Send className="mr-2 h-4 w-4" />
-                          Send Reset Link
-                        </>
-                      )}
-                    </Button>
-                  </form>
+                     <div className="mb-4">
+                       <div id="turnstile-forgot" ref={turnstileRef} className="flex justify-center"></div>
+                     </div>
+
+                     <Button 
+                       type="submit" 
+                       className="w-full touch-target font-semibold bg-[#f59f0a] hover:bg-[#f59f0a]/90 text-white" 
+                       disabled={loading}
+                     >
+                       {loading ? <LoadingSpinner size="sm" /> : (
+                         <>
+                           <Send className="mr-2 h-4 w-4" />
+                           Send Reset Link
+                         </>
+                       )}
+                     </Button>
+                   </form>
                 </>
               ) : (
                 <div className="text-center py-4">
