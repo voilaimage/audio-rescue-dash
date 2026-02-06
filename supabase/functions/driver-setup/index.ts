@@ -122,8 +122,8 @@ serve(async (req) => {
       });
     }
     
-    if (!password || typeof password !== "string" || password.length < 6) {
-      return new Response(JSON.stringify({ error: "Password must be at least 6 characters" }), {
+    if (!password || typeof password !== "string" || password.length < 8) {
+      return new Response(JSON.stringify({ error: "Password must be at least 8 characters" }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
@@ -131,6 +131,26 @@ serve(async (req) => {
     
     if (password.length > 72) {
       return new Response(JSON.stringify({ error: "Password must be 72 characters or less" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Validate password complexity: lowercase, uppercase, digits, and symbols
+    const hasLowercase = /[a-z]/.test(password);
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasDigit = /[0-9]/.test(password);
+    const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+    
+    if (!hasLowercase || !hasUppercase || !hasDigit || !hasSymbol) {
+      const missing = [];
+      if (!hasLowercase) missing.push("lowercase letter");
+      if (!hasUppercase) missing.push("uppercase letter");
+      if (!hasDigit) missing.push("digit");
+      if (!hasSymbol) missing.push("symbol");
+      return new Response(JSON.stringify({ 
+        error: `Password must contain: ${missing.join(", ")}` 
+      }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });

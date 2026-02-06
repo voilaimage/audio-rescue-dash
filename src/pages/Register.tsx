@@ -69,6 +69,25 @@ export default function Register() {
     return true;
   };
 
+  const validatePassword = (password: string): { valid: boolean; message: string } => {
+    if (password.length < 8) {
+      return { valid: false, message: "Password must be at least 8 characters" };
+    }
+    if (!/[a-z]/.test(password)) {
+      return { valid: false, message: "Password must contain at least one lowercase letter" };
+    }
+    if (!/[A-Z]/.test(password)) {
+      return { valid: false, message: "Password must contain at least one uppercase letter" };
+    }
+    if (!/[0-9]/.test(password)) {
+      return { valid: false, message: "Password must contain at least one digit" };
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      return { valid: false, message: "Password must contain at least one symbol (!@#$%^&*...)" };
+    }
+    return { valid: true, message: "" };
+  };
+
   const validateStep2 = () => {
     if (!formData.email || !formData.password || !formData.confirmPassword) {
       toast({ variant: "destructive", title: "Missing information", description: "Please fill in all required fields" });
@@ -78,8 +97,9 @@ export default function Register() {
       toast({ variant: "destructive", title: "Passwords don't match", description: "Please make sure your passwords match" });
       return false;
     }
-    if (formData.password.length < 6) {
-      toast({ variant: "destructive", title: "Password too short", description: "Password must be at least 6 characters" });
+    const passwordCheck = validatePassword(formData.password);
+    if (!passwordCheck.valid) {
+      toast({ variant: "destructive", title: "Password requirements not met", description: passwordCheck.message });
       return false;
     }
     return true;
