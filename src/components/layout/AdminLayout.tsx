@@ -127,6 +127,6 @@ export function AdminLayout({
       </nav>
 
       {/* Main Content - responsive margin */}
-      <main className="min-h-screen w-full bg-[#121212] p-4 pt-16 pb-20 text-white md:ml-60 md:p-6 md:pt-6 md:pb-6">{children}</main>
+      <main className="min-h-screen w-full overflow-x-hidden bg-[#121212] p-4 pt-16 pb-20 text-white md:ml-60 md:p-6 md:pt-6 md:pb-6">{children}</main>
     </div>;
 }

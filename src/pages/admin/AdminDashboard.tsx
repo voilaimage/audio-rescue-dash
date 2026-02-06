@@ -93,7 +93,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 md:gap-4">
           {Object.entries(statusCounts).map(([key, { label, icon: Icon, color }]) => (
             <div
               key={key}
