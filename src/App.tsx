@@ -19,6 +19,7 @@ import NewRequest from "./pages/NewRequest";
 import Requests from "./pages/Requests";
 import RequestDetail from "./pages/RequestDetail";
 import Profile from "./pages/Profile";
+import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 
 // Admin Pages (web-only)
@@ -112,6 +113,7 @@ function AppRoutes() {
       <Route path="/requests" element={<ProtectedRoute allowedRoles={["customer"]}><Requests /></ProtectedRoute>} />
       <Route path="/requests/:id" element={<ProtectedRoute allowedRoles={["customer"]}><RequestDetail /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute allowedRoles={["customer"]}><Profile /></ProtectedRoute>} />
+      <Route path="/help" element={<ProtectedRoute allowedRoles={["customer"]}><Help /></ProtectedRoute>} />
       
       {/* Admin & Driver Routes - Web only */}
       {!isNative && (

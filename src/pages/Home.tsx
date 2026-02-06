@@ -1,7 +1,7 @@
 import { useNavigate, Link } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { Camera, ClipboardList, ChevronRight, Sparkles, LogOut } from "lucide-react";
+import { Camera, ClipboardList, ChevronRight, Sparkles, LogOut, HelpCircle } from "lucide-react";
 import { hapticFeedback } from "@/lib/haptics";
 import appBg from "@/assets/app-bg.png";
 import logo from "@/assets/logo-white.png";
@@ -104,6 +104,19 @@ export default function Home() {
               We'll arrange a free collection at a time that suits you.
             </p>
           </div>
+
+          {/* Help & Support Link */}
+          <Link to="/help" onClick={handleNavClick} className="block mt-4">
+            <div className="group rounded-xl border border-[#555555] bg-[#1d1d1d] p-4 shadow-card transition-all hover:border-primary/40">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <HelpCircle className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-medium text-white">Help & Support</span>
+                </div>
+                <ChevronRight className="h-4 w-4 text-white/60 transition-transform group-hover:translate-x-1" />
+              </div>
+            </div>
+          </Link>
 
           {/* Sign Out Button */}
           <button
