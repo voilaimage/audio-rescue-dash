@@ -73,7 +73,12 @@ export function AdminLayout({
   };
   
   const handleNavClick = () => {
+    hapticFeedback("light");
     setDrawerOpen(false);
+  };
+  
+  const handleDesktopNavClick = () => {
+    hapticFeedback("light");
   };
   return <div className="flex min-h-screen bg-[#121212]">
       {/* Sidebar - hidden on mobile */}
@@ -94,7 +99,7 @@ export function AdminLayout({
             label
           }) => {
             const isActive = location.pathname === path;
-            return <Link key={path} to={path} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all", isActive ? "bg-primary text-primary-foreground" : "text-white hover:bg-white/10 hover:text-primary")}>
+            return <Link key={path} to={path} onClick={handleDesktopNavClick} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all", isActive ? "bg-primary text-primary-foreground" : "text-white hover:bg-white/10 hover:text-primary")}>
                   <Icon className="h-4 w-4" />
                   {label}
                 </Link>;
@@ -107,7 +112,7 @@ export function AdminLayout({
               <p className="text-sm font-medium text-white">{profile?.contact_name}</p>
               <p className="text-xs text-gray-400">{profile?.email}</p>
             </div>
-            <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-white hover:bg-white/10 hover:text-destructive" onClick={handleSignOut}>
+            <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-white hover:bg-white/10 hover:text-destructive" onClick={handleSignOut} haptic="light">
               <LogOut className="h-4 w-4" />
               Sign Out
             </Button>
@@ -120,7 +125,7 @@ export function AdminLayout({
         <div className="flex items-center gap-3">
           <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-white hover:text-primary">
+              <Button variant="ghost" size="icon" className="text-white hover:text-primary" haptic="light">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -172,6 +177,7 @@ export function AdminLayout({
                     handleNavClick();
                     handleSignOut();
                   }}
+                  haptic="light"
                 >
                   <LogOut className="h-4 w-4" />
                   Sign Out
@@ -197,7 +203,8 @@ export function AdminLayout({
             const isActive = location.pathname === path;
             return <Link 
               key={path} 
-              to={path} 
+              to={path}
+              onClick={handleDesktopNavClick}
               className={cn(
                 "flex flex-col items-center gap-1 px-2 py-1 text-xs transition-colors",
                 isActive ? "text-primary" : "text-white hover:text-primary"
