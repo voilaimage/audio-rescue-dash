@@ -6,8 +6,9 @@ import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { hapticFeedback } from "@/lib/haptics";
+import { cacheRequests, getCachedRequests } from "@/lib/offline-storage";
 import { format } from "date-fns";
-import { ChevronRight, Package, ArrowLeft, Trash2, X } from "lucide-react";
+import { ChevronRight, Package, ArrowLeft, Trash2, X, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -92,6 +93,7 @@ export default function Requests() {
   const { user } = useAuth();
   const [requests, setRequests] = useState<RequestWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOffline, setIsOffline] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<RequestWithPhotos | null>(null);
   const [cancelling, setCancelling] = useState(false);
@@ -116,18 +118,50 @@ export default function Requests() {
     return map;
   }, [thumbnailUrls, signedUrls]);
 
+  // Load cached data first, then fetch fresh data
   useEffect(() => {
     if (!user) return;
-    const fetchRequests = async () => {
-      const {
-        data
-      } = await supabase.from("requests").select("*, request_photos(*)").eq("user_id", user.id).order("created_at", {
-        ascending: false
-      });
-      setRequests(data as RequestWithPhotos[] || []);
-      setLoading(false);
+
+    const loadData = async () => {
+      // Try to load cached data first for instant display
+      const cachedData = await getCachedRequests(Infinity); // Get cache regardless of age
+      if (cachedData && cachedData.length > 0) {
+        setRequests(cachedData);
+        setLoading(false);
+      }
+
+      // Then fetch fresh data from the server
+      try {
+        const { data, error } = await supabase
+          .from("requests")
+          .select("*, request_photos(*)")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const freshData = data as RequestWithPhotos[] || [];
+        setRequests(freshData);
+        setIsOffline(false);
+        
+        // Cache the fresh data for offline use
+        await cacheRequests(freshData);
+      } catch (error) {
+        console.error("Failed to fetch requests:", error);
+        // If we have cached data, show offline indicator
+        if (requests.length > 0 || (await getCachedRequests(Infinity))?.length) {
+          setIsOffline(true);
+          if (requests.length === 0) {
+            const cached = await getCachedRequests(Infinity);
+            if (cached) setRequests(cached);
+          }
+        }
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchRequests();
+
+    loadData();
 
     // Subscribe to realtime updates for user's requests
     const channel = supabase.channel('requests-changes').on('postgres_changes', {
@@ -138,21 +172,35 @@ export default function Requests() {
     }, async payload => {
       if (payload.eventType === 'INSERT') {
         // Fetch the new request with photos
-        const {
-          data
-        } = await supabase.from("requests").select("*, request_photos(*)").eq("id", payload.new.id).single();
+        const { data } = await supabase
+          .from("requests")
+          .select("*, request_photos(*)")
+          .eq("id", payload.new.id)
+          .single();
         if (data) {
-          setRequests(prev => [data as RequestWithPhotos, ...prev]);
+          setRequests(prev => {
+            const updated = [data as RequestWithPhotos, ...prev];
+            cacheRequests(updated);
+            return updated;
+          });
         }
       } else if (payload.eventType === 'UPDATE') {
-        setRequests(prev => prev.map(req => req.id === payload.new.id ? {
-          ...req,
-          ...payload.new
-        } : req));
+        setRequests(prev => {
+          const updated = prev.map(req => 
+            req.id === payload.new.id ? { ...req, ...payload.new } : req
+          );
+          cacheRequests(updated);
+          return updated;
+        });
       } else if (payload.eventType === 'DELETE') {
-        setRequests(prev => prev.filter(req => req.id !== payload.old.id));
+        setRequests(prev => {
+          const updated = prev.filter(req => req.id !== payload.old.id);
+          cacheRequests(updated);
+          return updated;
+        });
       }
     }).subscribe();
+
     return () => {
       supabase.removeChannel(channel);
     };
@@ -253,6 +301,14 @@ export default function Requests() {
           </div>
 
           <h1 className="mb-5 font-display text-white text-lg font-light">Past Requests</h1>
+          
+          {/* Offline Indicator */}
+          {isOffline && (
+            <div className="mb-4 flex items-center gap-2 rounded-lg bg-warning/10 px-3 py-2 text-sm text-warning">
+              <WifiOff className="h-4 w-4" />
+              <span>Showing cached data - you're offline</span>
+            </div>
+          )}
         </div>
 
         {/* Scrollable Content */}
