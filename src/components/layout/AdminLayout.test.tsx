@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { AdminLayout } from "@/components/layout/AdminLayout";
+import { AdminLayout } from "./AdminLayout";
 
 // Mock useAuth hook
 vi.mock("@/contexts/AuthContext", () => ({
@@ -81,5 +81,17 @@ describe("AdminLayout", () => {
     const { getAllByText } = renderWithRouter();
     const subtitles = getAllByText("Admin Dashboard");
     expect(subtitles.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders bottom navigation on mobile", () => {
+    const { container } = renderWithRouter();
+    const bottomNav = container.querySelector('nav.md\\:hidden');
+    expect(bottomNav).toBeInTheDocument();
+  });
+
+  it("highlights active route", () => {
+    const { container } = renderWithRouter("/admin/requests");
+    const activeLink = container.querySelector('a[href="/admin/requests"]');
+    expect(activeLink).toBeInTheDocument();
   });
 });
