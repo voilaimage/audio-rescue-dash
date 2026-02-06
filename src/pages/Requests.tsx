@@ -6,7 +6,8 @@ import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { hapticFeedback } from "@/lib/haptics";
-import { cacheRequests, getCachedRequests } from "@/lib/offline-storage";
+import { cacheRequests, getCachedRequests, getRequestsCacheTimestamp } from "@/lib/offline-storage";
+import { formatDistanceToNow } from "date-fns";
 import { format } from "date-fns";
 import { ChevronRight, Package, ArrowLeft, Trash2, X, WifiOff } from "lucide-react";
 import { toast } from "sonner";
@@ -94,6 +95,7 @@ export default function Requests() {
   const [requests, setRequests] = useState<RequestWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
+  const [lastSynced, setLastSynced] = useState<number | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<RequestWithPhotos | null>(null);
   const [cancelling, setCancelling] = useState(false);
@@ -125,8 +127,10 @@ export default function Requests() {
     const loadData = async () => {
       // Try to load cached data first for instant display
       const cachedData = await getCachedRequests(Infinity); // Get cache regardless of age
+      const cachedTimestamp = await getRequestsCacheTimestamp();
       if (cachedData && cachedData.length > 0) {
         setRequests(cachedData);
+        setLastSynced(cachedTimestamp);
         setLoading(false);
       }
 
@@ -146,6 +150,7 @@ export default function Requests() {
         
         // Cache the fresh data for offline use
         await cacheRequests(freshData);
+        setLastSynced(Date.now());
       } catch (error) {
         console.error("Failed to fetch requests:", error);
         // If we have cached data, show offline indicator
@@ -300,7 +305,14 @@ export default function Requests() {
             <div className="w-10" />
           </div>
 
-          <h1 className="mb-5 font-display text-white text-lg font-light">Past Requests</h1>
+          <div className="flex items-center justify-between mb-5">
+            <h1 className="font-display text-white text-lg font-light">Past Requests</h1>
+            {lastSynced && (
+              <span className="text-xs text-white/50">
+                Synced {formatDistanceToNow(lastSynced, { addSuffix: true })}
+              </span>
+            )}
+          </div>
           
           {/* Offline Indicator */}
           {isOffline && (

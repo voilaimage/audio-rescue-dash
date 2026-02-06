@@ -158,6 +158,15 @@ export async function getCachedRequests(maxAgeMs: number = 300000): Promise<any[
 }
 
 /**
+ * Get the timestamp when requests were last cached
+ * @returns The timestamp in milliseconds, or null if no cache exists
+ */
+export async function getRequestsCacheTimestamp(): Promise<number | null> {
+  const cached = await getItem<{ data: any[]; timestamp: number }>('cached_requests');
+  return cached?.timestamp ?? null;
+}
+
+/**
  * Cache a single request detail for offline access
  */
 export async function cacheRequestDetail(requestId: string, request: any): Promise<void> {
@@ -185,6 +194,17 @@ export async function getCachedRequestDetail(requestId: string, maxAgeMs: number
   }
   
   return cached.data;
+}
+
+/**
+ * Get the timestamp when a specific request detail was last cached
+ * @param requestId - The request ID
+ * @returns The timestamp in milliseconds, or null if no cache exists
+ */
+export async function getRequestDetailCacheTimestamp(requestId: string): Promise<number | null> {
+  const cacheKey = `cached_request_${requestId}`;
+  const cached = await getItem<{ data: any; timestamp: number }>(cacheKey);
+  return cached?.timestamp ?? null;
 }
 
 /**
