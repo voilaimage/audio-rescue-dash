@@ -7,7 +7,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { cacheRequestDetail, getCachedRequestDetail, getRequestDetailCacheTimestamp } from "@/lib/offline-storage";
 import { format, formatDistanceToNow } from "date-fns";
-import { ArrowLeft, MapPin, Clock, Calendar, Package, WifiOff } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Calendar, Package, WifiOff, RefreshCw } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
 import logo from "@/assets/logo-white.png";
 
@@ -42,6 +42,7 @@ export default function RequestDetail() {
   const [loading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
   const [lastSynced, setLastSynced] = useState<number | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
 
   // Get original URLs from request photos
@@ -126,6 +127,33 @@ export default function RequestDetail() {
     };
   }, [id, navigate]);
 
+  const handleManualRefresh = async () => {
+    if (!id || isSyncing) return;
+    
+    setIsSyncing(true);
+    
+    try {
+      const { data, error } = await supabase
+        .from("requests")
+        .select("*, request_photos(*)")
+        .eq("id", id)
+        .single();
+
+      if (error) throw error;
+
+      setRequest(data as RequestWithPhotos);
+      setIsOffline(false);
+      
+      await cacheRequestDetail(id, data);
+      setLastSynced(Date.now());
+    } catch (error) {
+      console.error("Failed to refresh request:", error);
+      setIsOffline(true);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   if (loading) {
     return (
       <MobileLayout showNav={false}>
@@ -193,11 +221,21 @@ export default function RequestDetail() {
           
           {/* Sync Status */}
           <div className="mt-3 flex items-center justify-between">
-            {lastSynced && (
-              <span className="text-xs text-white/50">
-                Synced {formatDistanceToNow(lastSynced, { addSuffix: true })}
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {lastSynced && (
+                <span className="text-xs text-white/50">
+                  Synced {formatDistanceToNow(lastSynced, { addSuffix: true })}
+                </span>
+              )}
+              <button
+                onClick={handleManualRefresh}
+                disabled={isSyncing}
+                className="flex h-6 w-6 items-center justify-center rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors disabled:opacity-50"
+                aria-label="Refresh request"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
             {isOffline && (
               <div className="flex items-center gap-2 rounded-lg bg-warning/10 px-3 py-1.5 text-xs text-warning">
                 <WifiOff className="h-3.5 w-3.5" />

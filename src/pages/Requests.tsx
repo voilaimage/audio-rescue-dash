@@ -9,7 +9,7 @@ import { hapticFeedback } from "@/lib/haptics";
 import { cacheRequests, getCachedRequests, getRequestsCacheTimestamp } from "@/lib/offline-storage";
 import { formatDistanceToNow } from "date-fns";
 import { format } from "date-fns";
-import { ChevronRight, Package, ArrowLeft, Trash2, X, WifiOff } from "lucide-react";
+import { ChevronRight, Package, ArrowLeft, Trash2, X, WifiOff, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -96,6 +96,7 @@ export default function Requests() {
   const [loading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
   const [lastSynced, setLastSynced] = useState<number | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<RequestWithPhotos | null>(null);
   const [cancelling, setCancelling] = useState(false);
@@ -211,6 +212,37 @@ export default function Requests() {
     };
   }, [user]);
 
+  const handleManualRefresh = async () => {
+    if (!user || isSyncing) return;
+    
+    hapticFeedback("light");
+    setIsSyncing(true);
+    
+    try {
+      const { data, error } = await supabase
+        .from("requests")
+        .select("*, request_photos(*)")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const freshData = data as RequestWithPhotos[] || [];
+      setRequests(freshData);
+      setIsOffline(false);
+      
+      await cacheRequests(freshData);
+      setLastSynced(Date.now());
+      hapticFeedback("success");
+    } catch (error) {
+      console.error("Failed to refresh requests:", error);
+      hapticFeedback("error");
+      setIsOffline(true);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleCancelRequest = async () => {
     if (!selectedRequest) return;
     
@@ -307,11 +339,21 @@ export default function Requests() {
 
           <div className="flex items-center justify-between mb-5">
             <h1 className="font-display text-white text-lg font-light">Past Requests</h1>
-            {lastSynced && (
-              <span className="text-xs text-white/50">
-                Synced {formatDistanceToNow(lastSynced, { addSuffix: true })}
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {lastSynced && (
+                <span className="text-xs text-white/50">
+                  Synced {formatDistanceToNow(lastSynced, { addSuffix: true })}
+                </span>
+              )}
+              <button
+                onClick={handleManualRefresh}
+                disabled={isSyncing}
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors disabled:opacity-50"
+                aria-label="Refresh requests"
+              >
+                <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
           
           {/* Offline Indicator */}
