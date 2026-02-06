@@ -29,6 +29,11 @@ vi.mock("@/hooks/use-mobile", () => ({
   useIsMobile: () => true,
 }));
 
+// Mock haptics
+vi.mock("@/lib/haptics", () => ({
+  hapticFeedback: () => true,
+}));
+
 const renderWithRouter = (initialRoute = "/admin") => {
   return render(
     <MemoryRouter initialEntries={[initialRoute]}>
