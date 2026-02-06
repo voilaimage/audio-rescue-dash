@@ -158,6 +158,36 @@ export async function getCachedRequests(maxAgeMs: number = 300000): Promise<any[
 }
 
 /**
+ * Cache a single request detail for offline access
+ */
+export async function cacheRequestDetail(requestId: string, request: any): Promise<void> {
+  const cacheKey = `cached_request_${requestId}`;
+  await setItem(cacheKey, {
+    data: request,
+    timestamp: Date.now(),
+  });
+}
+
+/**
+ * Get cached request detail
+ * @param requestId - The request ID
+ * @param maxAgeMs - Maximum age in milliseconds (default: infinite for offline)
+ */
+export async function getCachedRequestDetail(requestId: string, maxAgeMs: number = Infinity): Promise<any | null> {
+  const cacheKey = `cached_request_${requestId}`;
+  const cached = await getItem<{ data: any; timestamp: number }>(cacheKey);
+  
+  if (!cached) return null;
+  
+  // Check if cache is still valid (Infinity means always valid)
+  if (maxAgeMs !== Infinity && Date.now() - cached.timestamp > maxAgeMs) {
+    return null;
+  }
+  
+  return cached.data;
+}
+
+/**
  * Store pending request for offline submission
  */
 export async function storePendingRequest(request: any): Promise<void> {
