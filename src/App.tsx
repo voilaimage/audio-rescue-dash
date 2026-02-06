@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LoadingScreen } from "@/components/ui/loading-spinner";
 import { isNativeApp } from "@/lib/capacitor";
+import { useNativeInit } from "@/hooks/useNativeInit";
 
 // Pages
 import Splash from "./pages/Splash";
@@ -41,6 +42,7 @@ const queryClient = new QueryClient();
 
 function AppRoutes() {
   const { user, profile, loading } = useAuth();
+  const { initialized: nativeInitialized } = useNativeInit();
   const isNative = isNativeApp();
 
   // Protected Route wrapper

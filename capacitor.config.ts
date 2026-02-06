@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     url: 'https://4ad5e954-0b9d-4f62-b7e2-e745116f99ea.lovableproject.com?forceHideBadge=true',
-    cleartext: true
+    cleartext: true,
   },
   plugins: {
     SplashScreen: {
@@ -15,9 +15,22 @@ const config: CapacitorConfig = {
       showSpinner: false,
     },
     StatusBar: {
-      style: 'dark',
+      style: 'Dark',
       backgroundColor: '#000000',
     },
+    PushNotifications: {
+      presentationOptions: ['badge', 'sound', 'alert'],
+    },
+    Camera: {
+      presentationStyle: 'fullScreen',
+    },
+  },
+  ios: {
+    contentInset: 'automatic',
+    backgroundColor: '#000000',
+  },
+  android: {
+    backgroundColor: '#000000',
   },
 };
 
