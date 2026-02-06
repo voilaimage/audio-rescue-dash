@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Truck, LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { hapticFeedback } from "@/lib/haptics";
 import logoWhite from "@/assets/logo-white.png";
 
 interface DriverLayoutProps {
@@ -14,8 +15,13 @@ export function DriverLayout({ children }: DriverLayoutProps) {
   const { signOut, profile } = useAuth();
 
   const handleSignOut = async () => {
+    hapticFeedback("light");
     await signOut();
     navigate("/login", { replace: true });
+  };
+
+  const handleNavClick = () => {
+    hapticFeedback("light");
   };
 
   const isJobsActive = location.pathname === "/driver" || location.pathname.startsWith("/driver/job");
@@ -42,6 +48,7 @@ export function DriverLayout({ children }: DriverLayoutProps) {
           {/* Jobs */}
           <Link
             to="/driver"
+            onClick={handleNavClick}
             className={cn(
               "flex flex-col items-center gap-1 rounded-lg px-6 py-2 transition-colors",
               isJobsActive
@@ -56,6 +63,7 @@ export function DriverLayout({ children }: DriverLayoutProps) {
           {/* Profile */}
           <Link
             to="/driver/profile"
+            onClick={handleNavClick}
             className={cn(
               "flex flex-col items-center gap-1 rounded-lg px-6 py-2 transition-colors",
               location.pathname === "/driver/profile"
