@@ -4,6 +4,7 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { hapticFeedback } from "@/lib/haptics";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
@@ -377,8 +378,12 @@ export default function Requests() {
           )}
         </div>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-5 pb-24">
+        {/* Scrollable Content with Pull-to-Refresh */}
+        <PullToRefresh 
+          onRefresh={syncRequests}
+          disabled={isSyncing}
+          className="flex-1 px-5 pb-24"
+        >
           {requests.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-xl border border-[#555555] bg-[#1d1d1d] py-12 text-center">
               <Package className="mb-3 h-10 w-10 text-white" />
@@ -438,7 +443,7 @@ export default function Requests() {
               })}
             </div>
           )}
-        </div>
+        </PullToRefresh>
 
         {/* Cancel/Delete Confirmation Dialog */}
         <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>

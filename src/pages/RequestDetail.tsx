@@ -4,6 +4,7 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { cacheRequestDetail, getCachedRequestDetail, getRequestDetailCacheTimestamp } from "@/lib/offline-storage";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
@@ -258,8 +259,12 @@ export default function RequestDetail() {
           </div>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 pb-24 space-y-5">
+        {/* Scrollable Content with Pull-to-Refresh */}
+        <PullToRefresh
+          onRefresh={syncRequestDetail}
+          disabled={isSyncing}
+          className="flex-1 px-5 py-5 pb-24 space-y-5"
+        >
           {/* Photos Gallery */}
           {request.request_photos && request.request_photos.length > 0 && (
             <div className="space-y-3 rounded-xl border border-[#555555] bg-[#1d1d1d] p-4">
@@ -463,7 +468,7 @@ export default function RequestDetail() {
               )}
             </div>
           </div>
-        </div>
+        </PullToRefresh>
       </div>
     </MobileLayout>
   );
