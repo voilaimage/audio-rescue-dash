@@ -174,6 +174,30 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_attempts: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          ip_address: string
+          success: boolean
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          ip_address: string
+          success?: boolean
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          ip_address?: string
+          success?: boolean
+        }
+        Relationships: []
+      }
       request_photos: {
         Row: {
           created_at: string
@@ -330,6 +354,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          _endpoint: string
+          _ip_address: string
+          _max_attempts?: number
+          _window_minutes?: number
+        }
+        Returns: boolean
+      }
       get_customer_profile_for_driver: {
         Args: { _profile_id: string }
         Returns: {
@@ -365,6 +398,10 @@ export type Database = {
           _resource_type: string
           _user_id: string
         }
+        Returns: undefined
+      }
+      record_rate_limit_attempt: {
+        Args: { _endpoint: string; _ip_address: string; _success?: boolean }
         Returns: undefined
       }
     }
