@@ -5,8 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
-import { cacheRequestDetail, getCachedRequestDetail } from "@/lib/offline-storage";
-import { format } from "date-fns";
+import { cacheRequestDetail, getCachedRequestDetail, getRequestDetailCacheTimestamp } from "@/lib/offline-storage";
+import { format, formatDistanceToNow } from "date-fns";
 import { ArrowLeft, MapPin, Clock, Calendar, Package, WifiOff } from "lucide-react";
 import appBg from "@/assets/app-bg.png";
 import logo from "@/assets/logo-white.png";
@@ -41,6 +41,7 @@ export default function RequestDetail() {
   const [request, setRequest] = useState<RequestWithPhotos | null>(null);
   const [loading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
+  const [lastSynced, setLastSynced] = useState<number | null>(null);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
 
   // Get original URLs from request photos
@@ -55,8 +56,10 @@ export default function RequestDetail() {
     const loadData = async () => {
       // Try to load cached data first for instant display
       const cachedData = await getCachedRequestDetail(id);
+      const cachedTimestamp = await getRequestDetailCacheTimestamp(id);
       if (cachedData) {
         setRequest(cachedData);
+        setLastSynced(cachedTimestamp);
         setLoading(false);
       }
 
@@ -75,6 +78,7 @@ export default function RequestDetail() {
         
         // Cache the fresh data for offline use
         await cacheRequestDetail(id, data);
+        setLastSynced(Date.now());
       } catch (error) {
         console.error("Failed to fetch request:", error);
         // If we have cached data, show offline indicator
@@ -187,13 +191,20 @@ export default function RequestDetail() {
             </span>
           </div>
           
-          {/* Offline Indicator */}
-          {isOffline && (
-            <div className="mt-3 flex items-center gap-2 rounded-lg bg-warning/10 px-3 py-2 text-sm text-warning">
-              <WifiOff className="h-4 w-4" />
-              <span>Viewing cached data - you're offline</span>
-            </div>
-          )}
+          {/* Sync Status */}
+          <div className="mt-3 flex items-center justify-between">
+            {lastSynced && (
+              <span className="text-xs text-white/50">
+                Synced {formatDistanceToNow(lastSynced, { addSuffix: true })}
+              </span>
+            )}
+            {isOffline && (
+              <div className="flex items-center gap-2 rounded-lg bg-warning/10 px-3 py-1.5 text-xs text-warning">
+                <WifiOff className="h-3.5 w-3.5" />
+                <span>Offline</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Scrollable Content */}
