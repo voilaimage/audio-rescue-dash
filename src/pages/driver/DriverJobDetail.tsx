@@ -5,6 +5,7 @@ import { supabase, RequestWithPhotos, DriverViewProfile } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
+import { hapticFeedback } from "@/lib/haptics";
 import { format } from "date-fns";
 import { ArrowLeft, MapPin, Clock, Package, Phone, User, FileText, Camera, Calendar } from "lucide-react";
 
@@ -88,7 +89,10 @@ export default function DriverJobDetail() {
       {selectedPhotoIndex !== null && signedUrls[selectedPhotoIndex] && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/90 p-4"
-          onClick={() => setSelectedPhotoIndex(null)}
+          onClick={() => {
+            hapticFeedback("light");
+            setSelectedPhotoIndex(null);
+          }}
         >
           <img
             src={signedUrls[selectedPhotoIndex]}
@@ -103,7 +107,10 @@ export default function DriverJobDetail() {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate("/driver")}
+              onClick={() => {
+                hapticFeedback("light");
+                navigate("/driver");
+              }}
               className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -126,8 +133,12 @@ export default function DriverJobDetail() {
           {/* Mark as Collected Button - Top priority on mobile */}
           {canMarkCollected && (
             <Button
-              onClick={() => navigate(`/driver/job/${id}/collect`)}
+              onClick={() => {
+                hapticFeedback("light");
+                navigate(`/driver/job/${id}/collect`);
+              }}
               className="w-full h-14 text-lg font-semibold"
+              haptic="light"
             >
               Mark as Collected
             </Button>
@@ -150,6 +161,7 @@ export default function DriverJobDetail() {
               </div>
               <a
                 href={`tel:${profile.phone}`}
+                onClick={() => hapticFeedback("light")}
                 className="flex items-center gap-3 rounded-lg bg-primary/10 p-3 transition-colors active:bg-primary/20"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary">
@@ -255,7 +267,10 @@ export default function DriverJobDetail() {
                 {request.request_photos.map((photo, index) => (
                   <button
                     key={photo.id}
-                    onClick={() => setSelectedPhotoIndex(index)}
+                    onClick={() => {
+                      hapticFeedback("light");
+                      setSelectedPhotoIndex(index);
+                    }}
                     className="aspect-square overflow-hidden rounded-lg border border-[#333]"
                     disabled={urlsLoading}
                   >
