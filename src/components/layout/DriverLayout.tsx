@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Truck, LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { hapticFeedback } from "@/lib/haptics";
+import { NetworkStatusIndicator } from "@/components/NetworkStatusIndicator";
 import logoWhite from "@/assets/logo-white.png";
 
 interface DriverLayoutProps {
@@ -28,6 +29,7 @@ export function DriverLayout({ children }: DriverLayoutProps) {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#121212]">
+      <NetworkStatusIndicator />
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between border-b border-[#333] bg-black px-4 py-3">
         <img src={logoWhite} alt="Audio Salvage UK" className="h-12 w-auto" />

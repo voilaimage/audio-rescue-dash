@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useEdgeSwipe } from "@/hooks/useEdgeSwipe";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { hapticFeedback } from "@/lib/haptics";
+import { NetworkStatusIndicator } from "@/components/NetworkStatusIndicator";
 import logoWhite from "@/assets/logo-white.png";
 
 interface AdminLayoutProps {
@@ -85,6 +86,7 @@ export function AdminLayout({
     hapticFeedback("light");
   };
   return <div className="flex min-h-screen bg-[#121212]">
+      <NetworkStatusIndicator />
       {/* Sidebar - hidden on mobile */}
       <aside className="fixed left-0 top-0 z-40 hidden h-screen w-60 bg-black md:block">
         <div className="absolute right-0 top-0 h-full w-0.5 bg-primary" />
