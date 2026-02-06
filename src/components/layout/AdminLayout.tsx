@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useEdgeSwipe } from "@/hooks/useEdgeSwipe";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { hapticFeedback } from "@/lib/haptics";
 import logoWhite from "@/assets/logo-white.png";
 
 interface AdminLayoutProps {
@@ -49,10 +50,11 @@ export function AdminLayout({
     profile
   } = useAuth();
   
-  // Edge swipe to open drawer on mobile
+  // Edge swipe to open drawer on mobile with haptic feedback
   useEdgeSwipe({
     onSwipeRight: () => {
       if (isMobile && !drawerOpen) {
+        hapticFeedback("light");
         setDrawerOpen(true);
       }
     },
