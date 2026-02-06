@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, Profile } from '@/lib/supabase';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 interface AuthContextType {
   user: User | null;
@@ -79,7 +80,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Initialize push notifications
+  const { removeToken: removePushToken } = usePushNotifications(user?.id);
+
   const signOut = async () => {
+    // Remove push token before signing out
+    await removePushToken();
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
