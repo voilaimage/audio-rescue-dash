@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Home, Plus, ClipboardList } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NetworkStatusIndicator } from "@/components/NetworkStatusIndicator";
 
 interface MobileLayoutProps {
   children: React.ReactNode;
@@ -29,6 +30,7 @@ export function MobileLayout({ children, showNav = true, className }: MobileLayo
 
   return (
     <div className="flex h-screen flex-col bg-background overflow-hidden">
+      <NetworkStatusIndicator />
       <main className={cn("flex-1 overflow-hidden", className)}>
         {children}
       </main>
