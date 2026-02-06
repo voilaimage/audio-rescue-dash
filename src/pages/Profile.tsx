@@ -8,10 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ImageCropper } from "@/components/ImageCropper";
-import { Save, Camera, Trash2, ImageIcon, ChevronDown } from "lucide-react";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { Save, Camera, Trash2, ImageIcon, ChevronDown, Bell, BellOff, Smartphone } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +33,15 @@ export default function Profile() {
   const navigate = useNavigate();
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  
+  // Push notifications
+  const { 
+    isRegistered, 
+    isLoading: isPushLoading, 
+    initialize: initializePush, 
+    removeToken,
+    isSupported: isPushSupported 
+  } = usePushNotifications(user?.id);
 
   const [formData, setFormData] = useState({
     business_name: "",
@@ -377,6 +388,56 @@ export default function Profile() {
                 <Label className="text-sm text-white">Driver Notes</Label>
                 <Textarea value={formData.driver_notes} onChange={(e) => setFormData({ ...formData, driver_notes: e.target.value })} rows={2} placeholder="Parking instructions, access codes, etc." className="resize-none bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" />
               </div>
+            </div>
+          </div>
+
+          {/* Notification Settings */}
+          <div className="space-y-3 rounded-xl border border-[#555555] bg-[#1d1d1d] p-4 shadow-card">
+            <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Notifications</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {isRegistered ? (
+                    <Bell className="h-5 w-5 text-primary" />
+                  ) : (
+                    <BellOff className="h-5 w-5 text-gray-400" />
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-white">Push Notifications</p>
+                    <p className="text-xs text-gray-400">
+                      {isPushSupported 
+                        ? (isRegistered ? "Enabled" : "Disabled")
+                        : "Only available in the mobile app"
+                      }
+                    </p>
+                  </div>
+                </div>
+                {isPushSupported ? (
+                  <Switch
+                    checked={isRegistered}
+                    disabled={isPushLoading}
+                    onCheckedChange={async (checked) => {
+                      if (checked) {
+                        await initializePush();
+                        toast({ title: "Push notifications enabled" });
+                      } else {
+                        await removeToken();
+                        toast({ title: "Push notifications disabled" });
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <Smartphone className="h-3 w-3" />
+                    App only
+                  </div>
+                )}
+              </div>
+              {isPushSupported && isRegistered && (
+                <p className="text-xs text-gray-500">
+                  You'll receive notifications when your request status changes.
+                </p>
+              )}
             </div>
           </div>
 
