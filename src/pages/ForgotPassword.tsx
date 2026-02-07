@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { isNativeApp } from "@/lib/capacitor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,35 +10,11 @@ import { ArrowLeft, Mail, Send } from "lucide-react";
 import logo from "@/assets/logo-white.png";
 import authBg from "@/assets/auth-bg.png";
 
-declare global {
-  interface Window {
-    turnstile: {
-      render: (id: string, options: { sitekey: string; theme: string }) => void;
-      getResponse: () => string | undefined;
-      reset: () => void;
-    };
-  }
-}
-
-const TURNSTILE_SITE_KEY = "0x4AAAAAACYhxsndid19yosKrIZSK6cSg60";
-
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const turnstileRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-
-  useEffect(() => {
-    // Render Turnstile widget
-    if (turnstileRef.current && window.turnstile) {
-      window.turnstile.render("#turnstile-forgot", {
-        sitekey: TURNSTILE_SITE_KEY,
-        theme: "dark",
-      });
-    }
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,46 +31,6 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      // Check CAPTCHA only on web, not on native app
-      if (!isNativeApp()) {
-        if (!window.turnstile || typeof window.turnstile.getResponse !== 'function') {
-          toast({
-            variant: "destructive",
-            title: "CAPTCHA Not Ready",
-            description: "Please wait for CAPTCHA to load and try again",
-          });
-          return;
-        }
-
-        const token = window.turnstile.getResponse();
-        if (!token) {
-          toast({
-            variant: "destructive",
-            title: "CAPTCHA Required",
-            description: "Please complete the CAPTCHA verification",
-          });
-          return;
-        }
-
-        // Verify CAPTCHA with backend
-        const verifyResponse = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-turnstile`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({ token }),
-          }
-        );
-
-        if (!verifyResponse.ok) {
-          const errorData = await verifyResponse.json();
-          throw new Error(errorData.error || "CAPTCHA verification failed");
-        }
-      }
-
       const redirectUrl = `${window.location.origin}/reset-password`;
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -115,10 +50,6 @@ export default function ForgotPassword() {
         title: "Failed to send reset email",
         description: error.message,
       });
-      // Reset CAPTCHA on error (only on web)
-      if (!isNativeApp() && window.turnstile && typeof window.turnstile.reset === 'function') {
-        window.turnstile.reset();
-      }
     } finally {
       setLoading(false);
     }
@@ -170,12 +101,6 @@ export default function ForgotPassword() {
                          />
                        </div>
                      </div>
-
-                      {!isNativeApp() && (
-                        <div className="mb-4">
-                          <div id="turnstile-forgot" ref={turnstileRef} className="flex justify-center"></div>
-                        </div>
-                      )}
 
                      <Button 
                        type="submit" 
