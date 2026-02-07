@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
+import { SwipeHint } from "@/components/SwipeHint";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -103,6 +104,7 @@ export default function Requests() {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<RequestWithPhotos | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [showHint, setShowHint] = useState(true);
 
   // Get first photo URL from each request for thumbnails
   const thumbnailUrls = useMemo(() => 
@@ -326,6 +328,7 @@ export default function Requests() {
       </MobileLayout>;
   }
   return <MobileLayout>
+      {showHint && <SwipeHint onDismiss={() => setShowHint(false)} />}
       <div className="h-full flex flex-col safe-top" style={{
       backgroundImage: `url(${appBg})`,
       backgroundSize: '100% 100%',
