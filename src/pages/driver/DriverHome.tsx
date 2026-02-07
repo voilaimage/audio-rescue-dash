@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { DriverLayout } from "@/components/layout/DriverLayout";
+import { SwipeHint } from "@/components/SwipeHint";
 import { SwipeableCard } from "@/components/SwipeableCard";
 import { supabase, RequestWithPhotos, DriverViewProfile } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -35,6 +36,7 @@ export default function DriverHome() {
   const [requests, setRequests] = useState<RequestWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("today");
+  const [showHint, setShowHint] = useState(true);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -135,6 +137,7 @@ export default function DriverHome() {
 
   return (
     <DriverLayout>
+      {showHint && <SwipeHint onDismiss={() => setShowHint(false)} />}
       <div className="space-y-6">
         {/* Header */}
         <div>
