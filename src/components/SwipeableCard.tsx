@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback, ReactNode } from "react";
 import { hapticFeedback } from "@/lib/haptics";
+import { playDeleteSound } from "@/lib/audio-feedback";
 import { Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -72,8 +73,9 @@ export function SwipeableCard({
     const swipeDistance = Math.abs(translateX);
     
     if (swipeDistance >= SWIPE_THRESHOLD) {
-      // Trigger the action
+      // Trigger the action with haptic and audio feedback
       hapticFeedback("success");
+      playDeleteSound();
       onSwipe();
     }
     
