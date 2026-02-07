@@ -5,6 +5,7 @@
 
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { isNativeApp } from './capacitor';
+import { isHapticEnabled } from '@/hooks/useSoundSettings';
 
 type HapticPattern = "light" | "medium" | "heavy" | "success" | "warning" | "error";
 
@@ -24,6 +25,11 @@ const webPatterns: Record<HapticPattern, number | number[]> = {
  * @returns true if vibration was triggered, false otherwise
  */
 export async function hapticFeedback(pattern: HapticPattern = "light"): Promise<boolean> {
+  // Check if haptic feedback is enabled
+  if (!isHapticEnabled()) {
+    return false;
+  }
+
   // Use native haptics on mobile platforms
   if (isNativeApp()) {
     try {
@@ -78,6 +84,11 @@ export function isHapticSupported(): boolean {
  * Trigger a selection haptic (light tap for UI selections)
  */
 export async function hapticSelection(): Promise<void> {
+  // Check if haptic feedback is enabled
+  if (!isHapticEnabled()) {
+    return;
+  }
+
   if (isNativeApp()) {
     try {
       await Haptics.selectionStart();

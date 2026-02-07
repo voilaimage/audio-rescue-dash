@@ -6,11 +6,11 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { hapticFeedback } from "@/lib/haptics";
-import { Eye, EyeOff, Mail, Lock, Save, User, Volume2, VolumeX } from "lucide-react";
+import { hapticFeedback, isHapticSupported } from "@/lib/haptics";
+import { Eye, EyeOff, Mail, Lock, Save, User, Volume2, VolumeX, Vibrate, Smartphone } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Switch } from "@/components/ui/switch";
-import { useSoundSettings } from "@/hooks/useSoundSettings";
+import { useSoundSettings, useHapticSettings } from "@/hooks/useSoundSettings";
 export default function AdminSettings() {
   const {
     profile,
@@ -39,6 +39,8 @@ export default function AdminSettings() {
 
   // Sound settings
   const { soundEnabled, setSoundEnabled } = useSoundSettings();
+  const { hapticEnabled, setHapticEnabled } = useHapticSettings();
+  const hapticSupported = isHapticSupported();
 
   // Initialize name from profile
   useEffect(() => {
@@ -272,22 +274,24 @@ export default function AdminSettings() {
           </form>
         </div>
 
-        {/* Sound Settings */}
+        {/* Feedback Settings */}
         <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-6">
-          <h2 className="mb-4 text-lg font-semibold flex items-center gap-2">
-            {soundEnabled ? (
-              <Volume2 className="h-5 w-5 text-primary" />
-            ) : (
-              <VolumeX className="h-5 w-5 text-gray-400" />
-            )}
-            Sound Settings
-          </h2>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-white">Sound Feedback</p>
-              <p className="text-sm text-gray-400">
-                Play audio cues for swipe gestures and actions
-              </p>
+          <h2 className="mb-4 text-lg font-semibold">Feedback Settings</h2>
+          
+          {/* Sound Toggle */}
+          <div className="flex items-center justify-between py-3">
+            <div className="flex items-center gap-3">
+              {soundEnabled ? (
+                <Volume2 className="h-5 w-5 text-primary" />
+              ) : (
+                <VolumeX className="h-5 w-5 text-gray-400" />
+              )}
+              <div>
+                <p className="text-sm font-medium text-white">Sound Feedback</p>
+                <p className="text-sm text-gray-400">
+                  Audio cues for swipe gestures and actions
+                </p>
+              </div>
             </div>
             <Switch
               checked={soundEnabled}
@@ -299,6 +303,38 @@ export default function AdminSettings() {
                 });
               }}
             />
+          </div>
+
+          {/* Haptic Toggle */}
+          <div className="flex items-center justify-between py-3 border-t border-[#333]">
+            <div className="flex items-center gap-3">
+              <Vibrate className={`h-5 w-5 ${hapticEnabled && hapticSupported ? "text-primary" : "text-gray-400"}`} />
+              <div>
+                <p className="text-sm font-medium text-white">Haptic Feedback</p>
+                <p className="text-sm text-gray-400">
+                  {hapticSupported 
+                    ? "Vibration for button presses and gestures"
+                    : "Not supported on this device"
+                  }
+                </p>
+              </div>
+            </div>
+            {hapticSupported ? (
+              <Switch
+                checked={hapticEnabled}
+                onCheckedChange={(checked) => {
+                  setHapticEnabled(checked);
+                  toast({ 
+                    title: checked ? "Haptic feedback enabled" : "Haptic feedback disabled" 
+                  });
+                }}
+              />
+            ) : (
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <Smartphone className="h-3 w-3" />
+                Not available
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -13,8 +13,9 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ImageCropper } from "@/components/ImageCropper";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { useSoundSettings } from "@/hooks/useSoundSettings";
-import { Save, Camera, Trash2, ImageIcon, ChevronDown, Bell, BellOff, Smartphone, Volume2, VolumeX } from "lucide-react";
+import { useSoundSettings, useHapticSettings } from "@/hooks/useSoundSettings";
+import { isHapticSupported } from "@/lib/haptics";
+import { Save, Camera, Trash2, ImageIcon, ChevronDown, Bell, BellOff, Smartphone, Volume2, VolumeX, Vibrate } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,6 +47,8 @@ export default function Profile() {
 
   // Sound settings
   const { soundEnabled, setSoundEnabled } = useSoundSettings();
+  const { hapticEnabled, setHapticEnabled } = useHapticSettings();
+  const hapticSupported = isHapticSupported();
 
   const [formData, setFormData] = useState({
     business_name: "",
@@ -467,6 +470,38 @@ export default function Profile() {
                     });
                   }}
                 />
+              </div>
+
+              {/* Haptic Feedback Toggle */}
+              <div className="flex items-center justify-between pt-3 border-t border-[#333]">
+                <div className="flex items-center gap-3">
+                  <Vibrate className={`h-5 w-5 ${hapticEnabled && hapticSupported ? "text-primary" : "text-gray-400"}`} />
+                  <div>
+                    <p className="text-sm font-medium text-white">Haptic Feedback</p>
+                    <p className="text-xs text-gray-400">
+                      {hapticSupported 
+                        ? (hapticEnabled ? "Enabled" : "Disabled")
+                        : "Not supported on this device"
+                      }
+                    </p>
+                  </div>
+                </div>
+                {hapticSupported ? (
+                  <Switch
+                    checked={hapticEnabled}
+                    onCheckedChange={(checked) => {
+                      setHapticEnabled(checked);
+                      toast({ 
+                        title: checked ? "Haptic feedback enabled" : "Haptic feedback disabled" 
+                      });
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <Smartphone className="h-3 w-3" />
+                    Not available
+                  </div>
+                )}
               </div>
             </div>
           </div>
