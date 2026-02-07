@@ -1,9 +1,10 @@
 import { cn } from "@/lib/utils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Truck, LogOut, User } from "lucide-react";
+import { Truck, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { hapticFeedback } from "@/lib/haptics";
 import { NetworkStatusIndicator } from "@/components/NetworkStatusIndicator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import logoWhite from "@/assets/logo-white.png";
 
 interface DriverLayoutProps {
@@ -23,6 +24,13 @@ export function DriverLayout({ children }: DriverLayoutProps) {
 
   const handleNavClick = () => {
     hapticFeedback("light");
+  };
+
+  const getInitials = () => {
+    if (profile?.contact_name) {
+      return profile.contact_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+    }
+    return "D";
   };
 
   const isJobsActive = location.pathname === "/driver" || location.pathname.startsWith("/driver/job");
@@ -62,25 +70,30 @@ export function DriverLayout({ children }: DriverLayoutProps) {
             <span className="text-xs font-medium">Jobs</span>
           </Link>
 
-          {/* Profile */}
+          {/* Profile/Settings */}
           <Link
             to="/driver/profile"
             onClick={handleNavClick}
             className={cn(
-              "flex flex-col items-center gap-1 rounded-lg px-6 py-2 transition-colors",
+              "flex flex-col items-center gap-1 rounded-lg px-4 py-2 transition-colors",
               location.pathname === "/driver/profile"
                 ? "text-primary"
                 : "text-white/60 hover:text-white"
             )}
           >
-            <User className="h-6 w-6" />
-            <span className="text-xs font-medium">Profile</span>
+            <Avatar className={cn("h-6 w-6", location.pathname === "/driver/profile" && "ring-2 ring-primary ring-offset-1 ring-offset-black")}>
+              <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.contact_name} />
+              <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                {getInitials()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-xs font-medium">Settings</span>
           </Link>
 
           {/* Sign Out */}
           <button
             onClick={handleSignOut}
-            className="flex flex-col items-center gap-1 rounded-lg px-6 py-2 text-white/60 transition-colors hover:text-destructive"
+            className="flex flex-col items-center gap-1 rounded-lg px-4 py-2 text-white/60 transition-colors hover:text-destructive"
           >
             <LogOut className="h-6 w-6" />
             <span className="text-xs font-medium">Sign Out</span>
