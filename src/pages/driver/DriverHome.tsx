@@ -1,12 +1,14 @@
 import { useEffect, useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { DriverLayout } from "@/components/layout/DriverLayout";
+import { SwipeableCard } from "@/components/SwipeableCard";
 import { supabase, RequestWithPhotos, DriverViewProfile } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, isToday, isFuture, startOfDay } from "date-fns";
 import { MapPin, Clock, ChevronRight, Building2, Calendar, Sun, Sunset, Moon, Timer } from "lucide-react";
 import { JobThumbnail } from "@/components/driver/JobThumbnail";
+import { hapticFeedback } from "@/lib/haptics";
 
 const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
   accepted: { bg: "bg-primary/10", text: "text-primary", label: "Accepted" },
@@ -29,6 +31,7 @@ const dayRangeLabels: Record<string, string> = {
 };
 
 export default function DriverHome() {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState<RequestWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("today");
@@ -165,89 +168,99 @@ export default function DriverHome() {
             ) : (
               <div className="space-y-3">
                 {filteredRequests.map((request) => {
-                  const status = statusConfig[request.status] || statusConfig.accepted;
-                  return (
-                    <Link
-                      key={request.id}
-                      to={`/driver/job/${request.id}`}
-                      className="flex items-center gap-4 rounded-xl border border-[#333] bg-[#1d1d1d] p-4 transition-colors hover:bg-white/5"
-                    >
-                      {/* Photo */}
-                      {request.request_photos?.[0] && (
-                        <JobThumbnail fileUrl={request.request_photos[0].file_url} />
-                      )}
+                   const status = statusConfig[request.status] || statusConfig.accepted;
+                   return (
+                     <SwipeableCard
+                       key={request.id}
+                       onSwipe={() => {
+                         hapticFeedback("light");
+                         navigate(`/driver/job/${request.id}`);
+                       }}
+                       actionType="cancel"
+                       className="group relative"
+                     >
+                       <Link
+                         to={`/driver/job/${request.id}`}
+                         onClick={() => hapticFeedback("light")}
+                         className="flex items-center gap-4 rounded-xl border border-[#333] bg-[#1d1d1d] p-4 transition-colors hover:bg-white/5"
+                       >
+                         {/* Photo */}
+                         {request.request_photos?.[0] && (
+                           <JobThumbnail fileUrl={request.request_photos[0].file_url} />
+                         )}
 
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Building2 className="h-4 w-4 text-primary" />
-                          <p className="text-sm font-medium text-white truncate">
-                            {request.profiles?.business_name || "Unknown Business"}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <MapPin className="h-4 w-4 text-gray-400" />
-                          <p className="text-sm text-gray-400 truncate">
-                            {request.profiles?.postcode}, {request.profiles?.city}
-                          </p>
-                        </div>
-                        {request.scheduled_start && (
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-primary" />
-                            <p className="text-sm font-medium text-white">
-                              {format(new Date(request.scheduled_start), "EEE d MMM")}
-                            </p>
-                            <Clock className="h-4 w-4 text-gray-400 ml-2" />
-                            <p className="text-sm text-gray-400">
-                              {format(new Date(request.scheduled_start), "h:mm a")}
-                              {request.scheduled_end && (
-                                <> – {format(new Date(request.scheduled_end), "h:mm a")}</>
-                              )}
-                            </p>
-                          </div>
-                        )}
-                        {!request.scheduled_start && (
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-1">
-                            {request.preferred_window && request.preferred_window !== "anytime" && (
-                              <div className="flex items-center gap-2 rounded-md bg-primary/10 px-2 py-1">
-                                {(() => {
-                                  const WindowIcon = windowConfig[request.preferred_window]?.icon || Clock;
-                                  return <WindowIcon className="h-4 w-4 text-primary" />;
-                                })()}
-                                <span className="text-xs font-medium text-primary">
-                                  {windowConfig[request.preferred_window]?.label}
-                                </span>
-                              </div>
-                            )}
-                            {request.preferred_day_range && request.preferred_day_range !== "none" && (
-                              <div className="flex items-center gap-2 rounded-md bg-white/5 px-2 py-1">
-                                <Timer className="h-4 w-4 text-white" />
-                                <span className="text-xs font-medium text-white">
-                                  {dayRangeLabels[request.preferred_day_range]}
-                                </span>
-                              </div>
-                            )}
-                            {(!request.preferred_window || request.preferred_window === "anytime") && 
-                             (!request.preferred_day_range || request.preferred_day_range === "none") && (
-                              <div className="flex items-center gap-2 rounded-md bg-white/5 px-2 py-1">
-                                <Calendar className="h-4 w-4 text-white" />
-                                <span className="text-xs font-medium text-white">Flexible timing</span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                         {/* Info */}
+                         <div className="flex-1 min-w-0">
+                           <div className="flex items-center gap-2 mb-1">
+                             <Building2 className="h-4 w-4 text-primary" />
+                             <p className="text-sm font-medium text-white truncate">
+                               {request.profiles?.business_name || "Unknown Business"}
+                             </p>
+                           </div>
+                           <div className="flex items-center gap-2 mb-1">
+                             <MapPin className="h-4 w-4 text-gray-400" />
+                             <p className="text-sm text-gray-400 truncate">
+                               {request.profiles?.postcode}, {request.profiles?.city}
+                             </p>
+                           </div>
+                           {request.scheduled_start && (
+                             <div className="flex items-center gap-2">
+                               <Calendar className="h-4 w-4 text-primary" />
+                               <p className="text-sm font-medium text-white">
+                                 {format(new Date(request.scheduled_start), "EEE d MMM")}
+                               </p>
+                               <Clock className="h-4 w-4 text-gray-400 ml-2" />
+                               <p className="text-sm text-gray-400">
+                                 {format(new Date(request.scheduled_start), "h:mm a")}
+                                 {request.scheduled_end && (
+                                   <> – {format(new Date(request.scheduled_end), "h:mm a")}</>
+                                 )}
+                               </p>
+                             </div>
+                           )}
+                           {!request.scheduled_start && (
+                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-1">
+                               {request.preferred_window && request.preferred_window !== "anytime" && (
+                                 <div className="flex items-center gap-2 rounded-md bg-primary/10 px-2 py-1">
+                                   {(() => {
+                                     const WindowIcon = windowConfig[request.preferred_window]?.icon || Clock;
+                                     return <WindowIcon className="h-4 w-4 text-primary" />;
+                                   })()}
+                                   <span className="text-xs font-medium text-primary">
+                                     {windowConfig[request.preferred_window]?.label}
+                                   </span>
+                                 </div>
+                               )}
+                               {request.preferred_day_range && request.preferred_day_range !== "none" && (
+                                 <div className="flex items-center gap-2 rounded-md bg-white/5 px-2 py-1">
+                                   <Timer className="h-4 w-4 text-white" />
+                                   <span className="text-xs font-medium text-white">
+                                     {dayRangeLabels[request.preferred_day_range]}
+                                   </span>
+                                 </div>
+                               )}
+                               {(!request.preferred_window || request.preferred_window === "anytime") && 
+                                (!request.preferred_day_range || request.preferred_day_range === "none") && (
+                                 <div className="flex items-center gap-2 rounded-md bg-white/5 px-2 py-1">
+                                   <Calendar className="h-4 w-4 text-white" />
+                                   <span className="text-xs font-medium text-white">Flexible timing</span>
+                                 </div>
+                               )}
+                             </div>
+                           )}
+                         </div>
 
-                      {/* Status & Arrow */}
-                      <div className="flex items-center gap-3">
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}>
-                          {status.label}
-                        </span>
-                        <ChevronRight className="h-5 w-5 text-gray-400" />
-                      </div>
-                    </Link>
-                  );
-                })}
+                         {/* Status & Arrow */}
+                         <div className="flex items-center gap-3">
+                           <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}>
+                             {status.label}
+                           </span>
+                           <ChevronRight className="h-5 w-5 text-gray-400" />
+                         </div>
+                       </Link>
+                     </SwipeableCard>
+                   );
+                 })}
               </div>
             )}
           </TabsContent>
