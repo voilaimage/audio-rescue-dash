@@ -1,15 +1,18 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { DriverLayout } from "@/components/layout/DriverLayout";
-import { User, Phone, Mail, MapPin, Volume2, VolumeX } from "lucide-react";
+import { User, Phone, Mail, MapPin, Volume2, VolumeX, Vibrate, Smartphone } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { useSoundSettings } from "@/hooks/useSoundSettings";
+import { useSoundSettings, useHapticSettings } from "@/hooks/useSoundSettings";
+import { isHapticSupported } from "@/lib/haptics";
 import { useToast } from "@/hooks/use-toast";
 
 export default function DriverProfile() {
   const { profile } = useAuth();
   const { toast } = useToast();
   const { soundEnabled, setSoundEnabled } = useSoundSettings();
+  const { hapticEnabled, setHapticEnabled } = useHapticSettings();
+  const hapticSupported = isHapticSupported();
 
   const initials = profile?.contact_name
     ?.split(" ")
@@ -95,24 +98,26 @@ export default function DriverProfile() {
           )}
         </div>
 
-        {/* Sound Settings */}
+        {/* Feedback Settings */}
         <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
-          <div className="mb-4 flex items-center gap-2">
-            {soundEnabled ? (
-              <Volume2 className="h-5 w-5 text-primary" />
-            ) : (
-              <VolumeX className="h-5 w-5 text-gray-400" />
-            )}
-            <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
-              Sound Settings
-            </h3>
-          </div>
+          <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-gray-400">
+            Feedback Settings
+          </h3>
+          
+          {/* Sound Toggle */}
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-white">Sound Feedback</p>
-              <p className="text-xs text-gray-400">
-                Audio cues for swipe gestures
-              </p>
+            <div className="flex items-center gap-3">
+              {soundEnabled ? (
+                <Volume2 className="h-5 w-5 text-primary" />
+              ) : (
+                <VolumeX className="h-5 w-5 text-gray-400" />
+              )}
+              <div>
+                <p className="text-sm font-medium text-white">Sound Feedback</p>
+                <p className="text-xs text-gray-400">
+                  Audio cues for swipe gestures
+                </p>
+              </div>
             </div>
             <Switch
               checked={soundEnabled}
@@ -123,6 +128,38 @@ export default function DriverProfile() {
                 });
               }}
             />
+          </div>
+
+          {/* Haptic Toggle */}
+          <div className="flex items-center justify-between pt-3 mt-3 border-t border-[#333]">
+            <div className="flex items-center gap-3">
+              <Vibrate className={`h-5 w-5 ${hapticEnabled && hapticSupported ? "text-primary" : "text-gray-400"}`} />
+              <div>
+                <p className="text-sm font-medium text-white">Haptic Feedback</p>
+                <p className="text-xs text-gray-400">
+                  {hapticSupported 
+                    ? "Vibration for gestures"
+                    : "Not supported"
+                  }
+                </p>
+              </div>
+            </div>
+            {hapticSupported ? (
+              <Switch
+                checked={hapticEnabled}
+                onCheckedChange={(checked) => {
+                  setHapticEnabled(checked);
+                  toast({ 
+                    title: checked ? "Haptic feedback enabled" : "Haptic feedback disabled" 
+                  });
+                }}
+              />
+            ) : (
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <Smartphone className="h-3 w-3" />
+                N/A
+              </div>
+            )}
           </div>
         </div>
 
