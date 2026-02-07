@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";

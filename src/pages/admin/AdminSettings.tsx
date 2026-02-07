@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { hapticFeedback, isHapticSupported } from "@/lib/haptics";
-import { Eye, EyeOff, Mail, Lock, Save, User, Volume2, VolumeX, Vibrate, Smartphone, RotateCcw, HelpCircle } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Save, User, Volume2, VolumeX, Vibrate, Smartphone, RotateCcw, HelpCircle, ChevronRight } from "lucide-react";
 import {
   Accordion,
   AccordionContent,

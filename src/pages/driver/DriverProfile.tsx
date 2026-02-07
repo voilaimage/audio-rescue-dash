@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { DriverLayout } from "@/components/layout/DriverLayout";
-import { User, Phone, Mail, MapPin, Volume2, VolumeX, Vibrate, Smartphone, RotateCcw, HelpCircle } from "lucide-react";
+import { User, Phone, Mail, MapPin, Volume2, VolumeX, Vibrate, Smartphone, RotateCcw, HelpCircle, ChevronRight } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -195,11 +196,19 @@ export default function DriverProfile() {
 
         {/* Feedback Help Section */}
         <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <HelpCircle className="h-4 w-4 text-primary" />
-            <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
-              Help
-            </h3>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <HelpCircle className="h-4 w-4 text-primary" />
+              <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                Help
+              </h3>
+            </div>
+            <Link
+              to="/help"
+              className="flex items-center gap-1 text-xs text-primary hover:underline"
+            >
+              View all <ChevronRight className="h-3 w-3" />
+            </Link>
           </div>
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="what-is-sound" className="border-[#333]">
