@@ -170,30 +170,30 @@ export default function Register() {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-        options: { emailRedirectTo: window.location.origin },
+        options: { 
+          emailRedirectTo: window.location.origin,
+          data: {
+            business_name: formData.business_name,
+            contact_name: formData.contact_name,
+            phone: formData.phone,
+            address_line1: formData.address_line1,
+            address_line2: formData.address_line2 || "",
+            city: formData.city,
+            postcode: formData.postcode.toUpperCase(),
+            driver_notes: formData.driver_notes || "",
+          }
+        },
       });
 
       if (authError) throw authError;
       if (!authData.user) throw new Error("Failed to create user");
 
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: authData.user.id,
-        business_name: formData.business_name,
-        contact_name: formData.contact_name,
-        phone: formData.phone,
-        email: formData.email,
-        address_line1: formData.address_line1,
-        address_line2: formData.address_line2 || null,
-        city: formData.city,
-        postcode: formData.postcode.toUpperCase(),
-        driver_notes: formData.driver_notes || null,
-        role: "customer",
+      // Profile is automatically created by database trigger using user metadata
+      toast({ 
+        title: "Registration successful!", 
+        description: "Please check your email to verify your account." 
       });
-
-      if (profileError) throw profileError;
-
-      toast({ title: "Registration successful!", description: "Welcome to AudioSalvageUK Partner" });
-      navigate("/home", { replace: true });
+      navigate("/login", { replace: true });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Registration failed", description: error.message });
       // Reset CAPTCHA on error
