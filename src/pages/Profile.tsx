@@ -13,9 +13,9 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ImageCropper } from "@/components/ImageCropper";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { useSoundSettings, useHapticSettings } from "@/hooks/useSoundSettings";
+import { useFeedbackSettings } from "@/hooks/useSoundSettings";
 import { isHapticSupported } from "@/lib/haptics";
-import { Save, Camera, Trash2, ImageIcon, ChevronDown, Bell, BellOff, Smartphone, Volume2, VolumeX, Vibrate } from "lucide-react";
+import { Save, Camera, Trash2, ImageIcon, ChevronDown, Bell, BellOff, Smartphone, Volume2, VolumeX, Vibrate, RotateCcw } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,9 +45,12 @@ export default function Profile() {
     isSupported: isPushSupported 
   } = usePushNotifications(user?.id);
 
-  // Sound settings
-  const { soundEnabled, setSoundEnabled } = useSoundSettings();
-  const { hapticEnabled, setHapticEnabled } = useHapticSettings();
+  // Feedback settings
+  const { 
+    soundEnabled, setSoundEnabled, 
+    hapticEnabled, setHapticEnabled, 
+    resetToDefaults, hasCustomSettings 
+  } = useFeedbackSettings();
   const hapticSupported = isHapticSupported();
 
   const [formData, setFormData] = useState({
@@ -398,9 +401,23 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Notification Settings */}
+          {/* Notification & Feedback Settings */}
           <div className="space-y-3 rounded-xl border border-[#555555] bg-[#1d1d1d] p-4 shadow-card">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Notifications</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Notifications & Feedback</h3>
+              {hasCustomSettings && (
+                <button
+                  onClick={() => {
+                    resetToDefaults();
+                    toast({ title: "Feedback settings reset to defaults" });
+                  }}
+                  className="flex items-center gap-1 text-xs text-primary hover:underline"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  Reset
+                </button>
+              )}
+            </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
