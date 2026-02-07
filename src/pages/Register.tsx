@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -11,25 +11,11 @@ import { ArrowLeft, ArrowRight, Building2, User, MapPin, Check } from "lucide-re
 import logo from "@/assets/logo-white.png";
 import authBg from "@/assets/auth-bg.png";
 
-declare global {
-  interface Window {
-    turnstile: {
-      render: (id: string, options: { sitekey: string; theme: string }) => void;
-      getResponse: () => string | undefined;
-      reset: () => void;
-    };
-  }
-}
-
-const TURNSTILE_SITE_KEY = "0x4AAAAAACYhxsndid19yosKrIZSK6cSg60";
-
 type Step = 1 | 2 | 3;
 
 export default function Register() {
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const turnstileRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -47,15 +33,6 @@ export default function Register() {
     driver_notes: "",
   });
 
-  useEffect(() => {
-    // Render Turnstile widget when step 2 is reached
-    if (step === 2 && turnstileRef.current && window.turnstile) {
-      window.turnstile.render("#turnstile-register", {
-        sitekey: TURNSTILE_SITE_KEY,
-        theme: "dark",
-      });
-    }
-  }, [step]);
 
   const updateField = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -126,47 +103,9 @@ export default function Register() {
     e.preventDefault();
     if (!validateStep3()) return;
 
-    // Check if Turnstile is loaded and get token
-    if (!window.turnstile || typeof window.turnstile.getResponse !== 'function') {
-      toast({
-        variant: "destructive",
-        title: "CAPTCHA Not Ready",
-        description: "Please wait for CAPTCHA to load and try again",
-      });
-      return;
-    }
-
-    const token = window.turnstile.getResponse();
-    if (!token) {
-      toast({
-        variant: "destructive",
-        title: "CAPTCHA Required",
-        description: "Please complete the CAPTCHA verification",
-      });
-      return;
-    }
-
     setLoading(true);
 
     try {
-      // Verify CAPTCHA with backend
-      const verifyResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-turnstile`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ token }),
-        }
-      );
-
-      if (!verifyResponse.ok) {
-        const errorData = await verifyResponse.json();
-        throw new Error(errorData.error || "CAPTCHA verification failed");
-      }
-
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -188,7 +127,6 @@ export default function Register() {
       if (authError) throw authError;
       if (!authData.user) throw new Error("Failed to create user");
 
-      // Profile is automatically created by database trigger using user metadata
       toast({ 
         title: "Registration successful!", 
         description: "Please check your email to verify your account." 
@@ -196,10 +134,6 @@ export default function Register() {
       navigate("/login", { replace: true });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Registration failed", description: error.message });
-      // Reset CAPTCHA on error
-      if (window.turnstile && typeof window.turnstile.reset === 'function') {
-        window.turnstile.reset();
-      }
     } finally {
       setLoading(false);
     }
@@ -292,10 +226,7 @@ export default function Register() {
                      <Label className="text-sm text-white">Confirm Password *</Label>
                      <Input type="password" value={formData.confirmPassword} onChange={(e) => updateField("confirmPassword", e.target.value)} placeholder="••••••••" className="bg-[#28292b] border-[#555555] text-white placeholder:text-gray-500" required />
                    </div>
-                   <div className="mb-4 mt-4">
-                     <div id="turnstile-register" ref={turnstileRef} className="flex justify-center"></div>
-                   </div>
-                   <Button type="button" onClick={handleNext} className="w-full touch-target font-semibold">
+                   <Button type="button" onClick={handleNext} className="w-full touch-target font-semibold mt-4">
                      Continue <ArrowRight className="ml-2 h-4 w-4" />
                    </Button>
                  </div>
