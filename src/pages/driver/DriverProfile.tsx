@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DriverLayout } from "@/components/layout/DriverLayout";
 import { User, Phone, Mail, MapPin, Volume2, VolumeX, Vibrate, Smartphone, RotateCcw } from "lucide-react";
@@ -6,10 +7,19 @@ import { Switch } from "@/components/ui/switch";
 import { useFeedbackSettings } from "@/hooks/useSoundSettings";
 import { isHapticSupported } from "@/lib/haptics";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function DriverProfile() {
   const { profile } = useAuth();
   const { toast } = useToast();
+  const [showResetDialog, setShowResetDialog] = useState(false);
   const { 
     soundEnabled, setSoundEnabled, 
     hapticEnabled, setHapticEnabled, 
@@ -109,10 +119,7 @@ export default function DriverProfile() {
             </h3>
             {hasCustomSettings && (
               <button
-                onClick={() => {
-                  resetToDefaults();
-                  toast({ title: "Feedback settings reset" });
-                }}
+                onClick={() => setShowResetDialog(true)}
                 className="flex items-center gap-1 text-xs text-primary hover:underline"
               >
                 <RotateCcw className="h-3 w-3" />
@@ -186,6 +193,31 @@ export default function DriverProfile() {
             To update your profile details or coverage areas, please contact an administrator.
           </p>
         </div>
+
+        {/* Reset Confirmation Dialog */}
+        <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+          <AlertDialogContent className="bg-[#1d1d1d] border-[#333]">
+            <AlertDialogTitle className="text-white">Reset Feedback Settings?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              This will restore sound and haptic feedback to their default settings (both enabled).
+            </AlertDialogDescription>
+            <div className="flex gap-3 justify-end">
+              <AlertDialogCancel className="text-white bg-[#28292b] border-[#555555] hover:bg-[#333]">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-primary hover:bg-primary/90 text-white"
+                onClick={() => {
+                  resetToDefaults();
+                  setShowResetDialog(false);
+                  toast({ title: "Feedback settings reset" });
+                }}
+              >
+                Reset
+              </AlertDialogAction>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DriverLayout>
   );

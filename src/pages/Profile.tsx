@@ -15,6 +15,14 @@ import { ImageCropper } from "@/components/ImageCropper";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useFeedbackSettings } from "@/hooks/useSoundSettings";
 import { isHapticSupported } from "@/lib/haptics";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Save, Camera, Trash2, ImageIcon, ChevronDown, Bell, BellOff, Smartphone, Volume2, VolumeX, Vibrate, RotateCcw } from "lucide-react";
 import {
   DropdownMenu,
@@ -35,6 +43,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [showResetDialog, setShowResetDialog] = useState(false);
   
   // Push notifications
   const { 
@@ -407,10 +416,7 @@ export default function Profile() {
               <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Notifications & Feedback</h3>
               {hasCustomSettings && (
                 <button
-                  onClick={() => {
-                    resetToDefaults();
-                    toast({ title: "Feedback settings reset to defaults" });
-                  }}
+                  onClick={() => setShowResetDialog(true)}
                   className="flex items-center gap-1 text-xs text-primary hover:underline"
                 >
                   <RotateCcw className="h-3 w-3" />
@@ -528,6 +534,31 @@ export default function Profile() {
           </Button>
           </div>
         </div>
+
+        {/* Reset Confirmation Dialog */}
+        <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+          <AlertDialogContent className="bg-[#1d1d1d] border-[#333]">
+            <AlertDialogTitle className="text-white">Reset Feedback Settings?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              This will restore sound and haptic feedback to their default settings (both enabled).
+            </AlertDialogDescription>
+            <div className="flex gap-3 justify-end">
+              <AlertDialogCancel className="text-white bg-[#28292b] border-[#555555] hover:bg-[#333]">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-primary hover:bg-primary/90 text-white"
+                onClick={() => {
+                  resetToDefaults();
+                  setShowResetDialog(false);
+                  toast({ title: "Feedback settings reset to defaults" });
+                }}
+              >
+                Reset
+              </AlertDialogAction>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </MobileLayout>
   );

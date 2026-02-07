@@ -11,6 +11,14 @@ import { Eye, EyeOff, Mail, Lock, Save, User, Volume2, VolumeX, Vibrate, Smartph
 import { useAuth } from "@/contexts/AuthContext";
 import { Switch } from "@/components/ui/switch";
 import { useFeedbackSettings } from "@/hooks/useSoundSettings";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 export default function AdminSettings() {
   const {
     profile,
@@ -36,6 +44,7 @@ export default function AdminSettings() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [showResetDialog, setShowResetDialog] = useState(false);
 
   // Feedback settings
   const { 
@@ -283,11 +292,7 @@ export default function AdminSettings() {
             <h2 className="text-lg font-semibold">Feedback Settings</h2>
             {hasCustomSettings && (
               <button
-                onClick={() => {
-                  resetToDefaults();
-                  hapticFeedback("light");
-                  toast({ title: "Feedback settings reset to defaults" });
-                }}
+                onClick={() => setShowResetDialog(true)}
                 className="flex items-center gap-1 text-sm text-primary hover:underline"
               >
                 <RotateCcw className="h-4 w-4" />
@@ -355,6 +360,32 @@ export default function AdminSettings() {
             )}
           </div>
         </div>
+
+        {/* Reset Confirmation Dialog */}
+        <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+          <AlertDialogContent className="bg-[#1d1d1d] border-[#333]">
+            <AlertDialogTitle className="text-white">Reset Feedback Settings?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              This will restore sound and haptic feedback to their default settings (both enabled).
+            </AlertDialogDescription>
+            <div className="flex gap-3 justify-end">
+              <AlertDialogCancel className="text-white bg-[#28292b] border-[#555555] hover:bg-[#333]">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-primary hover:bg-primary/90 text-white"
+                onClick={() => {
+                  resetToDefaults();
+                  hapticFeedback("light");
+                  setShowResetDialog(false);
+                  toast({ title: "Feedback settings reset to defaults" });
+                }}
+              >
+                Reset
+              </AlertDialogAction>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>;
-}
+  }
