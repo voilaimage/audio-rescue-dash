@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { isNativeApp } from "@/lib/capacitor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,45 +53,47 @@ export default function ForgotPassword() {
       return;
     }
 
-    // Check if Turnstile is loaded and get token
-    if (!window.turnstile || typeof window.turnstile.getResponse !== 'function') {
-      toast({
-        variant: "destructive",
-        title: "CAPTCHA Not Ready",
-        description: "Please wait for CAPTCHA to load and try again",
-      });
-      return;
-    }
-
-    const token = window.turnstile.getResponse();
-    if (!token) {
-      toast({
-        variant: "destructive",
-        title: "CAPTCHA Required",
-        description: "Please complete the CAPTCHA verification",
-      });
-      return;
-    }
-
     setLoading(true);
 
     try {
-      // Verify CAPTCHA with backend
-      const verifyResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-turnstile`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ token }),
+      // Check CAPTCHA only on web, not on native app
+      if (!isNativeApp()) {
+        if (!window.turnstile || typeof window.turnstile.getResponse !== 'function') {
+          toast({
+            variant: "destructive",
+            title: "CAPTCHA Not Ready",
+            description: "Please wait for CAPTCHA to load and try again",
+          });
+          return;
         }
-      );
 
-      if (!verifyResponse.ok) {
-        const errorData = await verifyResponse.json();
-        throw new Error(errorData.error || "CAPTCHA verification failed");
+        const token = window.turnstile.getResponse();
+        if (!token) {
+          toast({
+            variant: "destructive",
+            title: "CAPTCHA Required",
+            description: "Please complete the CAPTCHA verification",
+          });
+          return;
+        }
+
+        // Verify CAPTCHA with backend
+        const verifyResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-turnstile`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ token }),
+          }
+        );
+
+        if (!verifyResponse.ok) {
+          const errorData = await verifyResponse.json();
+          throw new Error(errorData.error || "CAPTCHA verification failed");
+        }
       }
 
       const redirectUrl = `${window.location.origin}/reset-password`;
@@ -112,8 +115,8 @@ export default function ForgotPassword() {
         title: "Failed to send reset email",
         description: error.message,
       });
-      // Reset CAPTCHA on error
-      if (window.turnstile && typeof window.turnstile.reset === 'function') {
+      // Reset CAPTCHA on error (only on web)
+      if (!isNativeApp() && window.turnstile && typeof window.turnstile.reset === 'function') {
         window.turnstile.reset();
       }
     } finally {
@@ -168,9 +171,11 @@ export default function ForgotPassword() {
                        </div>
                      </div>
 
-                     <div className="mb-4">
-                       <div id="turnstile-forgot" ref={turnstileRef} className="flex justify-center"></div>
-                     </div>
+                      {!isNativeApp() && (
+                        <div className="mb-4">
+                          <div id="turnstile-forgot" ref={turnstileRef} className="flex justify-center"></div>
+                        </div>
+                      )}
 
                      <Button 
                        type="submit" 
