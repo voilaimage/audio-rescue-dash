@@ -84,9 +84,14 @@ export default function Login() {
         }
       );
 
+      const verifyData = await verifyResponse.json();
+      
       if (!verifyResponse.ok) {
-        const errorData = await verifyResponse.json();
-        throw new Error(errorData.error || "CAPTCHA verification failed");
+        // Check for rate limiting
+        if (verifyResponse.status === 429 || verifyData.rateLimited) {
+          throw new Error(verifyData.error || "Too many failed attempts. Please try again later.");
+        }
+        throw new Error(verifyData.error || "CAPTCHA verification failed");
       }
 
       const { data, error } = await supabase.auth.signInWithPassword({
