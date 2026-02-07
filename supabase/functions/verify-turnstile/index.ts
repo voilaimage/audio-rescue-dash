@@ -10,6 +10,7 @@ const corsHeaders = {
 const RATE_LIMITS: Record<string, { maxAttempts: number; windowMinutes: number }> = {
   login: { maxAttempts: 5, windowMinutes: 15 },
   register: { maxAttempts: 3, windowMinutes: 30 }, // Stricter for registration
+  "forgot-password": { maxAttempts: 3, windowMinutes: 30 }, // Prevent abuse of password reset emails
 };
 
 function getClientIp(req: Request): string {
@@ -54,7 +55,7 @@ Deno.serve(async (req) => {
     const { token, endpoint: requestedEndpoint } = await req.json();
     
     // Determine which endpoint to use for rate limiting (default to "login")
-    const endpoint = requestedEndpoint === "register" ? "register" : "login";
+    const endpoint = ["register", "forgot-password"].includes(requestedEndpoint) ? requestedEndpoint : "login";
     const rateLimit = RATE_LIMITS[endpoint];
     
     console.log(`${endpoint} attempt from IP: ${clientIp}`);
