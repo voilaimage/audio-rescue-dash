@@ -221,7 +221,7 @@ export default function Login() {
                     Register your business
                   </Link>
                 </div>
-                <div className="pt-2 border-t border-[#555555] text-xs text-gray-400 space-y-1">
+                <div className="pt-2 border-t border-[#555555] text-xs text-white space-y-1">
                   <p>
                     By signing in, you agree to our{" "}
                     <Link to="/terms-of-service" className="text-[#f59f0a] hover:text-[#f59f0a]/80 underline">
