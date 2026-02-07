@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { SwipeableCard } from "@/components/SwipeableCard";
 import { useSignedUrls } from "@/hooks/useSignedUrl";
 import { hapticFeedback } from "@/lib/haptics";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
@@ -400,7 +401,15 @@ export default function Requests() {
                 const signedUrl = firstPhotoUrl ? signedUrlMap.get(firstPhotoUrl) : null;
                 
                 return (
-                  <div key={request.id} className="group relative">
+                  <SwipeableCard
+                    key={request.id}
+                    onSwipe={() => {
+                      setSelectedRequest(request);
+                      setCancelDialogOpen(true);
+                    }}
+                    actionType={request.status === 'new' ? 'delete' : 'cancel'}
+                    disabled={!status.canCancel}
+                  >
                     <Link to={`/requests/${request.id}`} onClick={() => hapticFeedback("light")} className="block">
                       <div className="rounded-xl border border-[#555555] bg-[#1d1d1d] p-4 shadow-card transition-all hover:border-primary/40">
                         <div className="flex gap-3">
@@ -438,7 +447,7 @@ export default function Requests() {
                         </div>
                       </div>
                     </Link>
-                  </div>
+                  </SwipeableCard>
                 );
               })}
             </div>
