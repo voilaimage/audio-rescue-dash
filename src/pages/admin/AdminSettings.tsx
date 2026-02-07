@@ -7,10 +7,10 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { hapticFeedback, isHapticSupported } from "@/lib/haptics";
-import { Eye, EyeOff, Mail, Lock, Save, User, Volume2, VolumeX, Vibrate, Smartphone } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Save, User, Volume2, VolumeX, Vibrate, Smartphone, RotateCcw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Switch } from "@/components/ui/switch";
-import { useSoundSettings, useHapticSettings } from "@/hooks/useSoundSettings";
+import { useFeedbackSettings } from "@/hooks/useSoundSettings";
 export default function AdminSettings() {
   const {
     profile,
@@ -37,9 +37,12 @@ export default function AdminSettings() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
 
-  // Sound settings
-  const { soundEnabled, setSoundEnabled } = useSoundSettings();
-  const { hapticEnabled, setHapticEnabled } = useHapticSettings();
+  // Feedback settings
+  const { 
+    soundEnabled, setSoundEnabled, 
+    hapticEnabled, setHapticEnabled, 
+    resetToDefaults, hasCustomSettings 
+  } = useFeedbackSettings();
   const hapticSupported = isHapticSupported();
 
   // Initialize name from profile
@@ -276,7 +279,22 @@ export default function AdminSettings() {
 
         {/* Feedback Settings */}
         <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-6">
-          <h2 className="mb-4 text-lg font-semibold">Feedback Settings</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Feedback Settings</h2>
+            {hasCustomSettings && (
+              <button
+                onClick={() => {
+                  resetToDefaults();
+                  hapticFeedback("light");
+                  toast({ title: "Feedback settings reset to defaults" });
+                }}
+                className="flex items-center gap-1 text-sm text-primary hover:underline"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Reset to defaults
+              </button>
+            )}
+          </div>
           
           {/* Sound Toggle */}
           <div className="flex items-center justify-between py-3">

@@ -1,17 +1,20 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { DriverLayout } from "@/components/layout/DriverLayout";
-import { User, Phone, Mail, MapPin, Volume2, VolumeX, Vibrate, Smartphone } from "lucide-react";
+import { User, Phone, Mail, MapPin, Volume2, VolumeX, Vibrate, Smartphone, RotateCcw } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { useSoundSettings, useHapticSettings } from "@/hooks/useSoundSettings";
+import { useFeedbackSettings } from "@/hooks/useSoundSettings";
 import { isHapticSupported } from "@/lib/haptics";
 import { useToast } from "@/hooks/use-toast";
 
 export default function DriverProfile() {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const { soundEnabled, setSoundEnabled } = useSoundSettings();
-  const { hapticEnabled, setHapticEnabled } = useHapticSettings();
+  const { 
+    soundEnabled, setSoundEnabled, 
+    hapticEnabled, setHapticEnabled, 
+    resetToDefaults, hasCustomSettings 
+  } = useFeedbackSettings();
   const hapticSupported = isHapticSupported();
 
   const initials = profile?.contact_name
@@ -100,9 +103,23 @@ export default function DriverProfile() {
 
         {/* Feedback Settings */}
         <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
-          <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-gray-400">
-            Feedback Settings
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+              Feedback Settings
+            </h3>
+            {hasCustomSettings && (
+              <button
+                onClick={() => {
+                  resetToDefaults();
+                  toast({ title: "Feedback settings reset" });
+                }}
+                className="flex items-center gap-1 text-xs text-primary hover:underline"
+              >
+                <RotateCcw className="h-3 w-3" />
+                Reset
+              </button>
+            )}
+          </div>
           
           {/* Sound Toggle */}
           <div className="flex items-center justify-between">
