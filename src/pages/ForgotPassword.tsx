@@ -75,7 +75,7 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      // Verify CAPTCHA with backend (using forgot-password endpoint for rate limiting)
+      // Verify CAPTCHA with backend
       const verifyResponse = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-turnstile`,
         {
@@ -84,18 +84,13 @@ export default function ForgotPassword() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ token, endpoint: "forgot-password" }),
+          body: JSON.stringify({ token }),
         }
       );
 
-      const verifyData = await verifyResponse.json();
-      
       if (!verifyResponse.ok) {
-        // Check for rate limiting
-        if (verifyResponse.status === 429 || verifyData.rateLimited) {
-          throw new Error(verifyData.error || "Too many failed attempts. Please try again later.");
-        }
-        throw new Error(verifyData.error || "CAPTCHA verification failed");
+        const errorData = await verifyResponse.json();
+        throw new Error(errorData.error || "CAPTCHA verification failed");
       }
 
       const redirectUrl = `${window.location.origin}/reset-password`;
