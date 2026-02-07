@@ -1,10 +1,15 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { DriverLayout } from "@/components/layout/DriverLayout";
-import { User, Phone, Mail, MapPin } from "lucide-react";
+import { User, Phone, Mail, MapPin, Volume2, VolumeX } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
+import { useSoundSettings } from "@/hooks/useSoundSettings";
+import { useToast } from "@/hooks/use-toast";
 
 export default function DriverProfile() {
   const { profile } = useAuth();
+  const { toast } = useToast();
+  const { soundEnabled, setSoundEnabled } = useSoundSettings();
 
   const initials = profile?.contact_name
     ?.split(" ")
@@ -88,6 +93,37 @@ export default function DriverProfile() {
           ) : (
             <p className="text-sm text-gray-400">No coverage areas assigned</p>
           )}
+        </div>
+
+        {/* Sound Settings */}
+        <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
+          <div className="mb-4 flex items-center gap-2">
+            {soundEnabled ? (
+              <Volume2 className="h-5 w-5 text-primary" />
+            ) : (
+              <VolumeX className="h-5 w-5 text-gray-400" />
+            )}
+            <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+              Sound Settings
+            </h3>
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-white">Sound Feedback</p>
+              <p className="text-xs text-gray-400">
+                Audio cues for swipe gestures
+              </p>
+            </div>
+            <Switch
+              checked={soundEnabled}
+              onCheckedChange={(checked) => {
+                setSoundEnabled(checked);
+                toast({ 
+                  title: checked ? "Sound feedback enabled" : "Sound feedback disabled" 
+                });
+              }}
+            />
+          </div>
         </div>
 
         {/* Info Note */}

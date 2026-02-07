@@ -7,8 +7,10 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { hapticFeedback } from "@/lib/haptics";
-import { Eye, EyeOff, Mail, Lock, Save, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Save, User, Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Switch } from "@/components/ui/switch";
+import { useSoundSettings } from "@/hooks/useSoundSettings";
 export default function AdminSettings() {
   const {
     profile,
@@ -34,6 +36,9 @@ export default function AdminSettings() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+
+  // Sound settings
+  const { soundEnabled, setSoundEnabled } = useSoundSettings();
 
   // Initialize name from profile
   useEffect(() => {
@@ -265,6 +270,36 @@ export default function AdminSettings() {
                 </>}
             </Button>
           </form>
+        </div>
+
+        {/* Sound Settings */}
+        <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-6">
+          <h2 className="mb-4 text-lg font-semibold flex items-center gap-2">
+            {soundEnabled ? (
+              <Volume2 className="h-5 w-5 text-primary" />
+            ) : (
+              <VolumeX className="h-5 w-5 text-gray-400" />
+            )}
+            Sound Settings
+          </h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-white">Sound Feedback</p>
+              <p className="text-sm text-gray-400">
+                Play audio cues for swipe gestures and actions
+              </p>
+            </div>
+            <Switch
+              checked={soundEnabled}
+              onCheckedChange={(checked) => {
+                setSoundEnabled(checked);
+                hapticFeedback("light");
+                toast({ 
+                  title: checked ? "Sound feedback enabled" : "Sound feedback disabled" 
+                });
+              }}
+            />
+          </div>
         </div>
       </div>
     </AdminLayout>;

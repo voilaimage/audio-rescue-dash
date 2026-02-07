@@ -13,7 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ImageCropper } from "@/components/ImageCropper";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { Save, Camera, Trash2, ImageIcon, ChevronDown, Bell, BellOff, Smartphone } from "lucide-react";
+import { useSoundSettings } from "@/hooks/useSoundSettings";
+import { Save, Camera, Trash2, ImageIcon, ChevronDown, Bell, BellOff, Smartphone, Volume2, VolumeX } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +43,9 @@ export default function Profile() {
     removeToken,
     isSupported: isPushSupported 
   } = usePushNotifications(user?.id);
+
+  // Sound settings
+  const { soundEnabled, setSoundEnabled } = useSoundSettings();
 
   const [formData, setFormData] = useState({
     business_name: "",
@@ -438,6 +442,32 @@ export default function Profile() {
                   You'll receive notifications when your request status changes.
                 </p>
               )}
+
+              {/* Sound Feedback Toggle */}
+              <div className="flex items-center justify-between pt-3 border-t border-[#333]">
+                <div className="flex items-center gap-3">
+                  {soundEnabled ? (
+                    <Volume2 className="h-5 w-5 text-primary" />
+                  ) : (
+                    <VolumeX className="h-5 w-5 text-gray-400" />
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-white">Sound Feedback</p>
+                    <p className="text-xs text-gray-400">
+                      {soundEnabled ? "Enabled" : "Disabled"}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={soundEnabled}
+                  onCheckedChange={(checked) => {
+                    setSoundEnabled(checked);
+                    toast({ 
+                      title: checked ? "Sound feedback enabled" : "Sound feedback disabled" 
+                    });
+                  }}
+                />
+              </div>
             </div>
           </div>
 
