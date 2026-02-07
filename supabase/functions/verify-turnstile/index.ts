@@ -7,37 +7,66 @@ const corsHeaders = {
 };
 
 // Rate limit configuration
-const MAX_ATTEMPTS = 5; // Max failed attempts before blocking
-const WINDOW_MINUTES = 15; // Time window in minutes
+const RATE_LIMITS: Record<string, { maxAttempts: number; windowMinutes: number }> = {
+  login: { maxAttempts: 5, windowMinutes: 15 },
+  register: { maxAttempts: 3, windowMinutes: 30 }, // Stricter for registration
+};
+
+function getClientIp(req: Request): string {
+  return (
+    req.headers.get("cf-connecting-ip") ||
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown"
+  );
+}
+
+async function recordAttempt(
+  supabase: any,
+  ipAddress: string,
+  endpoint: string,
+  success: boolean
+): Promise<void> {
+  try {
+    await supabase.rpc("record_rate_limit_attempt", {
+      _ip_address: ipAddress,
+      _endpoint: endpoint,
+      _success: success,
+    });
+  } catch (error) {
+    console.error("Failed to record rate limit attempt:", error);
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Get client IP from headers (Cloudflare/proxy headers take precedence)
-  const clientIp = 
-    req.headers.get("cf-connecting-ip") || 
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
-    req.headers.get("x-real-ip") || 
-    "unknown";
-
-  console.log(`Login attempt from IP: ${clientIp}`);
-
+  const clientIp = getClientIp(req);
+  
   // Initialize Supabase client with service role for rate limiting checks
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
+    const { token, endpoint: requestedEndpoint } = await req.json();
+    
+    // Determine which endpoint to use for rate limiting (default to "login")
+    const endpoint = requestedEndpoint === "register" ? "register" : "login";
+    const rateLimit = RATE_LIMITS[endpoint];
+    
+    console.log(`${endpoint} attempt from IP: ${clientIp}`);
+
     // Check if IP is rate limited
     const { data: isRateLimited, error: rateLimitError } = await supabase.rpc(
       "check_rate_limit",
       {
         _ip_address: clientIp,
-        _endpoint: "login",
-        _max_attempts: MAX_ATTEMPTS,
-        _window_minutes: WINDOW_MINUTES,
+        _endpoint: endpoint,
+        _max_attempts: rateLimit.maxAttempts,
+        _window_minutes: rateLimit.windowMinutes,
       }
     );
 
@@ -45,11 +74,11 @@ Deno.serve(async (req) => {
       console.error("Rate limit check error:", rateLimitError);
       // Continue anyway to not block legitimate users on DB errors
     } else if (isRateLimited) {
-      console.warn(`IP ${clientIp} is rate limited for login attempts`);
+      console.warn(`IP ${clientIp} is rate limited for ${endpoint} attempts`);
       return new Response(
         JSON.stringify({
           success: false,
-          error: `Too many failed login attempts. Please try again in ${WINDOW_MINUTES} minutes.`,
+          error: `Too many failed ${endpoint} attempts. Please try again in ${rateLimit.windowMinutes} minutes.`,
           rateLimited: true,
         }),
         {
@@ -59,7 +88,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { token } = await req.json();
     const TURNSTILE_SECRET_KEY = Deno.env.get("TURNSTILE_SECRET_KEY");
 
     if (!TURNSTILE_SECRET_KEY) {
@@ -67,12 +95,7 @@ Deno.serve(async (req) => {
     }
 
     if (!token) {
-      // Record failed attempt (missing token)
-      await supabase.rpc("record_rate_limit_attempt", {
-        _ip_address: clientIp,
-        _endpoint: "login",
-        _success: false,
-      });
+      await recordAttempt(supabase, clientIp, endpoint, false);
       throw new Error("Token is required");
     }
 
@@ -92,26 +115,15 @@ Deno.serve(async (req) => {
     );
 
     if (!verifyResponse.ok) {
-      // Record failed attempt
-      await supabase.rpc("record_rate_limit_attempt", {
-        _ip_address: clientIp,
-        _endpoint: "login",
-        _success: false,
-      });
+      await recordAttempt(supabase, clientIp, endpoint, false);
       throw new Error(`Turnstile verification failed: ${verifyResponse.statusText}`);
     }
 
     const verifyData = await verifyResponse.json();
 
     if (verifyData.success) {
-      // Record successful attempt (resets the rate limit counter logic)
-      await supabase.rpc("record_rate_limit_attempt", {
-        _ip_address: clientIp,
-        _endpoint: "login",
-        _success: true,
-      });
-      
-      console.log(`Login CAPTCHA verified successfully for IP: ${clientIp}`);
+      await recordAttempt(supabase, clientIp, endpoint, true);
+      console.log(`${endpoint} CAPTCHA verified successfully for IP: ${clientIp}`);
       
       return new Response(
         JSON.stringify({ success: true, score: verifyData.score }),
@@ -121,13 +133,7 @@ Deno.serve(async (req) => {
         }
       );
     } else {
-      // Record failed CAPTCHA attempt
-      await supabase.rpc("record_rate_limit_attempt", {
-        _ip_address: clientIp,
-        _endpoint: "login",
-        _success: false,
-      });
-      
+      await recordAttempt(supabase, clientIp, endpoint, false);
       console.warn(`CAPTCHA verification failed for IP: ${clientIp}`, verifyData["error-codes"]);
       
       return new Response(
@@ -144,17 +150,6 @@ Deno.serve(async (req) => {
     }
   } catch (error) {
     console.error("Turnstile verification error:", error);
-    
-    // Record failed attempt on error
-    try {
-      await supabase.rpc("record_rate_limit_attempt", {
-        _ip_address: clientIp,
-        _endpoint: "login",
-        _success: false,
-      });
-    } catch (recordError) {
-      console.error("Failed to record rate limit attempt:", recordError);
-    }
     
     return new Response(
       JSON.stringify({
