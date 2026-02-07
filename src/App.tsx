@@ -20,6 +20,8 @@ import Requests from "./pages/Requests";
 import RequestDetail from "./pages/RequestDetail";
 import Profile from "./pages/Profile";
 import Help from "./pages/Help";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
 
 // Admin Pages (web-only)
@@ -102,6 +104,10 @@ function AppRoutes() {
 
   return (
     <Routes>
+      {/* Public legal pages - no auth required */}
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<TermsOfService />} />
+      
       <Route path="/" element={<Splash />} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
