@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DriverLayout } from "@/components/layout/DriverLayout";
-import { User, Phone, Mail, MapPin, Volume2, VolumeX, Vibrate, Smartphone, RotateCcw } from "lucide-react";
+import { User, Phone, Mail, MapPin, Volume2, VolumeX, Vibrate, Smartphone, RotateCcw, HelpCircle } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { useFeedbackSettings } from "@/hooks/useSoundSettings";
@@ -185,6 +191,42 @@ export default function DriverProfile() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Feedback Help Section */}
+        <div className="rounded-xl border border-[#333] bg-[#1d1d1d] p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <HelpCircle className="h-4 w-4 text-primary" />
+            <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+              Help
+            </h3>
+          </div>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="what-is-sound" className="border-[#333]">
+              <AccordionTrigger className="text-sm text-white hover:text-primary py-2">
+                What is sound feedback?
+              </AccordionTrigger>
+              <AccordionContent className="text-xs text-gray-400 pb-2">
+                Plays audio tones when you swipe on job cards to confirm your actions.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="what-is-haptic" className="border-[#333]">
+              <AccordionTrigger className="text-sm text-white hover:text-primary py-2">
+                What is haptic feedback?
+              </AccordionTrigger>
+              <AccordionContent className="text-xs text-gray-400 pb-2">
+                Creates gentle vibrations for button presses and swipe gestures.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="not-working" className="border-[#333] border-b-0">
+              <AccordionTrigger className="text-sm text-white hover:text-primary py-2">
+                Not working?
+              </AccordionTrigger>
+              <AccordionContent className="text-xs text-gray-400 pb-2">
+                Check that your device isn't in silent mode and that vibration is enabled in device settings.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
 
         {/* Info Note */}

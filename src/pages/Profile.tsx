@@ -23,7 +23,13 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Save, Camera, Trash2, ImageIcon, ChevronDown, Bell, BellOff, Smartphone, Volume2, VolumeX, Vibrate, RotateCcw } from "lucide-react";
+import { Save, Camera, Trash2, ImageIcon, ChevronDown, Bell, BellOff, Smartphone, Volume2, VolumeX, Vibrate, RotateCcw, HelpCircle, ChevronRight } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -527,6 +533,56 @@ export default function Profile() {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Feedback Help Section */}
+          <div className="space-y-3 rounded-xl border border-[#555555] bg-[#1d1d1d] p-4 shadow-card">
+            <div className="flex items-center gap-2">
+              <HelpCircle className="h-4 w-4 text-primary" />
+              <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Feedback Settings Help</h3>
+            </div>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="what-is-sound" className="border-[#333]">
+                <AccordionTrigger className="text-sm text-white hover:text-primary py-3">
+                  What is sound feedback?
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-gray-400 pb-3">
+                  Sound feedback plays short audio tones when you perform actions like swiping to delete or cancel a request. 
+                  These audio cues help confirm your actions were registered.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="what-is-haptic" className="border-[#333]">
+                <AccordionTrigger className="text-sm text-white hover:text-primary py-3">
+                  What is haptic feedback?
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-gray-400 pb-3">
+                  Haptic feedback creates a gentle vibration when you interact with the app. 
+                  It provides a tactile response to button presses, swipe gestures, and important actions.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="not-working" className="border-[#333]">
+                <AccordionTrigger className="text-sm text-white hover:text-primary py-3">
+                  Why aren't these features working?
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-gray-400 pb-3">
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Make sure your device isn't in silent mode</li>
+                    <li>Check that vibration is enabled in your device settings</li>
+                    <li>Some browsers don't support haptic feedback—try using the mobile app</li>
+                    <li>Ensure the toggles above are switched on</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="battery" className="border-[#333] border-b-0">
+                <AccordionTrigger className="text-sm text-white hover:text-primary py-3">
+                  Do these features affect battery life?
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-gray-400 pb-3">
+                  The impact is minimal. Sound and haptic feedback only activate briefly during interactions, 
+                  so they won't noticeably affect your device's battery life.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
 
           <Button onClick={handleSave} disabled={loading} className="w-full touch-target font-semibold">
