@@ -3,6 +3,8 @@
  * Uses Web Audio API to generate synthetic sounds
  */
 
+import { isSoundEnabled } from "@/hooks/useSoundSettings";
+
 let audioContext: AudioContext | null = null;
 
 function getAudioContext(): AudioContext | null {
@@ -29,6 +31,7 @@ function getAudioContext(): AudioContext | null {
  * Play a confirmation sound (soft chime)
  */
 export function playConfirmSound(): void {
+  if (!isSoundEnabled()) return;
   const ctx = getAudioContext();
   if (!ctx) return;
 
@@ -59,6 +62,7 @@ export function playConfirmSound(): void {
  * Play a delete/cancel warning sound (lower tone)
  */
 export function playDeleteSound(): void {
+  if (!isSoundEnabled()) return;
   const ctx = getAudioContext();
   if (!ctx) return;
 
@@ -89,6 +93,7 @@ export function playDeleteSound(): void {
  * Play a subtle tap sound
  */
 export function playTapSound(): void {
+  if (!isSoundEnabled()) return;
   const ctx = getAudioContext();
   if (!ctx) return;
 
