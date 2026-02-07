@@ -3,8 +3,5 @@ project_id = "lyfieowqpaxzfsdnkvfa"
 [env.local]
 # inherits all config from top-level env
 
-[functions.verify-turnstile]
-verify_jwt = false
-
 [functions.send-push-notification]
 verify_jwt = false
