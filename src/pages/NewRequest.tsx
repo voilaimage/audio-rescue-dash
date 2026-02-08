@@ -76,21 +76,22 @@ export default function NewRequest() {
     }
 
     const newPhotos: File[] = [];
-    const newPreviews: string[] = [...previews];
+    const newPreviews: string[] = [];
 
     for (const dataUrl of dataUrls) {
       // Convert data URL to File for storage
       const response = await fetch(dataUrl);
       const blob = await response.blob();
-      const timestamp = Date.now();
+      const timestamp = Date.now() + newPhotos.length; // Ensure unique timestamps
       const file = new File([blob], `photo-${timestamp}.jpg`, { type: 'image/jpeg' });
       newPhotos.push(file);
       newPreviews.push(dataUrl);
     }
 
     const combinedPhotos = [...photos, ...newPhotos].slice(0, 10);
+    const combinedPreviews = [...previews, ...newPreviews].slice(0, 10);
     setPhotos(combinedPhotos);
-    setPreviews(newPreviews.slice(0, 10));
+    setPreviews(combinedPreviews);
     await hapticFeedback("success");
   };
 
