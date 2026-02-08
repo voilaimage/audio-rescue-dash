@@ -15,6 +15,8 @@ import { ImageCropper } from "@/components/ImageCropper";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useFeedbackSettings } from "@/hooks/useSoundSettings";
 import { isHapticSupported } from "@/lib/haptics";
+import { useNativeCamera } from "@/hooks/useNativeCamera";
+import { isNativeApp } from "@/lib/capacitor";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,6 +52,22 @@ export default function Profile() {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [showResetDialog, setShowResetDialog] = useState(false);
+  const isNative = isNativeApp();
+  
+  // Native camera hook for profile photo
+  const nativeCamera = useNativeCamera({
+    onPhotoTaken: (dataUrl) => {
+      setSelectedImage(dataUrl);
+      setCropperOpen(true);
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Camera error",
+        description: error,
+      });
+    },
+  });
   
   // Push notifications
   const { 
@@ -275,20 +293,41 @@ export default function Profile() {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center" className="bg-[#1d1d1d] border-[#555555]">
-                  <DropdownMenuItem 
-                    onClick={() => cameraInputRef.current?.click()}
-                    className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
-                  >
-                    <Camera className="mr-2 h-4 w-4" />
-                    Take Photo
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => galleryInputRef.current?.click()}
-                    className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
-                  >
-                    <ImageIcon className="mr-2 h-4 w-4" />
-                    Choose from Gallery
-                  </DropdownMenuItem>
+                  {isNative ? (
+                    <>
+                      <DropdownMenuItem 
+                        onClick={async () => await nativeCamera.capturePhoto()}
+                        className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
+                      >
+                        <Camera className="mr-2 h-4 w-4" />
+                        Take Photo
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={async () => await nativeCamera.selectFromGallery()}
+                        className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
+                      >
+                        <ImageIcon className="mr-2 h-4 w-4" />
+                        Choose from Gallery
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <DropdownMenuItem 
+                        onClick={() => cameraInputRef.current?.click()}
+                        className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
+                      >
+                        <Camera className="mr-2 h-4 w-4" />
+                        Take Photo
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => galleryInputRef.current?.click()}
+                        className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
+                      >
+                        <ImageIcon className="mr-2 h-4 w-4" />
+                        Choose from Gallery
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
               <input
@@ -318,20 +357,41 @@ export default function Profile() {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center" className="bg-[#1d1d1d] border-[#555555]">
-                  <DropdownMenuItem 
-                    onClick={() => cameraInputRef.current?.click()}
-                    className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
-                  >
-                    <Camera className="mr-2 h-4 w-4" />
-                    Take Photo
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => galleryInputRef.current?.click()}
-                    className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
-                  >
-                    <ImageIcon className="mr-2 h-4 w-4" />
-                    Choose from Gallery
-                  </DropdownMenuItem>
+                  {isNative ? (
+                    <>
+                      <DropdownMenuItem 
+                        onClick={async () => await nativeCamera.capturePhoto()}
+                        className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
+                      >
+                        <Camera className="mr-2 h-4 w-4" />
+                        Take Photo
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={async () => await nativeCamera.selectFromGallery()}
+                        className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
+                      >
+                        <ImageIcon className="mr-2 h-4 w-4" />
+                        Choose from Gallery
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <DropdownMenuItem 
+                        onClick={() => cameraInputRef.current?.click()}
+                        className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
+                      >
+                        <Camera className="mr-2 h-4 w-4" />
+                        Take Photo
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => galleryInputRef.current?.click()}
+                        className="text-white focus:bg-[#28292b] focus:text-white cursor-pointer"
+                      >
+                        <ImageIcon className="mr-2 h-4 w-4" />
+                        Choose from Gallery
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
               {(profile as any)?.avatar_url && (
