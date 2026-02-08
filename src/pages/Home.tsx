@@ -121,7 +121,7 @@ export default function Home() {
           {/* Sign Out Button */}
           <button
             onClick={handleSignOut}
-            className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl border border-primary bg-transparent py-3 text-sm font-medium text-white hover:bg-primary/10 transition-colors"
+            className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl border border-primary bg-black py-3 text-sm font-medium text-white hover:bg-primary/10 transition-colors"
           >
             <LogOut className="h-4 w-4" />
             Sign Out
