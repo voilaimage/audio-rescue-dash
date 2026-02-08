@@ -106,11 +106,13 @@ export default function Register() {
     setLoading(true);
 
     try {
+      const redirectUrl = window.location.origin;
+      
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: { 
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: redirectUrl,
           data: {
             business_name: formData.business_name,
             contact_name: formData.contact_name,
@@ -126,6 +128,22 @@ export default function Register() {
 
       if (authError) throw authError;
       if (!authData.user) throw new Error("Failed to create user");
+
+      // Send verification email via our custom edge function
+      const { error: emailError } = await supabase.functions.invoke("send-auth-email", {
+        body: {
+          email: formData.email,
+          token: "",
+          token_hash: authData.session ? "" : "pending",
+          redirect_to: redirectUrl,
+          email_action_type: "signup",
+        },
+      });
+
+      if (emailError) {
+        console.error("Failed to send verification email:", emailError);
+        // Don't fail registration, just warn
+      }
 
       toast({ 
         title: "Registration successful!", 
