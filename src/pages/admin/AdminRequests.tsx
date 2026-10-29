@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { supabase, RequestWithPhotos } from "@/lib/supabase";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -545,9 +546,11 @@ export default function AdminRequests() {
   // Bulk status update handler
   const handleBulkStatusUpdate = async (newStatus: string) => {
     if (selectedIds.size === 0) return;
+    if (newStatus !== 'new' && newStatus !== 'accepted' && newStatus !== 'scheduled' &&
+        newStatus !== 'collected' && newStatus !== 'completed' && newStatus !== 'cancelled') return;
     
     try {
-      const updateData: Record<string, any> = { status: newStatus };
+      const updateData: TablesUpdate<'requests'> = { status: newStatus };
       
       // Add timestamps based on status
       if (newStatus === 'accepted') {
